@@ -7,9 +7,10 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Layout from './components/Layout';
 import Profile from './pages/Profile';
+import Documents from './pages/Documents';
+import DocumentUpload from './pages/DocumentUpload';
 import SchemaDocumentation from './pages/SchemaDocumentation';
 
-// Placeholder page for routes not yet built
 function ComingSoon({ title }) {
   return (
     <div className="flex items-center justify-center min-h-[60vh] flex-col gap-3" dir="rtl">
@@ -32,12 +33,8 @@ const AuthenticatedApp = () => {
   }
 
   if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
-    }
+    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
   }
 
   return (
@@ -45,7 +42,10 @@ const AuthenticatedApp = () => {
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/business-opening" replace />} />
         <Route path="/business-opening" element={<ComingSoon title="פתיחת עסק" />} />
-        <Route path="/documents" element={<ComingSoon title="מסמכים" />} />
+        <Route path="/documents" element={<Documents />} />
+        <Route path="/documents/upload" element={<DocumentUpload />} />
+        <Route path="/documents/templates" element={<ComingSoon title="טפסים" />} />
+        <Route path="/documents/sign" element={<ComingSoon title="חתימה" />} />
         <Route path="/clients" element={<ComingSoon title="לקוחות" />} />
         <Route path="/orders" element={<ComingSoon title="הזמנות" />} />
         <Route path="/schedule" element={<ComingSoon title="לוח זמנים" />} />
