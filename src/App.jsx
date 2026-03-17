@@ -1,47 +1,69 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-// Add page imports here
+import Layout from './components/Layout';
+import Profile from './pages/Profile';
+import SchemaDocumentation from './pages/SchemaDocumentation';
+
+// Placeholder page for routes not yet built
+function ComingSoon({ title }) {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh] flex-col gap-3" dir="rtl">
+      <div className="text-4xl">🚧</div>
+      <h2 className="text-xl font-semibold text-gray-700">{title}</h2>
+      <p className="text-sm text-gray-400">עמוד זה יהיה זמין בקרוב</p>
+    </div>
+  );
+}
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route element={<Layout />}>
+        <Route path="/" element={<Navigate to="/business-opening" replace />} />
+        <Route path="/business-opening" element={<ComingSoon title="פתיחת עסק" />} />
+        <Route path="/documents" element={<ComingSoon title="מסמכים" />} />
+        <Route path="/clients" element={<ComingSoon title="לקוחות" />} />
+        <Route path="/orders" element={<ComingSoon title="הזמנות" />} />
+        <Route path="/schedule" element={<ComingSoon title="לוח זמנים" />} />
+        <Route path="/notifications" element={<ComingSoon title="התראות" />} />
+        <Route path="/vision" element={<ComingSoon title="חזון ומטרות" />} />
+        <Route path="/landing-page" element={<ComingSoon title="דף הנחיתה" />} />
+        <Route path="/contacts" element={<ComingSoon title="אנשי קשר" />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/progress" element={<ComingSoon title="ההתקדמות שלי" />} />
+        <Route path="/settings" element={<ComingSoon title="הגדרות" />} />
+        <Route path="/schema" element={<SchemaDocumentation />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
@@ -51,7 +73,7 @@ function App() {
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;
