@@ -12,6 +12,8 @@ import DocumentUpload from './pages/DocumentUpload';
 import SignatureCreate from './pages/SignatureCreate';
 import DocumentSign from './pages/DocumentSign';
 import SchemaDocumentation from './pages/SchemaDocumentation';
+import Contacts from './pages/Contacts';
+import Dashboard from './pages/Dashboard';
 
 function ComingSoon({ title }) {
   return (
@@ -42,7 +44,8 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<Navigate to="/business-opening" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/business-opening" element={<ComingSoon title="פתיחת עסק" />} />
         <Route path="/documents" element={<Documents />} />
         <Route path="/documents/upload" element={<DocumentUpload />} />
@@ -55,7 +58,7 @@ const AuthenticatedApp = () => {
         <Route path="/notifications" element={<ComingSoon title="התראות" />} />
         <Route path="/vision" element={<ComingSoon title="חזון ומטרות" />} />
         <Route path="/landing-page" element={<ComingSoon title="דף הנחיתה" />} />
-        <Route path="/contacts" element={<ComingSoon title="אנשי קשר" />} />
+        <Route path="/contacts" element={<Contacts />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/progress" element={<ComingSoon title="ההתקדמות שלי" />} />
         <Route path="/settings" element={<ComingSoon title="הגדרות" />} />
