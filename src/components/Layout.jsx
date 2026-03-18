@@ -73,6 +73,7 @@ export default function Layout() {
   const [user, setUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [docCount, setDocCount] = useState(0);
+  const [contactCount, setContactCount] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [docsExpanded, setDocsExpanded] = useState(
@@ -87,6 +88,9 @@ export default function Layout() {
         .catch(() => {});
       base44.entities.Document.filter({ created_by: u.email, status: "active" })
         .then(items => setDocCount(items.length))
+        .catch(() => {});
+      base44.entities.Contact.filter({ created_by: u.email })
+        .then(items => setContactCount(items.length))
         .catch(() => {});
     }).catch(() => {});
   }, []);
@@ -112,7 +116,7 @@ export default function Layout() {
     { icon: Bell, label: "התראות", path: "/notifications", badge: unreadCount },
     { icon: Target, label: "חזון ומטרות", path: "/vision" },
     { icon: Globe, label: "דף הנחיתה", path: "/landing-page" },
-    { icon: Contact2, label: "אנשי קשר", path: "/contacts" },
+    { icon: Contact2, label: "אנשי קשר", path: "/contacts", badge: contactCount },
     { icon: User, label: "פרופיל", path: "/profile" },
   ];
 
@@ -176,6 +180,13 @@ export default function Layout() {
         {/* Sidebar */}
         <aside className={`fixed top-14 right-0 h-[calc(100vh-3.5rem)] w-60 bg-white border-l border-gray-200 z-30 flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "translate-x-full"} md:translate-x-0`}>
           <nav className="flex-1 overflow-y-auto py-4 px-2">
+
+            {/* Dashboard */}
+            <Link to="/dashboard" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/dashboard") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              style={isActive("/dashboard") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <span className="w-4 h-4 text-center text-sm leading-none">🏠</span><span>ראשי</span>
+            </Link>
 
             {/* Business Opening */}
             <Link to="/business-opening" onClick={closeSidebar}
