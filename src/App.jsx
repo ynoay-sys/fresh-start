@@ -9,6 +9,8 @@ import Layout from './components/Layout';
 import Profile from './pages/Profile';
 import Documents from './pages/Documents';
 import DocumentUpload from './pages/DocumentUpload';
+import SignatureCreate from './pages/SignatureCreate';
+import DocumentSign from './pages/DocumentSign';
 import SchemaDocumentation from './pages/SchemaDocumentation';
 
 function ComingSoon({ title }) {
@@ -45,7 +47,8 @@ const AuthenticatedApp = () => {
         <Route path="/documents" element={<Documents />} />
         <Route path="/documents/upload" element={<DocumentUpload />} />
         <Route path="/documents/templates" element={<ComingSoon title="טפסים" />} />
-        <Route path="/documents/sign" element={<ComingSoon title="חתימה" />} />
+        <Route path="/documents/sign/create" element={<SignatureCreate />} />
+        <Route path="/documents/sign/:documentId" element={<DocumentSign />} />
         <Route path="/clients" element={<ComingSoon title="לקוחות" />} />
         <Route path="/orders" element={<ComingSoon title="הזמנות" />} />
         <Route path="/schedule" element={<ComingSoon title="לוח זמנים" />} />

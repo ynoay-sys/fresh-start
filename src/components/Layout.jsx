@@ -19,7 +19,7 @@ const DOC_SUB = [
   { label: "ארכיון", path: "/documents" },
   { label: "העלאה", path: "/documents/upload" },
   { label: "טפסים", path: "/documents/templates" },
-  { label: "חתימה", path: "/documents/sign" },
+  { label: "חתימה", path: "/documents/sign/create" },
 ];
 
 function NavItem({ icon: Icon, label, path, isActive, badge, onClick, children, isOpen, onToggle }) {

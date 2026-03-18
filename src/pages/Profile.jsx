@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp, Plus, Trash2, Check, ShieldCheck } from "lucide-react";
+
+const SIG_TYPE_LABELS = { drawn: "צויירה", uploaded: "הועלתה", typed: "הוקלדה" };
 
 const RELATION_OPTIONS = [
   { value: "spouse", label: "בן/בת זוג" },
@@ -88,13 +91,15 @@ function SaveButton({ onClick, saving, justSaved }) {
 }
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [profileId, setProfileId] = useState(null);
+  const [activeSig, setActiveSig] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Section expanded states
-  const [expanded, setExpanded] = useState({ personal: true, bank: false, business: false, family: false });
+  const [expanded, setExpanded] = useState({ personal: true, bank: false, business: false, family: false, signature: false });
 
   // Per-section dirty / saving / justSaved states
   const [dirty, setDirty] = useState({ personal: false, bank: false, business: false, family: false });
@@ -123,6 +128,10 @@ export default function Profile() {
         setProfile(created);
         initSections(created);
       }
+      // Load active signature
+      base44.entities.Signature.filter({ created_by: u.email, is_active: true })
+        .then(sigs => setActiveSig(sigs[0] || null))
+        .catch(() => {});
       setLoading(false);
     }
     load();
@@ -310,6 +319,51 @@ export default function Profile() {
                 justSaved={justSaved.business}
               />
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Section 5: החתימה שלי */}
+      <div className="bg-white rounded-xl border border-gray-200 mb-4 overflow-hidden">
+        <SectionHeader
+          title="החתימה שלי"
+          expanded={expanded.signature}
+          onToggle={() => setExpanded(e => ({ ...e, signature: !e.signature }))}
+        />
+        {expanded.signature && (
+          <div className="px-5 pb-5 space-y-4">
+            {activeSig ? (
+              <>
+                <img
+                  src={activeSig.storage_path}
+                  alt="חתימה"
+                  className="max-h-24 border border-gray-100 rounded-lg bg-gray-50"
+                />
+                <div>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
+                    {SIG_TYPE_LABELS[activeSig.type] || activeSig.type}
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigate("/documents/sign/create")}
+                  className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+                  style={{ backgroundColor: "#1E5FA8" }}
+                >
+                  החלף חתימה
+                </button>
+              </>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <p className="text-sm text-gray-500">לא הוגדרה חתימה עדיין</p>
+                <button
+                  onClick={() => navigate("/documents/sign/create")}
+                  className="px-4 py-2 rounded-lg text-white text-sm font-medium w-fit"
+                  style={{ backgroundColor: "#1E5FA8" }}
+                >
+                  צור חתימה ←
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
