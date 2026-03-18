@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { PDFDocument } from "pdf-lib";
 import { Check, Download, AlertTriangle } from "lucide-react";
+import LegalCheckButton from "../components/LegalCheckButton";
 
 /* ── Step Indicator ── */
 function StepIndicator({ current }) {
@@ -261,6 +262,7 @@ export default function DocumentSign() {
       {step === 1 && (
         <div className="space-y-5">
           <DocViewer doc={doc} />
+          <LegalCheckButton doc={doc} />
           <button
             onClick={detectCoords}
             className="w-full py-2.5 rounded-lg text-white font-medium text-sm"
