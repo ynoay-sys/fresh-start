@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Search, Plus, Trash2, Download, FolderOpen, PenLine } from "lucide-react";
 import { format } from "date-fns";
+import LegalCheckButton from "../components/LegalCheckButton";
+import DocumentChatbot from "../components/DocumentChatbot";
 
 const TABS = [
   { key: "all", label: "הכל" },
@@ -74,7 +76,14 @@ function DeleteDialog({ doc, onConfirm, onCancel }) {
   );
 }
 
-function DocumentCard({ doc, onDelete, onSign }) {
+function LegalStatusBadge({ confidence }) {
+  if (confidence == null) return null;
+  if (confidence >= 80) return <span className="flex items-center gap-1 text-xs text-red-600"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />נדרשת בדיקה</span>;
+  if (confidence >= 50) return <span className="flex items-center gap-1 text-xs text-orange-600"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />ייתכן נדרשת</span>;
+  return <span className="flex items-center gap-1 text-xs text-green-600"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />תקין</span>;
+}
+
+function DocumentCard({ doc, onDelete, onSign, onConfidenceUpdate }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col p-5">
       {/* Icon */}
@@ -87,7 +96,7 @@ function DocumentCard({ doc, onDelete, onSign }) {
         {doc.file_name}
       </p>
 
-      {/* Category + Signed badges */}
+      {/* Category + Signed + Legal badges */}
       <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[doc.category] || CATEGORY_COLORS.other}`}>
           {CATEGORY_LABELS[doc.category] || "אחר"}
@@ -97,6 +106,7 @@ function DocumentCard({ doc, onDelete, onSign }) {
             חתום ✓
           </span>
         )}
+        <LegalStatusBadge confidence={doc.legal_check_confidence} />
       </div>
 
       {/* Meta */}
@@ -108,33 +118,36 @@ function DocumentCard({ doc, onDelete, onSign }) {
       </div>
 
       {/* Actions */}
-      <div className="mt-auto flex gap-2 flex-wrap">
-        <a
-          href={doc.storage_path}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          <Download className="w-3.5 h-3.5" />
-          הורד
-        </a>
-        {!doc.is_signed && (
-          <button
-            onClick={() => onSign(doc)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border text-xs font-medium transition-colors"
-            style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}
+      <div className="mt-auto flex flex-col gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <a
+            href={doc.storage_path}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            <PenLine className="w-3.5 h-3.5" />
-            חתום
+            <Download className="w-3.5 h-3.5" />
+            הורד
+          </a>
+          {!doc.is_signed && (
+            <button
+              onClick={() => onSign(doc)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border text-xs font-medium transition-colors"
+              style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}
+            >
+              <PenLine className="w-3.5 h-3.5" />
+              חתום
+            </button>
+          )}
+          <button
+            onClick={() => onDelete(doc)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            מחק
           </button>
-        )}
-        <button
-          onClick={() => onDelete(doc)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-          מחק
-        </button>
+        </div>
+        <LegalCheckButton doc={doc} onConfidenceUpdate={onConfidenceUpdate} />
       </div>
     </div>
   );
@@ -148,6 +161,10 @@ export default function Documents() {
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  function handleConfidenceUpdate(docId, confidence) {
+    setDocs(prev => prev.map(d => d.id === docId ? { ...d, legal_check_confidence: confidence } : d));
+  }
 
   useEffect(() => {
     async function load() {
@@ -228,7 +245,7 @@ export default function Documents() {
       {!loading && filtered.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(doc => (
-            <DocumentCard key={doc.id} doc={doc} onDelete={setDeleteTarget} onSign={handleSign} />
+            <DocumentCard key={doc.id} doc={doc} onDelete={setDeleteTarget} onSign={handleSign} onConfidenceUpdate={handleConfidenceUpdate} />
           ))}
         </div>
       )}
@@ -264,6 +281,9 @@ export default function Documents() {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
+
+      {/* AI Chatbot */}
+      <DocumentChatbot />
     </div>
   );
 }
