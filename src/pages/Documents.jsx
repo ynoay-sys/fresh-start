@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Search, Plus, Trash2, Download, FolderOpen } from "lucide-react";
+import { Search, Plus, Trash2, Download, FolderOpen, PenLine } from "lucide-react";
 import { format } from "date-fns";
 
 const TABS = [
@@ -74,7 +74,7 @@ function DeleteDialog({ doc, onConfirm, onCancel }) {
   );
 }
 
-function DocumentCard({ doc, onDelete }) {
+function DocumentCard({ doc, onDelete, onSign }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col p-5">
       {/* Icon */}
@@ -108,7 +108,7 @@ function DocumentCard({ doc, onDelete }) {
       </div>
 
       {/* Actions */}
-      <div className="mt-auto flex gap-2">
+      <div className="mt-auto flex gap-2 flex-wrap">
         <a
           href={doc.storage_path}
           target="_blank"
@@ -118,6 +118,16 @@ function DocumentCard({ doc, onDelete }) {
           <Download className="w-3.5 h-3.5" />
           הורד
         </a>
+        {!doc.is_signed && (
+          <button
+            onClick={() => onSign(doc)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border text-xs font-medium transition-colors"
+            style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}
+          >
+            <PenLine className="w-3.5 h-3.5" />
+            חתום
+          </button>
+        )}
         <button
           onClick={() => onDelete(doc)}
           className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
@@ -132,6 +142,7 @@ function DocumentCard({ doc, onDelete }) {
 
 export default function Documents() {
   const navigate = useNavigate();
+  const handleSign = (doc) => navigate(`/documents/sign/${doc.id}`);
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
@@ -217,7 +228,7 @@ export default function Documents() {
       {!loading && filtered.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(doc => (
-            <DocumentCard key={doc.id} doc={doc} onDelete={setDeleteTarget} />
+            <DocumentCard key={doc.id} doc={doc} onDelete={setDeleteTarget} onSign={handleSign} />
           ))}
         </div>
       )}
