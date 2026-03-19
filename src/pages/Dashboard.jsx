@@ -73,6 +73,48 @@ export default function Dashboard() {
         <BusinessProgressMap steps={steps} mini={true} />
       </div>
 
+      {/* Upcoming Events Widget */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold text-gray-800">אירועים קרובים</h2>
+          <button onClick={() => navigate("/schedule")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>
+            כל האירועים ←
+          </button>
+        </div>
+        {upcomingEvents.length === 0 ? (
+          <div className="text-center py-4">
+            <p className="text-sm text-gray-400 mb-3">אין אירועים קרובים. הוסף את האירוע הראשון שלך.</p>
+            <button onClick={() => navigate("/schedule")}
+              className="px-3 py-1.5 rounded-lg text-white text-xs font-medium" style={{ backgroundColor: "#1E5FA8" }}>
+              + הוסף אירוע
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {upcomingEvents.map(ev => {
+              const CAT_COLORS = { client:"#1E5FA8", delivery:"#C25A00", order:"#C25A00", milestone:"#5C1A8A", government:"#AA1111", personal:"#555555" };
+              const CAT_LABELS = { client:"לקוח", delivery:"משלוח", order:"הזמנה", milestone:"אבן דרך", government:"ממשלתי", personal:"אישי" };
+              const SOURCE_LABELS = { client:"לקוח", order:"הזמנה", milestone:"אבן דרך", manual:"ידני" };
+              const color = CAT_COLORS[ev.category] || "#555";
+              return (
+                <div key={ev.id} className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium text-gray-800 truncate block">{ev.title}</span>
+                  </div>
+                  <div className="text-xs text-gray-400 text-left flex-shrink-0">
+                    {format(new Date(ev.start_time), "dd/MM")}{!ev.all_day ? ` | ${format(new Date(ev.start_time), "HH:mm")}` : ""}
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full text-white flex-shrink-0" style={{ backgroundColor: color }}>
+                    {SOURCE_LABELS[ev.source_type] || "ידני"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Quick Actions */}
       <h2 className="text-base font-semibold text-gray-800 mb-3">פעולות מהירות</h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
