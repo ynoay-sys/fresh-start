@@ -19,20 +19,23 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [docCount, setDocCount] = useState(null);
   const [contactCount, setContactCount] = useState(null);
+  const [clientCount, setClientCount] = useState(null);
   const [stepsCompleted, setStepsCompleted] = useState(null);
   const [steps, setSteps] = useState([]);
 
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      const [docs, contacts, completedSteps, allSteps] = await Promise.all([
+      const [docs, contacts, clients, completedSteps, allSteps] = await Promise.all([
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
         base44.entities.Contact.filter({ created_by: user.email }),
+        base44.entities.Client.filter({ created_by: user.email }),
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email, status: "completed" }),
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
       ]);
       setDocCount(docs.length);
       setContactCount(contacts.length);
+      setClientCount(clients.length);
       setStepsCompleted(completedSteps.length);
       setSteps(allSteps);
     }
@@ -45,11 +48,12 @@ export default function Dashboard() {
       <p className="text-sm text-gray-500 mb-8">ברוך הבא ל-Fresh Start — הפלטפורמה לעצמאים בישראל</p>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <StatCard emoji="📁" label="מסמכים" value={docCount} onClick={() => navigate("/documents")} />
-        <StatCard emoji="👤" label="אנשי קשר" value={contactCount} onClick={() => navigate("/contacts")} />
+        <StatCard emoji="🤝" label="לקוחות" value={clientCount} onClick={() => navigate("/clients")} />
+        <StatCard emoji="👥" label="אנשי קשר" value={contactCount} onClick={() => navigate("/contacts")} />
         <StatCard emoji="✅" label="שלבי פתיחה" value={stepsCompleted != null ? `${stepsCompleted}/4` : "—"} onClick={() => navigate("/business-opening")} />
-        <StatCard emoji="📈" label="ההתקדמות שלי" value="←" onClick={() => navigate("/progress")} />
+        <StatCard emoji="📈" label="התקדמות" value="←" onClick={() => navigate("/progress")} />
       </div>
 
       {/* Business Opening Widget */}
