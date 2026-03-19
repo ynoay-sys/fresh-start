@@ -76,6 +76,7 @@ export default function Layout() {
   const [contactCount, setContactCount] = useState(0);
   const [clientCount, setClientCount] = useState(0);
   const [stepsCompleted, setStepsCompleted] = useState(0);
+  const [todayEventCount, setTodayEventCount] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [docsExpanded, setDocsExpanded] = useState(
@@ -100,6 +101,13 @@ export default function Layout() {
       base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" })
         .then(items => setStepsCompleted(items.length))
         .catch(() => {});
+      base44.entities.ScheduleEvent.filter({ created_by: u.email })
+        .then(items => {
+          const todayStr = new Date().toDateString();
+          const count = items.filter(e => new Date(e.start_time).toDateString() === todayStr).length;
+          setTodayEventCount(count);
+        })
+        .catch(() => {});
     }).catch(() => {});
   }, []);
 
@@ -120,7 +128,7 @@ export default function Layout() {
     { icon: Building2, label: "פתיחת עסק", path: "/business-opening" },
     { icon: Users, label: "לקוחות", path: "/clients", badge: clientCount },
     { icon: Package, label: "הזמנות", path: "/orders" },
-    { icon: CalendarDays, label: "לוח זמנים", path: "/schedule" },
+    { icon: CalendarDays, label: "לוח זמנים", path: "/schedule", badge: todayEventCount },
     { icon: Bell, label: "התראות", path: "/notifications", badge: unreadCount },
     { icon: Target, label: "חזון ומטרות", path: "/vision" },
     { icon: Globe, label: "דף הנחיתה", path: "/landing-page" },
