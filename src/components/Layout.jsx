@@ -74,6 +74,7 @@ export default function Layout() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [docCount, setDocCount] = useState(0);
   const [contactCount, setContactCount] = useState(0);
+  const [clientCount, setClientCount] = useState(0);
   const [stepsCompleted, setStepsCompleted] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -92,6 +93,9 @@ export default function Layout() {
         .catch(() => {});
       base44.entities.Contact.filter({ created_by: u.email })
         .then(items => setContactCount(items.length))
+        .catch(() => {});
+      base44.entities.Client.filter({ created_by: u.email })
+        .then(items => setClientCount(items.length))
         .catch(() => {});
       base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" })
         .then(items => setStepsCompleted(items.length))
@@ -114,7 +118,7 @@ export default function Layout() {
 
   const NAV_TOP = [
     { icon: Building2, label: "פתיחת עסק", path: "/business-opening" },
-    { icon: Users, label: "לקוחות", path: "/clients" },
+    { icon: Users, label: "לקוחות", path: "/clients", badge: clientCount },
     { icon: Package, label: "הזמנות", path: "/orders" },
     { icon: CalendarDays, label: "לוח זמנים", path: "/schedule" },
     { icon: Bell, label: "התראות", path: "/notifications", badge: unreadCount },
