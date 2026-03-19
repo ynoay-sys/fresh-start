@@ -74,6 +74,7 @@ export default function Layout() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [docCount, setDocCount] = useState(0);
   const [contactCount, setContactCount] = useState(0);
+  const [stepsCompleted, setStepsCompleted] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [docsExpanded, setDocsExpanded] = useState(
@@ -91,6 +92,9 @@ export default function Layout() {
         .catch(() => {});
       base44.entities.Contact.filter({ created_by: u.email })
         .then(items => setContactCount(items.length))
+        .catch(() => {});
+      base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" })
+        .then(items => setStepsCompleted(items.length))
         .catch(() => {});
     }).catch(() => {});
   }, []);
@@ -192,7 +196,11 @@ export default function Layout() {
             <Link to="/business-opening" onClick={closeSidebar}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/business-opening") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
               style={isActive("/business-opening") ? { backgroundColor: "#1E5FA8" } : {}}>
-              <Building2 className="w-4 h-4" /><span>פתיחת עסק</span>
+              <Building2 className="w-4 h-4 flex-shrink-0" />
+              <span className="flex-1">פתיחת עסק</span>
+              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${stepsCompleted === 4 ? "bg-green-100 text-green-700" : stepsCompleted > 0 ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-600"} ${isActive("/business-opening") ? "!bg-white/25 !text-white" : ""}`}>
+                {stepsCompleted}/4
+              </span>
             </Link>
 
             {/* Documents with sub-menu */}
