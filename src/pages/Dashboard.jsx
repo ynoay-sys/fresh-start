@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import BusinessProgressMap from "../components/BusinessProgressMap";
+import { isAfter, format } from "date-fns";
 
 function StatCard({ emoji, label, value, sub, onClick }) {
   return (
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [clientCount, setClientCount] = useState(null);
   const [stepsCompleted, setStepsCompleted] = useState(null);
   const [steps, setSteps] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
 
   useEffect(() => {
     async function load() {
@@ -38,6 +40,13 @@ export default function Dashboard() {
       setClientCount(clients.length);
       setStepsCompleted(completedSteps.length);
       setSteps(allSteps);
+      const eventsRes = await base44.entities.ScheduleEvent.filter({ created_by: user.email });
+      const now = new Date();
+      const upcoming = eventsRes
+        .filter(e => isAfter(new Date(e.start_time), now))
+        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+        .slice(0, 5);
+      setUpcomingEvents(upcoming);
     }
     load();
   }, []);
