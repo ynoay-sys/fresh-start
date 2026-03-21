@@ -6,6 +6,8 @@ import {
   Bell, Target, Globe, Contact2, Trophy, Settings,
   ChevronDown, ChevronLeft, LogOut, User, Menu, X, MoreHorizontal
 } from "lucide-react";
+import NotificationBellPanel from "./NotificationBellPanel";
+import { generateNotifications } from "../lib/generateNotifications";
 
 const MOBILE_NAV = [
   { icon: Building2, label: "פתיחת עסק", path: "/business-opening" },
@@ -79,9 +81,15 @@ export default function Layout() {
   const [todayEventCount, setTodayEventCount] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [bellOpen, setBellOpen] = useState(false);
+  const [allNotifs, setAllNotifs] = useState([]);
   const [docsExpanded, setDocsExpanded] = useState(
     location.pathname.startsWith("/documents")
   );
+
+  useEffect(() => {
+    generateNotifications().catch(() => {});
+  }, []);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -101,6 +109,9 @@ export default function Layout() {
       base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" })
         .then(items => setStepsCompleted(items.length))
         .catch(() => {});
+      base44.entities.Notification.filter({ created_by: u.email })
+        .then(items => { setAllNotifs(items); setUnreadCount(items.filter(n => !n.is_read).length); })
+        .catch(() => {});
       base44.entities.ScheduleEvent.filter({ created_by: u.email })
         .then(items => {
           const todayStr = new Date().toDateString();
@@ -116,6 +127,22 @@ export default function Layout() {
     if (location.pathname.startsWith("/documents")) setDocsExpanded(true);
   }, [location.pathname]);
 
+  const unreadNotifCount = allNotifs.filter(n => !n.is_read).length;
+
+  async function handleNotifClick(notif) {
+    if (!notif.is_read) {
+      await base44.entities.Notification.update(notif.id, { is_read: true });
+      setAllNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, is_read: true } : n));
+    }
+    if (notif.action_url) window.location.href = notif.action_url;
+  }
+
+  async function handleMarkAllRead() {
+    const unread = allNotifs.filter(n => !n.is_read);
+    await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
+    setAllNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
+  }
+
   const initials = user?.full_name
     ? user.full_name.split(" ").map(w => w[0]).slice(0, 2).join("")
     : user?.email?.[0]?.toUpperCase() || "?";
@@ -129,7 +156,7 @@ export default function Layout() {
     { icon: Users, label: "לקוחות", path: "/clients", badge: clientCount },
     { icon: Package, label: "הזמנות", path: "/orders" },
     { icon: CalendarDays, label: "לוח זמנים", path: "/schedule", badge: todayEventCount },
-    { icon: Bell, label: "התראות", path: "/notifications", badge: unreadCount },
+    { icon: Bell, label: "התראות", path: "/notifications", badge: unreadNotifCount },
     { icon: Target, label: "חזון ומטרות", path: "/vision" },
     { icon: Globe, label: "דף הנחיתה", path: "/landing-page" },
     { icon: Contact2, label: "אנשי קשר", path: "/contacts", badge: contactCount },
@@ -153,15 +180,24 @@ export default function Layout() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link to="/notifications" className="relative p-1.5 rounded-md hover:bg-gray-100 transition-colors">
-            <Bell className="w-5 h-5 text-gray-600" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -left-0.5 min-w-[18px] h-[18px] rounded-full text-white text-[10px] font-bold flex items-center justify-center px-1"
-                style={{ backgroundColor: "#1E5FA8" }}>
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
+          <div className="relative">
+            <button onClick={() => setBellOpen(v => !v)} className="relative p-1.5 rounded-md hover:bg-gray-100 transition-colors">
+              <Bell className="w-5 h-5 text-gray-600" />
+              {unreadNotifCount > 0 && (
+                <span className="absolute -top-0.5 -left-0.5 min-w-[18px] h-[18px] rounded-full text-white text-[10px] font-bold flex items-center justify-center px-1 bg-red-500">
+                  {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
+                </span>
+              )}
+            </button>
+            {bellOpen && (
+              <NotificationBellPanel
+                notifications={allNotifs}
+                onClose={() => setBellOpen(false)}
+                onMarkAllRead={handleMarkAllRead}
+                onNotifClick={handleNotifClick}
+              />
             )}
-          </Link>
+          </div>
 
           <div className="relative">
             <button onClick={() => setUserMenuOpen(v => !v)} className="flex items-center gap-2 p-1 rounded-md hover:bg-gray-100 transition-colors">
