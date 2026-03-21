@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { formatDistanceToNow, isToday, isYesterday, format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import BusinessProgressMap from "../components/BusinessProgressMap";
-import { isAfter, format } from "date-fns";
+
 
 function StatCard({ emoji, label, value, sub, onClick }) {
   return (
@@ -24,6 +25,7 @@ export default function Dashboard() {
   const [stepsCompleted, setStepsCompleted] = useState(null);
   const [steps, setSteps] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [recentNotifs, setRecentNotifs] = useState([]);
 
   useEffect(() => {
     async function load() {
@@ -47,9 +49,14 @@ export default function Dashboard() {
         .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
         .slice(0, 5);
       setUpcomingEvents(upcoming);
+      const notifsRes = await base44.entities.Notification.filter({ created_by: user.email });
+      const unread = notifsRes.filter(n => !n.is_read)
+        .sort((a,b) => new Date(b.scheduled_for || b.created_date) - new Date(a.scheduled_for || a.created_date))
+        .slice(0, 3);
+      setRecentNotifs(unread);
     }
     load();
-  }, []);
+  }, [];
 
   return (
     <div className="px-4 py-8 max-w-4xl mx-auto" dir="rtl">
@@ -108,6 +115,32 @@ export default function Dashboard() {
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full text-white flex-shrink-0" style={{ backgroundColor: color }}>
                     {SOURCE_LABELS[ev.source_type] || "ידני"}
                   </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Recent Notifications Widget */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold text-gray-800">התראות אחרונות</h2>
+          <button onClick={() => navigate("/notifications")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>כל ההתראות ←</button>
+        </div>
+        {recentNotifs.length === 0 ? (
+          <p className="text-sm text-center text-green-600 py-3">אין התראות חדשות ✓</p>
+        ) : (
+          <div className="space-y-2">
+            {recentNotifs.map(n => {
+              const TIER_ICONS = { personal:"👤", national:"🇮🇱", system:"⚙️" };
+              const d = n.scheduled_for || n.created_date;
+              let timeLabel = d ? format(new Date(d), "dd/MM") : "";
+              return (
+                <div key={n.id} className="flex items-center gap-2.5" onClick={() => navigate("/notifications")} style={{cursor:"pointer"}}>
+                  <span className="text-base">{TIER_ICONS[n.tier] || "🔔"}</span>
+                  <span className="flex-1 text-sm font-medium text-gray-800 truncate">{n.title}</span>
+                  <span className="text-xs text-gray-400">{timeLabel}</span>
                 </div>
               );
             })}

@@ -18,6 +18,7 @@ import BusinessOpening from './pages/BusinessOpening';
 import Progress from './pages/Progress';
 import Clients from './pages/Clients';
 import Schedule from './pages/Schedule';
+import Notifications from './pages/Notifications';
 
 function ComingSoon({ title }) {
   return (
@@ -59,7 +60,7 @@ const AuthenticatedApp = () => {
         <Route path="/clients" element={<Clients />} />
         <Route path="/orders" element={<ComingSoon title="הזמנות" />} />
         <Route path="/schedule" element={<Schedule />} />
-        <Route path="/notifications" element={<ComingSoon title="התראות" />} />
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/vision" element={<ComingSoon title="חזון ומטרות" />} />
         <Route path="/landing-page" element={<ComingSoon title="דף הנחיתה" />} />
         <Route path="/contacts" element={<Contacts />} />
