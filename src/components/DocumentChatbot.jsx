@@ -200,7 +200,29 @@ export default function DocumentChatbot() {
           <div className="px-3 py-2 border-t border-gray-100">
             {limitReached ? (
               <PaywallMessage usedCount={usageCount} freeQuota={FREE_CHAT_LIMIT} featureNameHebrew="עוזר מסמכים" />
-            )
+            ) : (
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && sendMessage(input)}
+                  placeholder="שאל שאלה על מסמכים..."
+                  disabled={loading}
+                  dir="rtl"
+                  className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 disabled:opacity-50"
+                />
+                <button
+                  onClick={() => sendMessage(input)}
+                  disabled={loading || !input.trim()}
+                  className="p-2 rounded-lg text-white disabled:opacity-40"
+                  style={{ backgroundColor: "#1E5FA8" }}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </>
