@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [recentNotifs, setRecentNotifs] = useState([]);
   const [activeGoals, setActiveGoals] = useState([]);
   const [tasksByGoal, setTasksByGoal] = useState({});
+  const [urgentTemplates, setUrgentTemplates] = useState([]);
 
   useEffect(() => {
     async function load() {
@@ -63,6 +64,12 @@ export default function Dashboard() {
       const byGoal = {};
       for (const g of active) { byGoal[g.id] = allTasks.filter(t => t.parent_id === g.id); }
       setTasksByGoal(byGoal);
+      const [allTemplates, completions] = await Promise.all([
+        base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
+        base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
+      ]);
+      const completedKeys = completions.map(c => c.template_key);
+      setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
     }
     load();
   }, []);
@@ -150,6 +157,36 @@ export default function Dashboard() {
                   <span className="text-base">{TIER_ICONS[n.tier] || "🔔"}</span>
                   <span className="flex-1 text-sm font-medium text-gray-800 truncate">{n.title}</span>
                   <span className="text-xs text-gray-400">{timeLabel}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Urgent Templates Widget */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold text-gray-800">טפסים דחופים ⚠️</h2>
+          <button onClick={() => navigate("/documents/templates")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>כל הטפסים ←</button>
+        </div>
+        {urgentTemplates.length === 0 ? (
+          <p className="text-sm text-center text-green-600 py-3">כל הטפסים הדחופים הושלמו ✓</p>
+        ) : (
+          <div className="space-y-3">
+            {urgentTemplates.map(t => {
+              const COLORS = { tax_authority: "#1E5FA8", vat: "#5C1A8A", nii: "#1A7A4A", municipality: "#C25A00", other: "#555" };
+              return (
+                <div key={t.key} className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[t.authority] || "#555" }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{t.title_he}</p>
+                    {t.deadline_note && <p className="text-xs text-orange-500 truncate">{t.deadline_note}</p>}
+                  </div>
+                  <a href={t.external_url} target="_blank" rel="noopener noreferrer"
+                    className="text-xs px-2 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 flex-shrink-0">
+                    צפה ←
+                  </a>
                 </div>
               );
             })}

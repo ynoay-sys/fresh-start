@@ -19,9 +19,9 @@ const MOBILE_NAV = [
 
 const DOC_SUB = [
   { label: "ארכיון", path: "/documents" },
-  { label: "העלאה", path: "/documents/upload" },
-  { label: "טפסים", path: "/documents/templates" },
-  { label: "חתימה", path: "/documents/sign/create" },
+    { label: "העלאה", path: "/documents/upload" },
+    { label: `טפסים${urgentTemplatesCount > 0 ? ` (${urgentTemplatesCount})` : ""}`, path: "/documents/templates" },
+    { label: "חתימה", path: "/documents/sign/create" },
 ];
 
 function NavItem({ icon: Icon, label, path, isActive, badge, onClick, children, isOpen, onToggle }) {
@@ -84,6 +84,7 @@ export default function Layout() {
   const [bellOpen, setBellOpen] = useState(false);
   const [allNotifs, setAllNotifs] = useState([]);
   const [activeGoalCount, setActiveGoalCount] = useState(0);
+  const [urgentTemplatesCount, setUrgentTemplatesCount] = useState(0);
   const [docsExpanded, setDocsExpanded] = useState(
     location.pathname.startsWith("/documents")
   );
@@ -116,6 +117,13 @@ export default function Layout() {
       base44.entities.Milestone.filter({ created_by: u.email, type: "goal", status: "active" })
         .then(items => setActiveGoalCount(items.length))
         .catch(() => {});
+      Promise.all([
+        base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
+        base44.entities.UserTemplateCompletion.filter({ created_by: u.email }),
+      ]).then(([templates, completions]) => {
+        const completedKeys = completions.map(c => c.template_key);
+        setUrgentTemplatesCount(templates.filter(t => !completedKeys.includes(t.key)).length);
+      }).catch(() => {});
       base44.entities.ScheduleEvent.filter({ created_by: u.email })
         .then(items => {
           const todayStr = new Date().toDateString();
