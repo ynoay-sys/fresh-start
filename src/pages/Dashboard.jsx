@@ -56,7 +56,7 @@ export default function Dashboard() {
       setRecentNotifs(unread);
     }
     load();
-  }, [];
+  }, []);
 
   return (
     <div className="px-4 py-8 max-w-4xl mx-auto" dir="rtl">
