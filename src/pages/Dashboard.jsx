@@ -26,6 +26,8 @@ export default function Dashboard() {
   const [steps, setSteps] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [recentNotifs, setRecentNotifs] = useState([]);
+  const [activeGoals, setActiveGoals] = useState([]);
+  const [tasksByGoal, setTasksByGoal] = useState({});
 
   useEffect(() => {
     async function load() {
@@ -54,6 +56,13 @@ export default function Dashboard() {
         .sort((a,b) => new Date(b.scheduled_for || b.created_date) - new Date(a.scheduled_for || a.created_date))
         .slice(0, 3);
       setRecentNotifs(unread);
+      const milestonesRes = await base44.entities.Milestone.filter({ created_by: user.email });
+      const active = milestonesRes.filter(m => m.type === "goal" && m.status === "active").slice(0, 3);
+      setActiveGoals(active);
+      const allTasks = milestonesRes.filter(m => m.type === "task");
+      const byGoal = {};
+      for (const g of active) { byGoal[g.id] = allTasks.filter(t => t.parent_id === g.id); }
+      setTasksByGoal(byGoal);
     }
     load();
   }, []);
@@ -141,6 +150,37 @@ export default function Dashboard() {
                   <span className="text-base">{TIER_ICONS[n.tier] || "🔔"}</span>
                   <span className="flex-1 text-sm font-medium text-gray-800 truncate">{n.title}</span>
                   <span className="text-xs text-gray-400">{timeLabel}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Goals Widget */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold text-gray-800">המטרות שלי 🎯</h2>
+          <button onClick={() => navigate("/vision")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>כל המטרות ←</button>
+        </div>
+        {activeGoals.length === 0 ? (
+          <button onClick={() => navigate("/vision")} className="text-sm font-medium" style={{ color: "#1E5FA8" }}>הגדר את המטרה הראשונה שלך ←</button>
+        ) : (
+          <div className="space-y-3">
+            {activeGoals.map(g => {
+              const tasks = tasksByGoal[g.id] || [];
+              const done = tasks.filter(t => t.status === "completed").length;
+              const pct = tasks.length > 0 ? Math.round((done / tasks.length) * 100) : 0;
+              return (
+                <div key={g.id}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-800 truncate flex-1">{g.title}</span>
+                    <span className="text-xs text-gray-400 flex-shrink-0 mr-2">{done}/{tasks.length}</span>
+                    {g.due_date && <span className="text-[10px] text-gray-400">{format(new Date(g.due_date), "dd/MM")}</span>}
+                  </div>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: "#1E5FA8" }} />
+                  </div>
                 </div>
               );
             })}

@@ -289,14 +289,15 @@ export default function Layout() {
             </div>
 
             {/* Other Nav Items */}
-            {NAV_TOP.map(({ icon: Icon, label, path, badge }) => (
+            {NAV_TOP.map(({ icon: Icon, label, path, badge, badgeColor }) => (
               <Link key={path} to={path} onClick={closeSidebar}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive(path) ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
                 style={isActive(path) ? { backgroundColor: "#1E5FA8" } : {}}>
                 <Icon className="w-4 h-4 flex-shrink-0" />
                 <span className="flex-1">{label}</span>
                 {badge != null && badge > 0 && (
-                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${isActive(path) ? "bg-white/25 text-white" : "bg-gray-100 text-gray-600"}`}>{badge}</span>
+                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${isActive(path) ? "bg-white/25 text-white" : "text-white"}`}
+                    style={!isActive(path) ? { backgroundColor: badgeColor || "#6B7280" } : {}}>{badge}</span>
                 )}
               </Link>
             ))}
