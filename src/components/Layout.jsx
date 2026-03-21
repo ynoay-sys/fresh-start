@@ -83,6 +83,7 @@ export default function Layout() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [allNotifs, setAllNotifs] = useState([]);
+  const [activeGoalCount, setActiveGoalCount] = useState(0);
   const [docsExpanded, setDocsExpanded] = useState(
     location.pathname.startsWith("/documents")
   );
@@ -111,6 +112,9 @@ export default function Layout() {
         .catch(() => {});
       base44.entities.Notification.filter({ created_by: u.email })
         .then(items => { setAllNotifs(items); setUnreadCount(items.filter(n => !n.is_read).length); })
+        .catch(() => {});
+      base44.entities.Milestone.filter({ created_by: u.email, type: "goal", status: "active" })
+        .then(items => setActiveGoalCount(items.length))
         .catch(() => {});
       base44.entities.ScheduleEvent.filter({ created_by: u.email })
         .then(items => {
@@ -157,7 +161,7 @@ export default function Layout() {
     { icon: Package, label: "הזמנות", path: "/orders" },
     { icon: CalendarDays, label: "לוח זמנים", path: "/schedule", badge: todayEventCount },
     { icon: Bell, label: "התראות", path: "/notifications", badge: unreadNotifCount },
-    { icon: Target, label: "חזון ומטרות", path: "/vision" },
+    { icon: Target, label: "חזון ומטרות", path: "/vision", badge: activeGoalCount, badgeColor: "#5C1A8A" },
     { icon: Globe, label: "דף הנחיתה", path: "/landing-page" },
     { icon: Contact2, label: "אנשי קשר", path: "/contacts", badge: contactCount },
     { icon: User, label: "פרופיל", path: "/profile" },

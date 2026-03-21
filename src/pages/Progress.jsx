@@ -27,25 +27,26 @@ function QuickActionCard({ emoji, label, path }) {
 export default function Progress() {
   const [steps, setSteps] = useState([]);
   const [stats, setStats] = useState({});
+  const [vision, setVision] = useState(null);
+  const [goalStats, setGoalStats] = useState({ active: 0, completed: 0, total: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      const [stepRes, docsRes, signedRes, clientsRes, contactsRes] = await Promise.all([
+      const [stepRes, docsRes, signedRes, clientsRes, contactsRes, milestones] = await Promise.all([
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
         base44.entities.Document.filter({ created_by: user.email, is_signed: true }),
         base44.entities.Client.filter({ created_by: user.email }),
         base44.entities.Contact.filter({ created_by: user.email }),
+        base44.entities.Milestone.filter({ created_by: user.email }),
       ]);
       setSteps(stepRes);
-      setStats({
-        docs: docsRes.length,
-        signed: signedRes.length,
-        clients: clientsRes.length,
-        contacts: contactsRes.length,
-      });
+      setStats({ docs: docsRes.length, signed: signedRes.length, clients: clientsRes.length, contacts: contactsRes.length });
+      const goals = milestones.filter(m => m.type === "goal");
+      setGoalStats({ active: goals.filter(g => g.status === "active").length, completed: goals.filter(g => g.status === "completed").length, total: goals.length });
+      setVision(milestones.find(m => m.type === "vision") || null);
       setLoading(false);
     }
     load();
@@ -78,6 +79,27 @@ export default function Progress() {
           <StatCard emoji="👥" label="לקוחות" value={stats.clients} />
           <StatCard emoji="👤" label="אנשי קשר" value={stats.contacts} />
         </div>
+      </div>
+
+      {/* Section: Vision & Goals */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-bold text-gray-800">חזון ומטרות</h2>
+          <button onClick={() => navigate("/vision")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>עבור לחזון ומטרות ←</button>
+        </div>
+        {vision ? (
+          <p className="text-sm text-gray-600 italic mb-4">"{vision.title.slice(0, 100)}{vision.title.length > 100 ? '...' : ''}"</p>
+        ) : (
+          <button onClick={() => navigate("/vision")} className="text-sm font-medium mb-4 block" style={{ color: "#1E5FA8" }}>הגדר את החזון שלך ←</button>
+        )}
+        {goalStats.total > 0 && (
+          <>
+            <p className="text-xs text-gray-500 mb-1">{goalStats.completed} מתוך {goalStats.total} מטרות הושלמו</p>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${Math.round((goalStats.completed / goalStats.total) * 100)}%`, backgroundColor: "#1E5FA8" }} />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Section 3: Quick Actions */}
