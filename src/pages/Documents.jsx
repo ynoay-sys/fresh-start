@@ -250,6 +250,37 @@ export default function Documents() {
 
       {/* Document Grid */}
       {activeTab !== "templates" && !loading && filtered.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(doc => (
+            <DocumentCard key={doc.id} doc={doc} onDelete={setDeleteTarget} onSign={handleSign} onConfidenceUpdate={handleConfidenceUpdate} />
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {activeTab !== "templates" && !loading && filtered.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <FolderOpen className="w-16 h-16 text-gray-200 mb-4" />
+          <p className="text-lg font-semibold text-gray-700 mb-1">עדיין אין מסמכים</p>
+          <p className="text-sm text-gray-400 mb-6">
+            {search || activeTab !== "all"
+              ? "לא נמצאו מסמכים התואמים את החיפוש"
+              : "העלה את המסמך הראשון שלך כדי להתחיל"}
+          </p>
+          {!search && activeTab === "all" && (
+            <button
+              onClick={() => navigate("/documents/upload")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-medium"
+              style={{ backgroundColor: "#1E5FA8" }}
+            >
+              <Plus className="w-4 h-4" />
+              העלה מסמך +
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Delete Dialog */}
       {deleteTarget && (
         <DeleteDialog
           doc={deleteTarget}
