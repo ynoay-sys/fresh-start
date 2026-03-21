@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { MessageCircle, X, Send } from "lucide-react";
 import { format } from "date-fns";
+import PaywallMessage from "./PaywallMessage";
 
 const FREE_CHAT_LIMIT = 20;
 
@@ -198,30 +199,8 @@ export default function DocumentChatbot() {
           {/* Input */}
           <div className="px-3 py-2 border-t border-gray-100">
             {limitReached ? (
-              <p className="text-xs text-gray-400 text-center py-2">המכסה החינמית מוצתה. זמין בגרסת התשלום.</p>
-            ) : (
-              <div className="flex gap-2 items-center">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && sendMessage(input)}
-                  placeholder="שאל שאלה על מסמכים..."
-                  disabled={loading}
-                  dir="rtl"
-                  className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 disabled:opacity-50"
-                />
-                <button
-                  onClick={() => sendMessage(input)}
-                  disabled={loading || !input.trim()}
-                  className="p-2 rounded-lg text-white disabled:opacity-40"
-                  style={{ backgroundColor: "#1E5FA8" }}
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-          </div>
+              <PaywallMessage usedCount={usageCount} freeQuota={FREE_CHAT_LIMIT} featureNameHebrew="עוזר מסמכים" />
+            )
         </div>
       )}
     </>

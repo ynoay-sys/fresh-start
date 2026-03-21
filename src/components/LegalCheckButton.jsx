@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, X } from "lucide-react";
+import PaywallMessage from "./PaywallMessage";
 
 const FREE_LIMIT = 3;
 
@@ -133,27 +134,8 @@ export default function LegalCheckButton({ doc, onConfidenceUpdate }) {
   return (
     <div>
       {blocked && !result ? (
-        <p className="text-xs text-gray-400 text-center py-1">
-          השתמשת ב-{FREE_LIMIT} בדיקות החינמיות שלך. בדיקות נוספות יהיו זמינות בגרסת התשלום.
-        </p>
-      ) : (
-        <button
-          onClick={handleCheck}
-          disabled={loading || blocked}
-          className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-          title={blocked ? "מכסה חינמית מוצתה" : ""}
-        >
-          {loading ? (
-            <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin inline-block" />
-              בודק את המסמך...
-            </span>
-          ) : (
-            <>
-              <Search className="w-3.5 h-3.5" />
-              בדוק אם נדרשת חתימה משפטית 🔍
-            </>
-          )}
+        <PaywallMessage usedCount={usageCount} freeQuota={FREE_LIMIT} featureNameHebrew="בדיקה משפטית" />
+      )
         </button>
       )}
 
