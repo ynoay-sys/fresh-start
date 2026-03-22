@@ -17,12 +17,7 @@ const MOBILE_NAV = [
   { icon: MoreHorizontal, label: "עוד", path: "/profile" },
 ];
 
-const DOC_SUB = [
-  { label: "ארכיון", path: "/documents" },
-    { label: "העלאה", path: "/documents/upload" },
-    { label: `טפסים${urgentTemplatesCount > 0 ? ` (${urgentTemplatesCount})` : ""}`, path: "/documents/templates" },
-    { label: "חתימה", path: "/documents/sign/create" },
-];
+
 
 function NavItem({ icon: Icon, label, path, isActive, badge, onClick, children, isOpen, onToggle }) {
   const hasChildren = !!children;
@@ -140,6 +135,13 @@ export default function Layout() {
   }, [location.pathname]);
 
   const unreadNotifCount = allNotifs.filter(n => !n.is_read).length;
+
+  const DOC_SUB = [
+    { label: "ארכיון", path: "/documents" },
+    { label: "העלאה", path: "/documents/upload" },
+    { label: `טפסים${urgentTemplatesCount > 0 ? ` (${urgentTemplatesCount})` : ""}`, path: "/documents/templates" },
+    { label: "חתימה", path: "/documents/sign/create" },
+  ];
 
   async function handleNotifClick(notif) {
     if (!notif.is_read) {
