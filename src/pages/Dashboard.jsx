@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { formatDistanceToNow, isToday, isYesterday, format } from "date-fns";
+import { formatDistanceToNow, isToday, isYesterday, format, isAfter } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import BusinessProgressMap from "../components/BusinessProgressMap";
