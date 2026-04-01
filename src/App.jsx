@@ -20,6 +20,7 @@ import Clients from './pages/Clients';
 import Schedule from './pages/Schedule';
 import Notifications from './pages/Notifications';
 import Vision from './pages/Vision';
+import DocumentTemplatesPage from './pages/DocumentTemplatesPage';
 
 function ComingSoon({ title }) {
   return (
@@ -55,7 +56,7 @@ const AuthenticatedApp = () => {
         <Route path="/business-opening" element={<BusinessOpening />} />
         <Route path="/documents" element={<Documents />} />
         <Route path="/documents/upload" element={<DocumentUpload />} />
-        <Route path="/documents/templates" element={<ComingSoon title="טפסים" />} />
+        <Route path="/documents/templates" element={<DocumentTemplatesPage />} />
         <Route path="/documents/sign/create" element={<SignatureCreate />} />
         <Route path="/documents/sign/:documentId" element={<DocumentSign />} />
         <Route path="/clients" element={<Clients />} />
