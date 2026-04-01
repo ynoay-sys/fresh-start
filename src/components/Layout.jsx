@@ -7,6 +7,8 @@ import {
   ChevronDown, ChevronLeft, LogOut, User, Menu, X, MoreHorizontal
 } from "lucide-react";
 import NotificationBellPanel from "./NotificationBellPanel";
+import AchievementToast from "./AchievementToast";
+import { checkAndUnlockAchievements } from "../lib/achievements";
 import { generateNotifications } from "../lib/generateNotifications";
 
 const MOBILE_NAV = [
@@ -86,6 +88,7 @@ export default function Layout() {
 
   useEffect(() => {
     generateNotifications().catch(() => {});
+    checkAndUnlockAchievements().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -331,6 +334,8 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      <AchievementToast />
 
       {/* Mobile Bottom Tab Bar */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 md:hidden">

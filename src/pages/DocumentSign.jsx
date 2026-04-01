@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { PDFDocument } from "pdf-lib";
 import { Check, Download, AlertTriangle } from "lucide-react";
 import LegalCheckButton from "../components/LegalCheckButton";
+import { checkAndUnlockAchievements } from "../lib/achievements";
 
 /* ── Step Indicator ── */
 function StepIndicator({ current }) {
@@ -173,6 +174,7 @@ export default function DocumentSign() {
       await base44.entities.Document.update(doc.id, { is_signed: true, signature_id: activeSig.id });
       setSignedUrl(doc.storage_path);
       setSigning(false);
+      checkAndUnlockAchievements().catch(() => {});
       return;
     }
 
@@ -205,6 +207,7 @@ export default function DocumentSign() {
 
         await base44.entities.Document.update(doc.id, { is_signed: true, signature_id: activeSig.id, storage_path: file_url });
         setSignedUrl(file_url);
+        checkAndUnlockAchievements().catch(() => {});
 
       } else if (ext === "pdf") {
         const [pdfRes, sigRes] = await Promise.all([
@@ -233,6 +236,7 @@ export default function DocumentSign() {
 
         await base44.entities.Document.update(doc.id, { is_signed: true, signature_id: activeSig.id, storage_path: file_url });
         setSignedUrl(file_url);
+        checkAndUnlockAchievements().catch(() => {});
       }
     } catch (e) {
       setSignError("שגיאה בחתימה על המסמך. אנא נסה שוב.");

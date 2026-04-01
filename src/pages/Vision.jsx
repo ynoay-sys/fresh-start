@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import VisionModal from "../components/VisionModal";
 import GoalModal from "../components/GoalModal";
 import GoalCard from "../components/GoalCard";
+import { checkAndUnlockAchievements } from "../lib/achievements";
 
 export default function Vision() {
   const [vision, setVision] = useState(null);
@@ -48,6 +49,11 @@ export default function Vision() {
     if (!confirm(`למחוק את המטרה "${goal.title}"?`)) return;
     await base44.entities.Milestone.delete(goal.id);
     load();
+  }
+
+  async function handleMilestoneSaved() {
+    load();
+    checkAndUnlockAchievements().catch(() => {});
   }
 
   async function handleReactivate(goal) {
@@ -156,10 +162,10 @@ export default function Vision() {
 
       {/* Modals */}
       {showVisionModal && (
-        <VisionModal vision={vision} onClose={() => setShowVisionModal(false)} onSaved={() => { setShowVisionModal(false); load(); }} />
+        <VisionModal vision={vision} onClose={() => setShowVisionModal(false)} onSaved={() => { setShowVisionModal(false); handleMilestoneSaved(); }} />
       )}
       {showGoalModal && (
-        <GoalModal goal={editGoal} onClose={() => { setShowGoalModal(false); setEditGoal(null); }} onSaved={() => { setShowGoalModal(false); setEditGoal(null); load(); }} />
+        <GoalModal goal={editGoal} onClose={() => { setShowGoalModal(false); setEditGoal(null); }} onSaved={() => { setShowGoalModal(false); setEditGoal(null); handleMilestoneSaved(); }} />
       )}
     </div>
   );

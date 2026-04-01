@@ -6,6 +6,7 @@ import ClientModal from "../components/ClientModal";
 import ReminderModal from "../components/ReminderModal";
 import MeetingModal from "../components/MeetingModal";
 import ImportContactsModal from "../components/ImportContactsModal";
+import { checkAndUnlockAchievements } from "../lib/achievements";
 
 function SkeletonItem() {
   return (
@@ -177,7 +178,7 @@ export default function Clients() {
       {/* Modals */}
       {modalClient !== undefined && (
         <ClientModal client={modalClient} onClose={() => setModalClient(undefined)}
-          onSaved={() => { setModalClient(undefined); setLoading(true); load(); }} />
+          onSaved={() => { setModalClient(undefined); setLoading(true); load(); checkAndUnlockAchievements().catch(() => {}); }} />
       )}
       {reminderClient && <ReminderModal client={reminderClient} onClose={() => setReminderClient(null)} />}
       {meetingClient && <MeetingModal client={meetingClient} onClose={() => setMeetingClient(null)} onScheduled={load} />}

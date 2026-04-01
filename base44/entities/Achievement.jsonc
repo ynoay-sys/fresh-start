@@ -1,0 +1,30 @@
+{
+  "name": "Achievement",
+  "type": "object",
+  "properties": {
+    "achievement_key": {
+      "type": "string",
+      "description": "Unique key e.g. first_document"
+    },
+    "title_he": {
+      "type": "string",
+      "description": "Hebrew achievement title"
+    },
+    "description_he": {
+      "type": "string",
+      "description": "Hebrew description"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Emoji icon"
+    },
+    "unlocked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this achievement was unlocked"
+    }
+  },
+  "required": [
+    "achievement_key"
+  ]
+}

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { format } from "date-fns";
 import BusinessProgressMap from "../components/BusinessProgressMap";
+import { ACHIEVEMENT_DEFS } from "../lib/achievements";
 
 function StatCard({ emoji, label, value }) {
   return (
@@ -24,29 +26,66 @@ function QuickActionCard({ emoji, label, path }) {
   );
 }
 
+function AchievementBadge({ def, unlocked, unlockedAt }) {
+  return (
+    <div className="flex flex-col items-center gap-2 text-center">
+      <div
+        className="w-16 h-16 rounded-full flex items-center justify-center text-3xl flex-shrink-0 transition-all"
+        style={
+          unlocked
+            ? {
+                background: "linear-gradient(135deg, #1E5FA8, #5C1A8A)",
+                boxShadow: "0 0 16px rgba(30,95,168,0.35)",
+              }
+            : { backgroundColor: "#E5E7EB" }
+        }
+      >
+        {unlocked ? def.icon : "🔒"}
+      </div>
+      <div>
+        <p className={`text-xs font-semibold leading-tight ${unlocked ? "text-gray-800" : "text-gray-400"}`}>
+          {def.title}
+        </p>
+        {unlocked && unlockedAt ? (
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            נפתח: {format(new Date(unlockedAt), "dd/MM")}
+          </p>
+        ) : (
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            {def.description.split(" ").slice(0, 2).join(" ")}...
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Progress() {
+  const navigate = useNavigate();
   const [steps, setSteps] = useState([]);
   const [stats, setStats] = useState({});
-  const [vision, setVision] = useState(null);
-  const [goalStats, setGoalStats] = useState({ active: 0, completed: 0, total: 0 });
+  const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      const [stepRes, docsRes, signedRes, clientsRes, contactsRes, milestones] = await Promise.all([
+      const [stepRes, docsRes, signedRes, clientsRes, activeGoalsRes, achievementsRes] = await Promise.all([
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
         base44.entities.Document.filter({ created_by: user.email, is_signed: true }),
         base44.entities.Client.filter({ created_by: user.email }),
-        base44.entities.Contact.filter({ created_by: user.email }),
-        base44.entities.Milestone.filter({ created_by: user.email }),
+        base44.entities.Milestone.filter({ created_by: user.email, type: "goal", status: "active" }),
+        base44.entities.Achievement.filter({ created_by: user.email }),
       ]);
       setSteps(stepRes);
-      setStats({ docs: docsRes.length, signed: signedRes.length, clients: clientsRes.length, contacts: contactsRes.length });
-      const goals = milestones.filter(m => m.type === "goal");
-      setGoalStats({ active: goals.filter(g => g.status === "active").length, completed: goals.filter(g => g.status === "completed").length, total: goals.length });
-      setVision(milestones.find(m => m.type === "vision") || null);
+      setStats({
+        docs: docsRes.length,
+        signed: signedRes.length,
+        clients: clientsRes.length,
+        activeGoals: activeGoalsRes.length,
+      });
+      setAchievements(achievementsRes);
       setLoading(false);
     }
     load();
@@ -60,55 +99,71 @@ export default function Progress() {
     );
   }
 
+  const unlockedMap = {};
+  for (const a of achievements) {
+    unlockedMap[a.achievement_key] = a.unlocked_at;
+  }
+  const unlockedCount = achievements.length;
+  const pct = Math.round((unlockedCount / ACHIEVEMENT_DEFS.length) * 100);
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8" dir="rtl">
       <h1 className="text-2xl font-bold text-gray-900 mb-8">ההתקדמות שלי</h1>
 
-      {/* Section 1: Progress Map */}
+      {/* SECTION 1: Business Opening Journey */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
         <h2 className="text-base font-bold text-gray-800 mb-5">מפת המסע לפתיחת עסק</h2>
         <BusinessProgressMap steps={steps} />
       </div>
 
-      {/* Section 2: Stats */}
+      {/* SECTION 2: Achievements */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-base font-bold text-gray-800">ההישגים שלי 🏆</h2>
+          <span className="text-sm text-gray-500">{unlockedCount} מתוך {ACHIEVEMENT_DEFS.length} פוּתחו</span>
+        </div>
+
+        {/* Overall progress bar */}
+        <div className="mb-5">
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${pct}%`, background: "linear-gradient(90deg, #1E5FA8, #5C1A8A)" }}
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-1">{unlockedCount}/{ACHIEVEMENT_DEFS.length} הישגים</p>
+        </div>
+
+        <div className="grid grid-cols-4 sm:grid-cols-4 gap-4">
+          {ACHIEVEMENT_DEFS.map(def => (
+            <AchievementBadge
+              key={def.key}
+              def={def}
+              unlocked={!!unlockedMap[def.key]}
+              unlockedAt={unlockedMap[def.key]}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* SECTION 3: Stats */}
       <div className="mb-6">
         <h2 className="text-base font-bold text-gray-800 mb-3">הפלטפורמה שלי</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard emoji="📁" label="מסמכים שהועלו" value={stats.docs} />
           <StatCard emoji="✍️" label="מסמכים חתומים" value={stats.signed} />
           <StatCard emoji="👥" label="לקוחות" value={stats.clients} />
-          <StatCard emoji="👤" label="אנשי קשר" value={stats.contacts} />
+          <StatCard emoji="🎯" label="מטרות פעילות" value={stats.activeGoals} />
         </div>
       </div>
 
-      {/* Section: Vision & Goals */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-bold text-gray-800">חזון ומטרות</h2>
-          <button onClick={() => navigate("/vision")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>עבור לחזון ומטרות ←</button>
-        </div>
-        {vision ? (
-          <p className="text-sm text-gray-600 italic mb-4">"{vision.title.slice(0, 100)}{vision.title.length > 100 ? '...' : ''}"</p>
-        ) : (
-          <button onClick={() => navigate("/vision")} className="text-sm font-medium mb-4 block" style={{ color: "#1E5FA8" }}>הגדר את החזון שלך ←</button>
-        )}
-        {goalStats.total > 0 && (
-          <>
-            <p className="text-xs text-gray-500 mb-1">{goalStats.completed} מתוך {goalStats.total} מטרות הושלמו</p>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: `${Math.round((goalStats.completed / goalStats.total) * 100)}%`, backgroundColor: "#1E5FA8" }} />
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Section 3: Quick Actions */}
+      {/* SECTION 4: Quick Actions */}
       <div>
         <h2 className="text-base font-bold text-gray-800 mb-3">פעולות מהירות</h2>
         <div className="grid grid-cols-3 gap-3">
           <QuickActionCard emoji="📄" label="העלה מסמך" path="/documents/upload" />
           <QuickActionCard emoji="👥" label="הוסף לקוח" path="/clients" />
-          <QuickActionCard emoji="✍️" label="צור חתימה" path="/documents/sign/create" />
+          <QuickActionCard emoji="🌟" label="הגדר מטרה" path="/vision" />
         </div>
       </div>
     </div>

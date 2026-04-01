@@ -3,6 +3,7 @@ import { formatDistanceToNow, isToday, isYesterday, format, isAfter } from "date
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import BusinessProgressMap from "../components/BusinessProgressMap";
+import { ACHIEVEMENT_DEFS } from "../lib/achievements";
 
 
 function StatCard({ emoji, label, value, sub, onClick }) {
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [activeGoals, setActiveGoals] = useState([]);
   const [tasksByGoal, setTasksByGoal] = useState({});
   const [urgentTemplates, setUrgentTemplates] = useState([]);
+  const [achievements, setAchievements] = useState([]);
 
   useEffect(() => {
     async function load() {
@@ -64,13 +66,14 @@ export default function Dashboard() {
       const byGoal = {};
       for (const g of active) { byGoal[g.id] = allTasks.filter(t => t.parent_id === g.id); }
       setTasksByGoal(byGoal);
-      const [allTemplates, completions] = await Promise.all([
+      const [allTemplates, completions, achievementsRes] = await Promise.all([
         base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
         base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
+        base44.entities.Achievement.filter({ created_by: user.email }),
       ]);
       const completedKeys = completions.map(c => c.template_key);
       setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
-    }
+      setAchievements(achievementsRes);
     load();
   }, []);
 
@@ -190,6 +193,31 @@ export default function Dashboard() {
                 </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Achievements Widget */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-gray-800">ההישגים שלי 🏆</h2>
+          <button onClick={() => navigate("/progress")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>כל ההישגים ←</button>
+        </div>
+        <p className="text-xs text-gray-500 mb-2">{achievements.length} מתוך {ACHIEVEMENT_DEFS.length} הישגים פוּתחו</p>
+        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
+          <div className="h-full rounded-full" style={{ width: `${Math.round((achievements.length / ACHIEVEMENT_DEFS.length) * 100)}%`, background: "linear-gradient(90deg, #1E5FA8, #5C1A8A)" }} />
+        </div>
+        {achievements.length === 0 ? (
+          <p className="text-xs text-gray-400">השלם פעולות כדי לפתוח הישגים!</p>
+        ) : (
+          <div className="space-y-2">
+            {[...achievements].sort((a,b) => new Date(b.unlocked_at) - new Date(a.unlocked_at)).slice(0, 2).map(a => (
+              <div key={a.achievement_key} className="flex items-center gap-2.5">
+                <span className="text-xl">{a.icon}</span>
+                <span className="flex-1 text-sm font-medium text-gray-800 truncate">{a.title_he}</span>
+                <span className="text-xs text-gray-400">{a.unlocked_at ? format(new Date(a.unlocked_at), "dd/MM") : ""}</span>
+              </div>
+            ))}
           </div>
         )}
       </div>

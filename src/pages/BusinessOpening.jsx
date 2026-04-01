@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
 import ManualFallbackBanner from "../components/ManualFallbackBanner";
+import { checkAndUnlockAchievements } from "../lib/achievements";
 
 const STEP_DEFS = [
   {
@@ -84,6 +85,7 @@ function StepCard({ def, step, onUpdate, profile }) {
     await base44.entities.BusinessOpeningStep.update(step.id, data);
     onUpdate(step.id, data);
     setUpdating(false);
+    checkAndUnlockAchievements().catch(() => {});
   }
 
   const status = step.status;

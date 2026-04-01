@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { FileText, FileImage, File, CheckCircle, XCircle, UploadCloud } from "lucide-react";
+import { checkAndUnlockAchievements } from "../lib/achievements";
 
 const ACCEPTED = ["pdf", "docx", "jpg", "jpeg", "png"];
 const MAX_MB = 10;
@@ -98,6 +99,7 @@ export default function DocumentUpload() {
         status: "active",
       });
 
+      checkAndUnlockAchievements().catch(() => {});
       setSuccess(true);
     } catch (e) {
       clearInterval(ticker);

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp, Plus, Trash2, Check, ShieldCheck } from "lucide-react";
+import { checkAndUnlockAchievements } from "../lib/achievements";
 
 const SIG_TYPE_LABELS = { drawn: "צויירה", uploaded: "הועלתה", typed: "הוקלדה" };
 
@@ -92,6 +93,7 @@ function SaveButton({ onClick, saving, justSaved }) {
 
 export default function Profile() {
   const navigate = useNavigate();
+  const [achievements, setAchievements] = useState([]);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [profileId, setProfileId] = useState(null);
@@ -132,6 +134,9 @@ export default function Profile() {
       base44.entities.Signature.filter({ created_by: u.email, is_active: true })
         .then(sigs => setActiveSig(sigs[0] || null))
         .catch(() => {});
+      base44.entities.Achievement.filter({ created_by: u.email })
+        .then(items => setAchievements(items))
+        .catch(() => {});
       setLoading(false);
     }
     load();
@@ -156,6 +161,7 @@ export default function Profile() {
     setDirty(d => ({ ...d, [section]: false }));
     setJustSaved(j => ({ ...j, [section]: true }));
     setTimeout(() => setJustSaved(j => ({ ...j, [section]: false })), 2000);
+    checkAndUnlockAchievements().catch(() => {});
   }
 
   const completeness = calcCompleteness({ ...profile, ...personal, ...bank, ...business });
@@ -172,6 +178,28 @@ export default function Profile() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl">
+      {/* Achievements Summary */}
+      {achievements.length > 0 && (
+        <button
+          onClick={() => navigate("/progress")}
+          className="flex items-center gap-2 mb-4 px-4 py-2.5 bg-white rounded-xl border border-gray-200 w-full hover:border-gray-300 transition-colors"
+        >
+          <span className="text-base">🏆</span>
+          <span className="text-sm font-semibold text-gray-800">{achievements.length} הישגים</span>
+          <div className="flex gap-1 mr-1">
+            {achievements.slice(0, 6).map(a => (
+              <div key={a.achievement_key}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, #1E5FA8, #5C1A8A)" }}
+              >
+                {a.icon}
+              </div>
+            ))}
+          </div>
+          <span className="text-xs text-gray-400 mr-auto">צפה בכל ←</span>
+        </button>
+      )}
+
       {/* Page Title */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">הפרופיל שלי</h1>
