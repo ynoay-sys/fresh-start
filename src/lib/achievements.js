@@ -49,6 +49,12 @@ export const ACHIEVEMENT_DEFS = [
     description: "השלמת את המטרה הראשונה שלך",
     icon: "🏆",
   },
+  {
+    key: "page_published",
+    title: "דף הנחיתה שלי באוויר!",
+    description: "פרסמת את דף הנחיתה שלך",
+    icon: "🌐",
+  },
 ];
 
 let toastQueue = [];

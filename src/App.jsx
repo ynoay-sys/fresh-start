@@ -21,6 +21,8 @@ import Schedule from './pages/Schedule';
 import Notifications from './pages/Notifications';
 import Vision from './pages/Vision';
 import DocumentTemplatesPage from './pages/DocumentTemplatesPage';
+import LandingPageBuilder from './pages/LandingPageBuilder';
+import PublicLandingPage from './pages/PublicLandingPage';
 
 function ComingSoon({ title }) {
   return (
@@ -64,13 +66,14 @@ const AuthenticatedApp = () => {
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/vision" element={<Vision />} />
-        <Route path="/landing-page" element={<ComingSoon title="דף הנחיתה" />} />
+        <Route path="/landing-page" element={<LandingPageBuilder />} />
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/progress" element={<Progress />} />
         <Route path="/settings" element={<ComingSoon title="הגדרות" />} />
         <Route path="/schema" element={<SchemaDocumentation />} />
       </Route>
+      <Route path="/p/:subdomain" element={<PublicLandingPage />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

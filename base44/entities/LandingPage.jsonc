@@ -1,0 +1,61 @@
+{
+  "name": "LandingPage",
+  "type": "object",
+  "properties": {
+    "headline": {
+      "type": "string",
+      "description": "Main headline text"
+    },
+    "subheadline": {
+      "type": "string",
+      "description": "Sub-headline text"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short tagline"
+    },
+    "primary_color": {
+      "type": "string",
+      "default": "#1E5FA8",
+      "description": "Hex primary color"
+    },
+    "secondary_color": {
+      "type": "string",
+      "default": "#EAF2FB",
+      "description": "Hex secondary color"
+    },
+    "services_list": {
+      "type": "array",
+      "description": "List of services",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "subdomain": {
+      "type": "string",
+      "description": "Unique slug e.g. dana-design"
+    },
+    "is_published": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

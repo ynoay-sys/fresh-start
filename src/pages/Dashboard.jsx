@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [tasksByGoal, setTasksByGoal] = useState({});
   const [urgentTemplates, setUrgentTemplates] = useState([]);
   const [achievements, setAchievements] = useState([]);
+  const [landingPage, setLandingPage] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -66,14 +67,16 @@ export default function Dashboard() {
       const byGoal = {};
       for (const g of active) { byGoal[g.id] = allTasks.filter(t => t.parent_id === g.id); }
       setTasksByGoal(byGoal);
-      const [allTemplates, completions, achievementsRes] = await Promise.all([
+      const [allTemplates, completions, achievementsRes, landingPages] = await Promise.all([
         base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
         base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
         base44.entities.Achievement.filter({ created_by: user.email }),
+        base44.entities.LandingPage.filter({ created_by: user.email }),
       ]);
       const completedKeys = completions.map(c => c.template_key);
       setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
       setAchievements(achievementsRes);
+      setLandingPage(landingPages[0] || null);
     }
     load();
   }, []);
@@ -219,6 +222,43 @@ export default function Dashboard() {
                 <span className="text-xs text-gray-400">{a.unlocked_at ? format(new Date(a.unlocked_at), "dd/MM") : ""}</span>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Landing Page Widget */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-gray-800">דף הנחיתה שלי 🌐</h2>
+          <button onClick={() => navigate("/landing-page")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>עבור לעורך ←</button>
+        </div>
+        {!landingPage ? (
+          <div className="text-center py-3">
+            <p className="text-sm text-gray-500 mb-3">צור את דף הנחיתה שלך והצג את העסק ללקוחות</p>
+            <button onClick={() => navigate("/landing-page")}
+              className="px-4 py-2 rounded-lg text-white text-xs font-medium" style={{ backgroundColor: "#1E5FA8" }}>
+              ✨ צור דף נחיתה
+            </button>
+          </div>
+        ) : landingPage.is_published ? (
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🌐</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-green-700">הדף שלך פעיל ✓</p>
+              <p className="text-xs text-gray-400">freshstart.app/{landingPage.subdomain}</p>
+            </div>
+            <button onClick={() => navigate("/landing-page")}
+              className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">ערוך ←</button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🌐</span>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-700">דף הנחיתה שלך מוכן לפרסום</p>
+              <p className="text-xs text-gray-400">טיוטה — לא פורסם עדיין</p>
+            </div>
+            <button onClick={() => navigate("/landing-page")}
+              className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ backgroundColor: "#1E5FA8" }}>פרסם עכשיו ←</button>
           </div>
         )}
       </div>
