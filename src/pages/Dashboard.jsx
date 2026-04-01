@@ -74,6 +74,7 @@ export default function Dashboard() {
       const completedKeys = completions.map(c => c.template_key);
       setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
       setAchievements(achievementsRes);
+    }
     load();
   }, []);
 
