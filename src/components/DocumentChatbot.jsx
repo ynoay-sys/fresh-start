@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { MessageCircle, X, Send } from "lucide-react";
 import { format } from "date-fns";
-import PaywallMessage from "./PaywallMessage";
+import PaywallModal from "./PaywallModal";
 
 const FREE_CHAT_LIMIT = 20;
 
@@ -53,6 +53,7 @@ export default function DocumentChatbot() {
   const [usageCount, setUsageCount] = useState(0);
   const [usageRecord, setUsageRecord] = useState(null);
   const [limitReached, setLimitReached] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const bottomRef = useRef();
 
   useEffect(() => {
@@ -198,8 +199,22 @@ export default function DocumentChatbot() {
 
           {/* Input */}
           <div className="px-3 py-2 border-t border-gray-100">
+            {showPaywall && (
+              <PaywallModal
+                featureKey="ai_query"
+                usedCount={usageCount}
+                onClose={() => setShowPaywall(false)}
+                onPaymentSuccess={() => { setLimitReached(false); setShowPaywall(false); }}
+              />
+            )}
             {limitReached ? (
-              <PaywallMessage usedCount={usageCount} freeQuota={FREE_CHAT_LIMIT} featureNameHebrew="עוזר מסמכים" />
+              <button
+                onClick={() => setShowPaywall(true)}
+                className="w-full py-2 rounded-lg text-xs font-medium text-white"
+                style={{ backgroundColor: "#1E5FA8" }}
+              >
+                🔒 המשך עם תשלום (₪2 לשאלה)
+              </button>
             ) : (
               <div className="flex gap-2 items-center">
                 <input

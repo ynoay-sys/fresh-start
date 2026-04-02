@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import PaywallMessage from "./PaywallMessage";
+import PaywallModal from "./PaywallModal";
 
 const AUTHORITY_COLORS = {
   tax_authority: "#1E5FA8",
@@ -96,8 +96,8 @@ function TemplateCard({ template, isCompleted, usageBlocked, onComplete }) {
                   צפה בטופס ←
                 </a>
                 <button
-                  onClick={() => usageBlocked ? null : setConfirming(true)}
-                  disabled={usageBlocked}
+                 onClick={() => usageBlocked ? setPaywallTemplate(template) : setConfirming(true)}
+                 disabled={false}
                   className="flex-1 py-1.5 rounded-lg text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: "#1A7A4A" }}
                   title={usageBlocked ? "מכסה חינמית מוצתה" : ""}>
@@ -121,6 +121,7 @@ export default function TemplatesLibrary() {
   const [authorityFilter, setAuthorityFilter] = useState("all");
   const [urgencyFilter, setUrgencyFilter] = useState("all");
   const [toast, setToast] = useState("");
+  const [paywallTemplate, setPaywallTemplate] = useState(null);
 
   async function load() {
     const user = await base44.auth.me();
@@ -214,8 +215,13 @@ export default function TemplatesLibrary() {
         </div>
       </div>
 
-      {usageBlocked && (
-        <PaywallMessage usedCount={usageCount} freeQuota={FREE_QUOTA} featureNameHebrew="סימון טפסים" />
+      {paywallTemplate && (
+        <PaywallModal
+          featureKey="template_download"
+          usedCount={usageCount}
+          onClose={() => setPaywallTemplate(null)}
+          onPaymentSuccess={() => { setPaywallTemplate(null); handleComplete(paywallTemplate); }}
+        />
       )}
 
       {/* Filters */}

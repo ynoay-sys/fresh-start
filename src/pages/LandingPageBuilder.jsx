@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Send, Copy, Check, Monitor, Smartphone } from "lucide-react";
+import PaywallModal from "../components/PaywallModal";
 import LandingPagePreview from "../components/LandingPagePreview";
 import ManualEditModal from "../components/ManualEditModal";
 import { checkAndUnlockAchievements } from "../lib/achievements";
@@ -46,6 +47,9 @@ export default function LandingPageBuilder() {
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showDomainPaywall, setShowDomainPaywall] = useState(false);
+  const [customDomain, setCustomDomain] = useState("");
+  const [domainSaved, setDomainSaved] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -310,6 +314,18 @@ Respond ONLY with the JSON patch. No explanation. No markdown.`;
               </div>
             </div>
 
+            {/* Domain */}
+            {domainSaved ? (
+              <div className="px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 font-medium">
+                🌐 דומיין: {customDomain}
+              </div>
+            ) : (
+              <button onClick={() => setShowDomainPaywall(true)}
+                className="w-full py-2.5 rounded-lg border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">
+                🌐 חבר דומיין מותאם (₪29)
+              </button>
+            )}
+
             {/* Manual edit */}
             <button onClick={() => setShowManual(true)}
               className="w-full py-2.5 rounded-lg border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">
@@ -370,6 +386,23 @@ Respond ONLY with the JSON patch. No explanation. No markdown.`;
             </div>
           </div>
         </div>
+      )}
+
+      {/* Domain Paywall Modal */}
+      {showDomainPaywall && (
+        <PaywallModal
+          featureKey="domain"
+          onClose={() => setShowDomainPaywall(false)}
+          onPaymentSuccess={() => {
+            setShowDomainPaywall(false);
+            const domain = prompt("הזן את שם הדומיין המותאם שלך (לדוגמה: mybusiness.co.il)");
+            if (domain) {
+              base44.entities.LandingPage.update(page.id, { subdomain: domain.replace(/https?:\/\//, "").replace(/\/$/, "") });
+              setCustomDomain(domain);
+              setDomainSaved(true);
+            }
+          }}
+        />
       )}
 
       {/* Manual Edit Modal */}

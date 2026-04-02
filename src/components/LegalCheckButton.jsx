@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, X } from "lucide-react";
-import PaywallMessage from "./PaywallMessage";
+import PaywallModal from "./PaywallModal";
 
 const FREE_LIMIT = 3;
 
@@ -65,6 +65,7 @@ export default function LegalCheckButton({ doc, onConfidenceUpdate }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [blocked, setBlocked] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const [usageRecord, setUsageRecord] = useState(null);
   const [usageCount, setUsageCount] = useState(0);
 
@@ -133,14 +134,26 @@ export default function LegalCheckButton({ doc, onConfidenceUpdate }) {
 
   return (
     <div>
+      {blocked && showPaywall && (
+        <PaywallModal
+          featureKey="ai_query"
+          usedCount={usageCount}
+          onClose={() => setShowPaywall(false)}
+          onPaymentSuccess={() => { setBlocked(false); setShowPaywall(false); handleCheck(); }}
+        />
+      )}
       {blocked && !result ? (
-        <PaywallMessage usedCount={usageCount} freeQuota={FREE_LIMIT} featureNameHebrew="בדיקה משפטית" />
+        <button
+          onClick={() => setShowPaywall(true)}
+          className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-orange-200 text-xs font-medium text-orange-600 hover:bg-orange-50 transition-colors"
+        >
+          🔒 בדוק עם תשלום (₪2)
+        </button>
       ) : (
         <button
           onClick={handleCheck}
           disabled={loading || blocked}
           className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-          title={blocked ? "מכסה חינמית מוצתה" : ""}
         >
           {loading ? (
             <span className="flex items-center gap-1.5">
@@ -148,14 +161,10 @@ export default function LegalCheckButton({ doc, onConfidenceUpdate }) {
               בודק את המסמך...
             </span>
           ) : (
-            <>
-              <Search className="w-3.5 h-3.5" />
-              בדוק אם נדרשת חתימה משפטית 🔍
-            </>
+            <><Search className="w-3.5 h-3.5" />בדוק אם נדרשת חתימה משפטית 🔍</>
           )}
         </button>
       )}
-
       {result && <ResultBox result={result} onClose={() => setResult(null)} />}
     </div>
   );

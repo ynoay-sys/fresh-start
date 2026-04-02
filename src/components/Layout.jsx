@@ -316,15 +316,27 @@ export default function Layout() {
           </nav>
 
           <div className="border-t border-gray-100 px-2 py-3 space-y-0.5">
-            <Link to="/progress" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/progress") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
-              style={isActive("/progress") ? { backgroundColor: "#1E5FA8" } : {}}>
-              <Trophy className="w-4 h-4" /><span>ההתקדמות שלי 🏆</span>
+            <div className="border-t border-gray-100 my-1" />
+            <Link to="/pricing" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/pricing") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              style={isActive("/pricing") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <span className="w-4 h-4 text-center text-sm leading-none">💰</span><span>תמחור</span>
+            </Link>
+            <Link to="/billing" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/billing") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              style={isActive("/billing") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <span className="w-4 h-4 text-center text-sm leading-none">💳</span><span>תשלומים</span>
             </Link>
             <Link to="/settings" onClick={closeSidebar}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/settings") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
               style={isActive("/settings") ? { backgroundColor: "#1E5FA8" } : {}}>
               <Settings className="w-4 h-4" /><span>הגדרות</span>
+            </Link>
+            <div className="border-t border-gray-100 my-1" />
+            <Link to="/progress" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/progress") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              style={isActive("/progress") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <Trophy className="w-4 h-4" /><span>ההתקדמות שלי 🏆</span>
             </Link>
           </div>
         </aside>

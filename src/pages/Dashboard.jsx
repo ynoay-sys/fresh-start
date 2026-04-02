@@ -33,6 +33,9 @@ export default function Dashboard() {
   const [achievements, setAchievements] = useState([]);
   const [landingPage, setLandingPage] = useState(null);
   const [activeOrders, setActiveOrders] = useState([]);
+  const [aiUsage, setAiUsage] = useState(0);
+  const [templateUsage, setTemplateUsage] = useState(0);
+  const [monthPayments, setMonthPayments] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -81,6 +84,20 @@ export default function Dashboard() {
       const ordersRes = await base44.entities.Order.filter({ created_by: user.email }, "-created_date");
       const activeOrdersList = ordersRes.filter(o => o.status === "in_transit" || o.status === "delayed").slice(0, 3);
       setActiveOrders(activeOrdersList);
+      const [usageRecords, payments] = await Promise.all([
+        base44.entities.UserFeatureUsage.filter({ created_by: user.email }),
+        base44.entities.Payment.filter({ created_by: user.email }),
+      ]);
+      const aiRec = usageRecords.find(r => r.feature_key === "ai_query");
+      const tmplRec = usageRecords.find(r => r.feature_key === "template_download");
+      setAiUsage(aiRec?.usage_count || 0);
+      setTemplateUsage(tmplRec?.usage_count || 0);
+      const nowDate = new Date();
+      const thisMonth = payments.filter(p => {
+        const d = new Date(p.created_date);
+        return d.getMonth() === nowDate.getMonth() && d.getFullYear() === nowDate.getFullYear() && p.status === "completed";
+      });
+      setMonthPayments(thisMonth.reduce((s, p) => s + (p.amount_ils || 0), 0));
     }
     load();
   }, []);
@@ -265,6 +282,35 @@ export default function Dashboard() {
               className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ backgroundColor: "#1E5FA8" }}>פרסם עכשיו ←</button>
           </div>
         )}
+      </div>
+
+      {/* Usage Widget */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-gray-800">שימוש השוטף 💳</h2>
+          <button onClick={() => navigate("/billing")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>היסטוריית תשלומים ←</button>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between text-xs text-gray-600 mb-1">
+              <span>עוזר AI: {aiUsage}/20 שאלות חינמיות</span>
+              <span>{aiUsage >= 20 ? "מוצה" : `נותרו ${20 - aiUsage}`}</span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (aiUsage / 20) * 100)}%`, backgroundColor: aiUsage >= 20 ? "#EF4444" : aiUsage >= 15 ? "#F59E0B" : "#1A7A4A" }} />
+            </div>
+          </div>
+          <div>
+            <div className="flex justify-between text-xs text-gray-600 mb-1">
+              <span>טפסים: {templateUsage}/3 הורדות חינמיות</span>
+              <span>{templateUsage >= 3 ? "מוצה" : `נותרו ${3 - templateUsage}`}</span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (templateUsage / 3) * 100)}%`, backgroundColor: templateUsage >= 3 ? "#EF4444" : templateUsage >= 2 ? "#F59E0B" : "#1A7A4A" }} />
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 pt-1">הוצאות החודש: <span className="font-bold text-gray-800">₪{monthPayments}</span></p>
+        </div>
       </div>
 
       {/* Orders Widget */}

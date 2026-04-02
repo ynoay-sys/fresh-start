@@ -24,6 +24,8 @@ import DocumentTemplatesPage from './pages/DocumentTemplatesPage';
 import LandingPageBuilder from './pages/LandingPageBuilder';
 import Orders from './pages/Orders';
 import PublicLandingPage from './pages/PublicLandingPage';
+import Pricing from './pages/Pricing';
+import Billing from './pages/Billing';
 
 function ComingSoon({ title }) {
   return (
@@ -64,6 +66,8 @@ const AuthenticatedApp = () => {
         <Route path="/documents/sign/:documentId" element={<DocumentSign />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/billing" element={<Billing />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/vision" element={<Vision />} />
