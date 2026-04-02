@@ -40,58 +40,67 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      const [docs, contacts, clients, completedSteps, allSteps] = await Promise.all([
+      const [
+        docs, contacts, clients, completedSteps, allSteps,
+        eventsRes, notifsRes, milestonesRes,
+        allTemplates, completions, achievementsRes, landingPages,
+        ordersRes, usageRecords, payments
+      ] = await Promise.all([
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
         base44.entities.Contact.filter({ created_by: user.email }),
         base44.entities.Client.filter({ created_by: user.email }),
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email, status: "completed" }),
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
+        base44.entities.ScheduleEvent.filter({ created_by: user.email }),
+        base44.entities.Notification.filter({ created_by: user.email }),
+        base44.entities.Milestone.filter({ created_by: user.email }),
+        base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
+        base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
+        base44.entities.Achievement.filter({ created_by: user.email }),
+        base44.entities.LandingPage.filter({ created_by: user.email }),
+        base44.entities.Order.filter({ created_by: user.email }, "-created_date"),
+        base44.entities.UserFeatureUsage.filter({ created_by: user.email }),
+        base44.entities.Payment.filter({ created_by: user.email }),
       ]);
+
       setDocCount(docs.length);
       setContactCount(contacts.length);
       setClientCount(clients.length);
       setStepsCompleted(completedSteps.length);
       setSteps(allSteps);
-      const eventsRes = await base44.entities.ScheduleEvent.filter({ created_by: user.email });
+
       const now = new Date();
       const upcoming = eventsRes
         .filter(e => isAfter(new Date(e.start_time), now))
         .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
         .slice(0, 5);
       setUpcomingEvents(upcoming);
-      const notifsRes = await base44.entities.Notification.filter({ created_by: user.email });
+
       const unread = notifsRes.filter(n => !n.is_read)
         .sort((a,b) => new Date(b.scheduled_for || b.created_date) - new Date(a.scheduled_for || a.created_date))
         .slice(0, 3);
       setRecentNotifs(unread);
-      const milestonesRes = await base44.entities.Milestone.filter({ created_by: user.email });
+
       const active = milestonesRes.filter(m => m.type === "goal" && m.status === "active").slice(0, 3);
       setActiveGoals(active);
       const allTasks = milestonesRes.filter(m => m.type === "task");
       const byGoal = {};
       for (const g of active) { byGoal[g.id] = allTasks.filter(t => t.parent_id === g.id); }
       setTasksByGoal(byGoal);
-      const [allTemplates, completions, achievementsRes, landingPages] = await Promise.all([
-        base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
-        base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
-        base44.entities.Achievement.filter({ created_by: user.email }),
-        base44.entities.LandingPage.filter({ created_by: user.email }),
-      ]);
+
       const completedKeys = completions.map(c => c.template_key);
       setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
       setAchievements(achievementsRes);
       setLandingPage(landingPages[0] || null);
-      const ordersRes = await base44.entities.Order.filter({ created_by: user.email }, "-created_date");
+
       const activeOrdersList = ordersRes.filter(o => o.status === "in_transit" || o.status === "delayed").slice(0, 3);
       setActiveOrders(activeOrdersList);
-      const [usageRecords, payments] = await Promise.all([
-        base44.entities.UserFeatureUsage.filter({ created_by: user.email }),
-        base44.entities.Payment.filter({ created_by: user.email }),
-      ]);
+
       const aiRec = usageRecords.find(r => r.feature_key === "ai_query");
       const tmplRec = usageRecords.find(r => r.feature_key === "template_download");
       setAiUsage(aiRec?.usage_count || 0);
       setTemplateUsage(tmplRec?.usage_count || 0);
+
       const nowDate = new Date();
       const thisMonth = payments.filter(p => {
         const d = new Date(p.created_date);
