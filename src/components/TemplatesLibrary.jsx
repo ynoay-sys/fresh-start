@@ -39,7 +39,7 @@ const URGENCY_FILTERS = [
 
 const FREE_QUOTA = 3;
 
-function TemplateCard({ template, isCompleted, usageBlocked, onComplete }) {
+function TemplateCard({ template, isCompleted, usageBlocked, onComplete, onPaywall }) {
   const [confirming, setConfirming] = useState(false);
   const color = AUTHORITY_COLORS[template.authority] || "#555";
 
@@ -96,12 +96,10 @@ function TemplateCard({ template, isCompleted, usageBlocked, onComplete }) {
                   צפה בטופס ←
                 </a>
                 <button
-                 onClick={() => usageBlocked ? setPaywallTemplate(template) : setConfirming(true)}
-                 disabled={false}
-                  className="flex-1 py-1.5 rounded-lg text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: "#1A7A4A" }}
-                  title={usageBlocked ? "מכסה חינמית מוצתה" : ""}>
-                  {usageBlocked ? "מכסה מוצתה" : "סמן כהושלם ✓"}
+                  onClick={() => usageBlocked ? onPaywall(template) : setConfirming(true)}
+                  className="flex-1 py-1.5 rounded-lg text-white text-xs font-medium"
+                  style={{ backgroundColor: usageBlocked ? "#C25A00" : "#1A7A4A" }}>
+                  {usageBlocked ? "שדרג לסיום ✓" : "סמן כהושלם ✓"}
                 </button>
               </div>
             )}
@@ -255,6 +253,7 @@ export default function TemplatesLibrary() {
             isCompleted={isCompleted(t.key)}
             usageBlocked={usageBlocked && !isCompleted(t.key)}
             onComplete={handleComplete}
+            onPaywall={setPaywallTemplate}
           />
         ))}
       </div>
