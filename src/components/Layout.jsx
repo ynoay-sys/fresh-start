@@ -184,7 +184,6 @@ export default function Layout() {
   const NAV_TOP = [
     { icon: Building2, label: "פתיחת עסק", path: "/business-opening" },
     { icon: Users, label: "לקוחות", path: "/clients", badge: clientCount },
-    { icon: Package, label: "הזמנות", path: "/orders" },
     { icon: CalendarDays, label: "לוח זמנים", path: "/schedule", badge: todayEventCount },
     { icon: Bell, label: "התראות", path: "/notifications", badge: unreadNotifCount },
     { icon: Target, label: "חזון ומטרות", path: "/vision", badge: activeGoalCount, badgeColor: "#5C1A8A" },
