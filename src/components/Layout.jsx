@@ -83,6 +83,8 @@ export default function Layout() {
   const [activeGoalCount, setActiveGoalCount] = useState(0);
   const [urgentTemplatesCount, setUrgentTemplatesCount] = useState(0);
   const [landingPagePublished, setLandingPagePublished] = useState(false);
+  const [orderBadge, setOrderBadge] = useState(null);
+  const [orderBadgeColor, setOrderBadgeColor] = useState("#1E5FA8");
   const [docsExpanded, setDocsExpanded] = useState(
     location.pathname.startsWith("/documents")
   );
@@ -126,6 +128,13 @@ export default function Layout() {
       base44.entities.LandingPage.filter({ created_by: u.email })
         .then(pages => setLandingPagePublished(pages[0]?.is_published || false))
         .catch(() => {});
+      base44.entities.Order.filter({ created_by: u.email })
+        .then(orders => {
+          const delayed = orders.filter(o => o.status === "delayed" || (o.status === "in_transit" && o.expected_date && new Date(o.expected_date) < new Date())).length;
+          const inTransit = orders.filter(o => o.status === "in_transit").length;
+          if (delayed > 0) { setOrderBadge(delayed); setOrderBadgeColor("#AA1111"); }
+          else if (inTransit > 0) { setOrderBadge(inTransit); setOrderBadgeColor("#1E5FA8"); }
+        }).catch(() => {});
       base44.entities.ScheduleEvent.filter({ created_by: u.email })
         .then(items => {
           const todayStr = new Date().toDateString();
@@ -180,6 +189,7 @@ export default function Layout() {
     { icon: Bell, label: "התראות", path: "/notifications", badge: unreadNotifCount },
     { icon: Target, label: "חזון ומטרות", path: "/vision", badge: activeGoalCount, badgeColor: "#5C1A8A" },
     { icon: Globe, label: "דף הנחיתה", path: "/landing-page", badge: landingPagePublished ? "פעיל" : null, badgeColor: "#1A7A4A" },
+    { icon: Package, label: "הזמנות", path: "/orders", badge: orderBadge, badgeColor: orderBadgeColor },
     { icon: Contact2, label: "אנשי קשר", path: "/contacts", badge: contactCount },
     { icon: User, label: "פרופיל", path: "/profile" },
   ];

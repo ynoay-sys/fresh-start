@@ -22,6 +22,7 @@ import Notifications from './pages/Notifications';
 import Vision from './pages/Vision';
 import DocumentTemplatesPage from './pages/DocumentTemplatesPage';
 import LandingPageBuilder from './pages/LandingPageBuilder';
+import Orders from './pages/Orders';
 import PublicLandingPage from './pages/PublicLandingPage';
 
 function ComingSoon({ title }) {
@@ -62,7 +63,7 @@ const AuthenticatedApp = () => {
         <Route path="/documents/sign/create" element={<SignatureCreate />} />
         <Route path="/documents/sign/:documentId" element={<DocumentSign />} />
         <Route path="/clients" element={<Clients />} />
-        <Route path="/orders" element={<ComingSoon title="הזמנות" />} />
+        <Route path="/orders" element={<Orders />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/vision" element={<Vision />} />

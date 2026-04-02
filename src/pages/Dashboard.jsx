@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [urgentTemplates, setUrgentTemplates] = useState([]);
   const [achievements, setAchievements] = useState([]);
   const [landingPage, setLandingPage] = useState(null);
+  const [activeOrders, setActiveOrders] = useState([]);
 
   useEffect(() => {
     async function load() {
@@ -77,6 +78,9 @@ export default function Dashboard() {
       setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
       setAchievements(achievementsRes);
       setLandingPage(landingPages[0] || null);
+      const ordersRes = await base44.entities.Order.filter({ created_by: user.email }, "-created_date");
+      const activeOrdersList = ordersRes.filter(o => o.status === "in_transit" || o.status === "delayed").slice(0, 3);
+      setActiveOrders(activeOrdersList);
     }
     load();
   }, []);
@@ -259,6 +263,36 @@ export default function Dashboard() {
             </div>
             <button onClick={() => navigate("/landing-page")}
               className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ backgroundColor: "#1E5FA8" }}>פרסם עכשיו ←</button>
+          </div>
+        )}
+      </div>
+
+      {/* Orders Widget */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-gray-800">הזמנות פעילות 📦</h2>
+          <button onClick={() => navigate("/orders")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>כל ההזמנות ←</button>
+        </div>
+        {activeOrders.length === 0 ? (
+          <p className="text-sm text-center text-green-600 py-3">אין משלוחים פעילים כרגע ✓</p>
+        ) : (
+          <div className="space-y-2.5">
+            {activeOrders.filter(o => o.status === "delayed").length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-red-50 rounded-lg text-red-700 text-xs font-medium mb-1">
+                ⚠️ {activeOrders.filter(o => o.status === "delayed").length} הזמנות מאוחרות
+              </div>
+            )}
+            {activeOrders.map(o => (
+              <div key={o.id} className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: o.status === "delayed" ? "#AA1111" : "#1E5FA8" }} />
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-gray-800 truncate block">{o.carrier} — {o.contents}</span>
+                </div>
+                {o.expected_date && (
+                  <span className="text-xs text-gray-400 flex-shrink-0">{format(new Date(o.expected_date), "dd/MM")}</span>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
