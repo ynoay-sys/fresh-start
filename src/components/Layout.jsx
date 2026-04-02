@@ -95,54 +95,40 @@ export default function Layout() {
   }, []);
 
   useEffect(() => {
-    base44.auth.me().then(u => {
+    async function loadSidebarData() {
+      const u = await base44.auth.me();
       setUser(u);
-      base44.entities.Notification.filter({ created_by: u.email, is_read: false })
-        .then(items => setUnreadCount(items.length))
-        .catch(() => {});
-      base44.entities.Document.filter({ created_by: u.email, status: "active" })
-        .then(items => setDocCount(items.length))
-        .catch(() => {});
-      base44.entities.Contact.filter({ created_by: u.email })
-        .then(items => setContactCount(items.length))
-        .catch(() => {});
-      base44.entities.Client.filter({ created_by: u.email })
-        .then(items => setClientCount(items.length))
-        .catch(() => {});
-      base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" })
-        .then(items => setStepsCompleted(items.length))
-        .catch(() => {});
-      base44.entities.Notification.filter({ created_by: u.email })
-        .then(items => { setAllNotifs(items); setUnreadCount(items.filter(n => !n.is_read).length); })
-        .catch(() => {});
-      base44.entities.Milestone.filter({ created_by: u.email, type: "goal", status: "active" })
-        .then(items => setActiveGoalCount(items.length))
-        .catch(() => {});
-      Promise.all([
+      const [notifs, docs, contacts, clients, steps, goals, templates, completions, landingPages, orders, events] = await Promise.all([
+        base44.entities.Notification.filter({ created_by: u.email }),
+        base44.entities.Document.filter({ created_by: u.email, status: "active" }),
+        base44.entities.Contact.filter({ created_by: u.email }),
+        base44.entities.Client.filter({ created_by: u.email }),
+        base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" }),
+        base44.entities.Milestone.filter({ created_by: u.email, type: "goal", status: "active" }),
         base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
         base44.entities.UserTemplateCompletion.filter({ created_by: u.email }),
-      ]).then(([templates, completions]) => {
-        const completedKeys = completions.map(c => c.template_key);
-        setUrgentTemplatesCount(templates.filter(t => !completedKeys.includes(t.key)).length);
-      }).catch(() => {});
-      base44.entities.LandingPage.filter({ created_by: u.email })
-        .then(pages => setLandingPagePublished(pages[0]?.is_published || false))
-        .catch(() => {});
-      base44.entities.Order.filter({ created_by: u.email })
-        .then(orders => {
-          const delayed = orders.filter(o => o.status === "delayed" || (o.status === "in_transit" && o.expected_date && new Date(o.expected_date) < new Date())).length;
-          const inTransit = orders.filter(o => o.status === "in_transit").length;
-          if (delayed > 0) { setOrderBadge(delayed); setOrderBadgeColor("#AA1111"); }
-          else if (inTransit > 0) { setOrderBadge(inTransit); setOrderBadgeColor("#1E5FA8"); }
-        }).catch(() => {});
-      base44.entities.ScheduleEvent.filter({ created_by: u.email })
-        .then(items => {
-          const todayStr = new Date().toDateString();
-          const count = items.filter(e => new Date(e.start_time).toDateString() === todayStr).length;
-          setTodayEventCount(count);
-        })
-        .catch(() => {});
-    }).catch(() => {});
+        base44.entities.LandingPage.filter({ created_by: u.email }),
+        base44.entities.Order.filter({ created_by: u.email }),
+        base44.entities.ScheduleEvent.filter({ created_by: u.email }),
+      ]);
+      setAllNotifs(notifs);
+      setUnreadCount(notifs.filter(n => !n.is_read).length);
+      setDocCount(docs.length);
+      setContactCount(contacts.length);
+      setClientCount(clients.length);
+      setStepsCompleted(steps.length);
+      setActiveGoalCount(goals.length);
+      const completedKeys = completions.map(c => c.template_key);
+      setUrgentTemplatesCount(templates.filter(t => !completedKeys.includes(t.key)).length);
+      setLandingPagePublished(landingPages[0]?.is_published || false);
+      const delayed = orders.filter(o => o.status === "delayed" || (o.status === "in_transit" && o.expected_date && new Date(o.expected_date) < new Date())).length;
+      const inTransit = orders.filter(o => o.status === "in_transit").length;
+      if (delayed > 0) { setOrderBadge(delayed); setOrderBadgeColor("#AA1111"); }
+      else if (inTransit > 0) { setOrderBadge(inTransit); setOrderBadgeColor("#1E5FA8"); }
+      const todayStr = new Date().toDateString();
+      setTodayEventCount(events.filter(e => new Date(e.start_time).toDateString() === todayStr).length);
+    }
+    loadSidebarData().catch(() => {});
   }, []);
 
   // Auto-expand docs menu when on a docs route
