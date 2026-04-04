@@ -25,6 +25,7 @@ import LandingPageBuilder from './pages/LandingPageBuilder';
 import Orders from './pages/Orders';
 import PublicLandingPage from './pages/PublicLandingPage';
 import Pricing from './pages/Pricing';
+import AutomationTest from './pages/admin/AutomationTest';
 import Billing from './pages/Billing';
 
 function ComingSoon({ title }) {
@@ -79,7 +80,8 @@ const AuthenticatedApp = () => {
         <Route path="/schema" element={<SchemaDocumentation />} />
       </Route>
       <Route path="/p/:subdomain" element={<PublicLandingPage />} />
-      <Route path="*" element={<PageNotFound />} />
+      <Route path="/admin/automation-test" element={<AutomationTest />} />
+        <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
