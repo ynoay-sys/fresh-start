@@ -63,7 +63,7 @@ export default function Billing() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 overflow-x-hidden w-full" dir="rtl">
+    <div className="max-w-3xl mx-auto px-4 py-8" dir="rtl" style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">היסטוריית תשלומים</h1>
         {payments.length > 0 && (

@@ -88,7 +88,7 @@ function LegalStatusBadge({ confidence }) {
 
 function DocumentCard({ doc, onDelete, onSign, onConfidenceUpdate }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col p-5">
+    <div className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col p-5" style={{ width: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
       {/* Icon */}
       <div className="flex justify-center mb-3">
         <FileTypeIcon ext={doc.file_type} />
@@ -240,7 +240,7 @@ export default function Documents() {
 
       {/* Document Grid */}
       {activeTab !== "templates" && !loading && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: 12, width: '100%', boxSizing: 'border-box' }} className="sm:grid-cols-2-override lg:grid-cols-3-override">
           {filtered.map(doc => (
             <DocumentCard key={doc.id} doc={doc} onDelete={setDeleteTarget} onSign={handleSign} onConfidenceUpdate={handleConfidenceUpdate} />
           ))}

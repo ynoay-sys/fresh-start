@@ -384,12 +384,11 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <h2 className="text-base font-semibold text-gray-800 mb-3">פעולות מהירות</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {[
           { emoji: "📄", label: "העלאת מסמך", path: "/documents/upload" },
-          { emoji: "✍️", label: "יצירת חתימה", path: "/documents/sign/create" },
-          { emoji: "👤", label: "הוספת איש קשר", path: "/contacts" },
-          { emoji: "📁", label: "הארכיון שלי", path: "/documents" },
+          { emoji: "👥", label: "הוספת לקוח", path: "/clients" },
+          { emoji: "🎯", label: "הגדרת מטרה", path: "/vision" },
         ].map(({ emoji, label, path }) => (
           <button key={path} onClick={() => navigate(path)}
             className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2 hover:shadow-md hover:border-gray-200 transition-all text-center">

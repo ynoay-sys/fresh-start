@@ -72,16 +72,18 @@ function ContactCard({ contact, onEdit, onDelete, onClick }) {
       </div>
 
       {/* Actions */}
-      <div className="mt-auto flex gap-2 w-full" onClick={e => e.stopPropagation()}>
+      <div style={{ display: 'flex', flexDirection: 'row', gap: 8, width: '100%', overflow: 'visible', flexWrap: 'wrap', marginTop: 'auto' }} onClick={e => e.stopPropagation()}>
         <button
           onClick={() => onEdit(contact)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 flex-shrink-0"
+          style={{ flexShrink: 0 }}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50"
         >
           <Edit className="w-3.5 h-3.5" /> ערוך
         </button>
         <button
           onClick={() => onDelete(contact)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50 flex-shrink-0"
+          style={{ flexShrink: 0 }}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50"
         >
           <Trash2 className="w-3.5 h-3.5" /> מחק
         </button>
@@ -171,8 +173,8 @@ export default function Contacts() {
             className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium mb-0.5 transition-colors ${activeCategory === cat ? "text-white" : "text-gray-700 hover:bg-gray-50"}`}
             style={activeCategory === cat ? { backgroundColor: "#1E5FA8" } : {}}
           >
-            <span className="inline-flex items-center gap-1.5">
-              <span style={{ fontSize: 15, lineHeight: 1 }}>{CATEGORY_ICONS[cat]}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{CATEGORY_ICONS[cat]}</span>
               <span>{CATEGORY_LABELS[cat]}</span>
             </span>
             <span className="text-xs opacity-70 mr-1">{categoryCounts[cat] || 0}</span>

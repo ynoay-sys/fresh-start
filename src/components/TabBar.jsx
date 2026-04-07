@@ -1,61 +1,84 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useLayoutEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
  * Reusable horizontal tab bar with arrow navigation.
- * Props: tabs [{key, label}], activeKey, onChange
+ * Works correctly in RTL layouts.
  */
 export default function TabBar({ tabs, activeKey, onChange, className = "" }) {
   const scrollRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(true);
 
   function checkScroll() {
     const el = scrollRef.current;
     if (!el) return;
-    // In RTL, scrollLeft can be negative in some browsers
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 2) {
+      setAtStart(true);
+      setAtEnd(true);
+      return;
+    }
+    // scrollLeft in RTL: Chrome uses 0 at right-start, goes negative leftward
+    // Use Math.abs for cross-browser safety
     const sl = Math.abs(el.scrollLeft);
-    setCanScrollLeft(sl > 4);
-    setCanScrollRight(sl < el.scrollWidth - el.clientWidth - 4);
+    setAtStart(sl < 4);
+    setAtEnd(sl > maxScroll - 4);
   }
 
   useEffect(() => {
-    checkScroll();
     const el = scrollRef.current;
     if (!el) return;
+    // Delay to let layout stabilize
+    const t = setTimeout(checkScroll, 50);
     el.addEventListener("scroll", checkScroll, { passive: true });
-    const ro = new ResizeObserver(checkScroll);
+    const ro = new ResizeObserver(() => { checkScroll(); });
     ro.observe(el);
-    return () => { el.removeEventListener("scroll", checkScroll); ro.disconnect(); };
+    return () => { clearTimeout(t); el.removeEventListener("scroll", checkScroll); ro.disconnect(); };
   }, [tabs]);
 
-  function scrollBy(dir) {
+  // Scroll toward the end (left in RTL = more tabs)
+  function goToEnd() {
     const el = scrollRef.current;
     if (!el) return;
-    // dir: "left" = show more left tabs (scroll right in RTL), "right" = opposite
-    el.scrollBy({ left: dir === "left" ? -120 : 120, behavior: "smooth" });
+    // In RTL Chrome, scrollLeft is negative for leftward scroll
+    el.scrollBy({ left: -120, behavior: "smooth" });
   }
+
+  // Scroll back toward start (right in RTL)
+  function goToStart() {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: 120, behavior: "smooth" });
+  }
+
+  const showLeftArrow = !atEnd;   // more tabs hidden to the LEFT
+  const showRightArrow = !atStart; // we've scrolled left, can go back RIGHT
 
   return (
     <div className={`relative flex items-center ${className}`} style={{ overflow: "hidden" }}>
-      {/* Right arrow (shows tabs to the right / earlier in RTL list) */}
-      {canScrollLeft && (
+      {/* LEFT arrow — reveals tabs hidden to the left */}
+      {showLeftArrow && (
         <button
-          onClick={() => scrollBy("left")}
-          className="absolute right-0 z-10 flex items-center justify-center bg-white shadow-md border border-gray-200 rounded-full flex-shrink-0"
-          style={{ width: 28, height: 28, top: "50%", transform: "translateY(-50%)" }}
+          onClick={goToEnd}
+          className="absolute left-0 z-10 flex items-center justify-center bg-white shadow-md border border-gray-200 rounded-full flex-shrink-0"
+          style={{ width: 30, height: 30, top: "50%", transform: "translateY(-50%)" }}
         >
-          <ChevronRight className="w-4 h-4 text-gray-600" />
+          <ChevronLeft className="w-4 h-4 text-gray-600" />
         </button>
       )}
 
       {/* Scrollable tab list */}
       <div
         ref={scrollRef}
-        className="flex gap-1 overflow-x-auto w-full"
-        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
-          paddingRight: canScrollLeft ? 34 : 0,
-          paddingLeft: canScrollRight ? 34 : 0 }}
+        className="flex gap-1 w-full"
+        style={{
+          overflowX: "auto",
+          scrollbarWidth: "none",
+          WebkitOverflowScrolling: "touch",
+          paddingLeft: showLeftArrow ? 36 : 0,
+          paddingRight: showRightArrow ? 36 : 0,
+        }}
       >
         {tabs.map(tab => (
           <button
@@ -71,14 +94,14 @@ export default function TabBar({ tabs, activeKey, onChange, className = "" }) {
         ))}
       </div>
 
-      {/* Left arrow */}
-      {canScrollRight && (
+      {/* RIGHT arrow — go back towards the start */}
+      {showRightArrow && (
         <button
-          onClick={() => scrollBy("right")}
-          className="absolute left-0 z-10 flex items-center justify-center bg-white shadow-md border border-gray-200 rounded-full flex-shrink-0"
-          style={{ width: 28, height: 28, top: "50%", transform: "translateY(-50%)" }}
+          onClick={goToStart}
+          className="absolute right-0 z-10 flex items-center justify-center bg-white shadow-md border border-gray-200 rounded-full flex-shrink-0"
+          style={{ width: 30, height: 30, top: "50%", transform: "translateY(-50%)" }}
         >
-          <ChevronLeft className="w-4 h-4 text-gray-600" />
+          <ChevronRight className="w-4 h-4 text-gray-600" />
         </button>
       )}
     </div>

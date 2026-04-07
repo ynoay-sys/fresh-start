@@ -218,19 +218,19 @@ export default function Layout() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <button
+          <div style={{ position: 'relative' }}>
+            <div
+              style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, cursor: 'pointer', borderRadius: 8 }}
+              className="hover:bg-gray-100 transition-colors"
               onClick={() => setBellOpen(v => !v)}
-              className="relative inline-flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
-              style={{ minWidth: 44, minHeight: 44, padding: 6 }}
             >
-              <Bell className="w-5 h-5 text-gray-600" />
+              <Bell className="w-5 h-5 text-gray-600" style={{ pointerEvents: 'none' }} />
               {unreadNotifCount > 0 && (
-                <span className="absolute top-0.5 left-0.5 min-w-[18px] h-[18px] rounded-full text-white text-[10px] font-bold flex items-center justify-center px-1 bg-red-500" style={{ pointerEvents: 'none' }}>
+                <span style={{ position: 'absolute', top: 2, left: 2, pointerEvents: 'none', zIndex: 1, minWidth: 18, height: 18, borderRadius: '50%', backgroundColor: '#EF4444', color: 'white', fontSize: 10, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
                   {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
                 </span>
               )}
-            </button>
+            </div>
             {bellOpen && (
               <NotificationBellPanel
                 notifications={allNotifs}
