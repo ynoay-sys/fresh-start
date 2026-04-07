@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, addDays, differenceInDays } from "date-fns";
 import { Plus, RefreshCw } from "lucide-react";
+import TabBar from "../components/TabBar";
 import OrderCard from "../components/OrderCard";
 import AddOrderModal from "../components/AddOrderModal";
 import EmailConnectModal from "../components/EmailConnectModal";
@@ -111,7 +112,7 @@ export default function Orders() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
             style={{ backgroundColor: "#1E5FA8" }}
           >
-            <Plus className="w-4 h-4" /> הוסף הזמנה ידנית
+            <Plus className="w-4 h-4" /> הוספת הזמנה ידנית
           </button>
         </div>
       </div>
@@ -175,19 +176,8 @@ export default function Orders() {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex gap-1 mb-4 overflow-x-auto pb-1">
-        {STATUS_TABS.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-              activeTab === tab.key ? "text-white" : "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50"
-            }`}
-            style={activeTab === tab.key ? { backgroundColor: "#1E5FA8" } : {}}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-4">
+        <TabBar tabs={STATUS_TABS} activeKey={activeTab} onChange={setActiveTab} />
       </div>
 
       {/* Search */}

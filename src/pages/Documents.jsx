@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Search, Plus, Trash2, Download, FolderOpen, PenLine } from "lucide-react";
 import { format } from "date-fns";
 import LegalCheckButton from "../components/LegalCheckButton";
+import TabBar from "../components/TabBar";
 import DocumentChatbot from "../components/DocumentChatbot";
 import TemplatesLibrary from "../components/TemplatesLibrary";
 
@@ -190,8 +191,10 @@ export default function Documents() {
     return matchTab && matchSearch;
   });
 
+  const TABS_LIST = TABS.map(t => ({ key: t.key, label: t.label }));
+
   return (
-    <div className="px-4 py-8 w-full max-w-6xl mx-auto overflow-x-hidden" dir="rtl">
+    <div className="px-3 py-8 w-full max-w-6xl mx-auto overflow-x-hidden box-border" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">המסמכים שלי</h1>
@@ -206,21 +209,8 @@ export default function Documents() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 mb-4 overflow-x-auto" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
-        {TABS.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px ${
-              activeTab === tab.key
-                ? "text-blue-700 border-blue-700"
-                : "text-gray-500 border-transparent hover:text-gray-700"
-            }`}
-            style={activeTab === tab.key ? { borderColor: "#1E5FA8", color: "#1E5FA8" } : {}}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-4">
+        <TabBar tabs={TABS_LIST} activeKey={activeTab} onChange={setActiveTab} />
       </div>
 
       {/* Search */}
@@ -250,7 +240,7 @@ export default function Documents() {
 
       {/* Document Grid */}
       {activeTab !== "templates" && !loading && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full">
           {filtered.map(doc => (
             <DocumentCard key={doc.id} doc={doc} onDelete={setDeleteTarget} onSign={handleSign} onConfidenceUpdate={handleConfidenceUpdate} />
           ))}

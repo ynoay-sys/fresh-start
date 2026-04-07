@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, Plus, Trash2, Edit } from "lucide-react";
+import TabBar from "../components/TabBar";
 import ContactModal from "../components/ContactModal";
 import ContactDrawer from "../components/ContactDrawer";
 
@@ -71,16 +72,16 @@ function ContactCard({ contact, onEdit, onDelete, onClick }) {
       </div>
 
       {/* Actions */}
-      <div className="mt-auto flex gap-2" onClick={e => e.stopPropagation()}>
+      <div className="mt-auto flex gap-2 w-full" onClick={e => e.stopPropagation()}>
         <button
           onClick={() => onEdit(contact)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 flex-shrink-0"
         >
           <Edit className="w-3.5 h-3.5" /> ערוך
         </button>
         <button
           onClick={() => onDelete(contact)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50 flex-shrink-0"
         >
           <Trash2 className="w-3.5 h-3.5" /> מחק
         </button>
@@ -170,8 +171,11 @@ export default function Contacts() {
             className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium mb-0.5 transition-colors ${activeCategory === cat ? "text-white" : "text-gray-700 hover:bg-gray-50"}`}
             style={activeCategory === cat ? { backgroundColor: "#1E5FA8" } : {}}
           >
-            <span>{CATEGORY_ICONS[cat]} {CATEGORY_LABELS[cat]}</span>
-            <span className="text-xs opacity-70">{categoryCounts[cat] || 0}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span style={{ fontSize: 15, lineHeight: 1 }}>{CATEGORY_ICONS[cat]}</span>
+              <span>{CATEGORY_LABELS[cat]}</span>
+            </span>
+            <span className="text-xs opacity-70 mr-1">{categoryCounts[cat] || 0}</span>
           </button>
         ))}
       </aside>
@@ -202,19 +206,18 @@ export default function Contacts() {
         </div>
 
         {/* Mobile category tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-4 md:hidden">
-          <button
-            onClick={() => setActiveCategory("all")}
-            className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap"
-            style={activeCategory === "all" ? { backgroundColor: "#1E5FA8", color: "#fff" } : { backgroundColor: "#F3F4F6", color: "#374151" }}
-          >הכל ({contacts.length})</button>
-          {FILTER_CATEGORIES.map(cat => (
-            <button key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap"
-              style={activeCategory === cat ? { backgroundColor: "#1E5FA8", color: "#fff" } : { backgroundColor: "#F3F4F6", color: "#374151" }}
-            >{CATEGORY_ICONS[cat]} {CATEGORY_LABELS[cat]}</button>
-          ))}
+        <div className="mb-4 md:hidden">
+          <TabBar
+            tabs={[
+              { key: "all", label: `הכל (${contacts.length})` },
+              ...FILTER_CATEGORIES.map(cat => ({
+                key: cat,
+                label: `${CATEGORY_ICONS[cat]} ${CATEGORY_LABELS[cat]}`
+              }))
+            ]}
+            activeKey={activeCategory}
+            onChange={setActiveCategory}
+          />
         </div>
 
         {/* Loading */}

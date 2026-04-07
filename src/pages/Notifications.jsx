@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Plus } from "lucide-react";
 import NotificationItem from "../components/NotificationItem";
 import AddReminderModal from "../components/AddReminderModal";
+import TabBar from "../components/TabBar";
 
 const FILTERS = [
   { key: "all", label: "הכל" },
@@ -76,14 +77,8 @@ export default function Notifications() {
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 border-b border-gray-200 mb-4 overflow-x-auto">
-        {FILTERS.map(f => (
-          <button key={f.key} onClick={() => setFilter(f.key)}
-            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${filter === f.key ? "border-blue-700" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-            style={filter === f.key ? { borderColor: "#1E5FA8", color: "#1E5FA8" } : {}}>
-            {f.label}
-          </button>
-        ))}
+      <div className="mb-4">
+        <TabBar tabs={FILTERS} activeKey={filter} onChange={setFilter} />
       </div>
 
       {/* List */}

@@ -63,7 +63,7 @@ export default function Billing() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8" dir="rtl">
+    <div className="max-w-3xl mx-auto px-4 py-8 overflow-x-hidden w-full" dir="rtl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">היסטוריית תשלומים</h1>
         {payments.length > 0 && (
@@ -78,7 +78,7 @@ export default function Billing() {
 
       {/* Summary */}
       {payments.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 mb-8">
           <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
             <p className="text-2xl font-bold" style={{ color: "#1E5FA8" }}>₪{total}</p>
             <p className="text-xs text-gray-500 mt-1">סה״כ הוצאות</p>
@@ -106,8 +106,31 @@ export default function Billing() {
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
+        <>
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {payments.map(p => {
+              const cfg = PRICING_CONFIG[p.feature_key];
+              const statusInfo = STATUS_LABELS[p.status] || { label: p.status, cls: "bg-gray-100 text-gray-600" };
+              return (
+                <div key={p.id} className="bg-white border border-gray-200 rounded-xl p-4 w-full">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">{cfg?.icon || "💳"}</span>
+                    <span className="font-bold text-gray-800 text-sm">{cfg?.label_he || p.feature_key}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-1">תאריך: {p.created_date ? format(new Date(p.created_date), "dd/MM/yyyy HH:mm") : "—"}</p>
+                  <p className="text-xs text-gray-800 font-bold mb-1">סכום: ₪{p.amount_ils}</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs text-gray-500">סטטוס:</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusInfo.cls}`}>{statusInfo.label}</span>
+                  </div>
+                  {p.gateway_ref && <p className="text-xs text-gray-400 font-mono truncate">עסקה: {p.gateway_ref}</p>}
+                </div>
+              );
+            })}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -146,7 +169,7 @@ export default function Billing() {
               </tbody>
             </table>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

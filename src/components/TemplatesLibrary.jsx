@@ -236,9 +236,12 @@ export default function TemplatesLibrary() {
           ))}
         </div>
       </div>
-      {filtersActive && (
-        <p className="text-xs text-gray-400 text-right mb-3">{filtered.length} טפסים</p>
-      )}
+      <p className="text-xs text-gray-400 text-right mb-3">
+        {filtersActive
+          ? `${[authorityFilter !== "all" && AUTHORITY_LABELS[authorityFilter], urgencyFilter !== "all" && URGENCY_LABELS[urgencyFilter]].filter(Boolean).join(" + ")}: ${filtered.length} טפסים`
+          : `מציג את כל ${filtered.length} הטפסים`
+        }
+      </p>
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

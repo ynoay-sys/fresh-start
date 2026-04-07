@@ -69,6 +69,11 @@ function SubNavItem({ label, path, isActive, onClick }) {
 
 export default function Layout() {
   const location = useLocation();
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname]);
   const [user, setUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [docCount, setDocCount] = useState(0);
@@ -214,10 +219,14 @@ export default function Layout() {
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <button onClick={() => setBellOpen(v => !v)} className="relative p-1.5 rounded-md hover:bg-gray-100 transition-colors">
+            <button
+              onClick={() => setBellOpen(v => !v)}
+              className="relative inline-flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+              style={{ minWidth: 44, minHeight: 44, padding: 6 }}
+            >
               <Bell className="w-5 h-5 text-gray-600" />
               {unreadNotifCount > 0 && (
-                <span className="absolute -top-0.5 -left-0.5 min-w-[18px] h-[18px] rounded-full text-white text-[10px] font-bold flex items-center justify-center px-1 bg-red-500">
+                <span className="absolute top-0.5 left-0.5 min-w-[18px] h-[18px] rounded-full text-white text-[10px] font-bold flex items-center justify-center px-1 bg-red-500" style={{ pointerEvents: 'none' }}>
                   {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
                 </span>
               )}
@@ -233,7 +242,11 @@ export default function Layout() {
           </div>
 
           <div className="relative">
-            <button onClick={() => setUserMenuOpen(v => !v)} className="flex items-center gap-2 p-1 rounded-md hover:bg-gray-100 transition-colors">
+            <button
+              onClick={() => setUserMenuOpen(v => !v)}
+              className="inline-flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors gap-1"
+              style={{ minWidth: 44, minHeight: 44, padding: '6px 8px' }}
+            >
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold" style={{ backgroundColor: "#1E5FA8" }}>
                 {initials}
               </div>

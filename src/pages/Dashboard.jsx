@@ -387,8 +387,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { emoji: "📄", label: "העלאת מסמך", path: "/documents/upload" },
-          { emoji: "✍️", label: "צור חתימה", path: "/documents/sign/create" },
-          { emoji: "👤", label: "הוסף איש קשר", path: "/contacts" },
+          { emoji: "✍️", label: "יצירת חתימה", path: "/documents/sign/create" },
+          { emoji: "👤", label: "הוספת איש קשר", path: "/contacts" },
           { emoji: "📁", label: "הארכיון שלי", path: "/documents" },
         ].map(({ emoji, label, path }) => (
           <button key={path} onClick={() => navigate(path)}
