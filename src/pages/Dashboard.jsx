@@ -40,12 +40,8 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      const [
-        docs, contacts, clients, completedSteps, allSteps,
-        eventsRes, notifsRes, milestonesRes,
-        allTemplates, completions, achievementsRes, landingPages,
-        ordersRes, usageRecords, payments
-      ] = await Promise.all([
+      // Batch 1
+      const [docs, contacts, clients, completedSteps, allSteps, eventsRes, notifsRes] = await Promise.all([
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
         base44.entities.Contact.filter({ created_by: user.email }),
         base44.entities.Client.filter({ created_by: user.email }),
@@ -53,6 +49,9 @@ export default function Dashboard() {
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
         base44.entities.ScheduleEvent.filter({ created_by: user.email }),
         base44.entities.Notification.filter({ created_by: user.email }),
+      ]);
+      // Batch 2
+      const [milestonesRes, allTemplates, completions, achievementsRes, landingPages, ordersRes, usageRecords, payments] = await Promise.all([
         base44.entities.Milestone.filter({ created_by: user.email }),
         base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
         base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
