@@ -112,13 +112,14 @@ function VatTypeSelector({ current, onSelect }) {
 }
 
 // Income pre-step
-function IncomeSelector({ current, onSelect }) {
+function IncomeSelector({ current, currentYear, onSelect, onSkip }) {
   const [val, setVal] = useState(current || 0);
+  const [taxYear, setTaxYear] = useState(currentYear || 2026);
   const [error, setError] = useState("");
 
   function handleConfirm() {
     if (!val || val <= 0) { setError("יש להזין הכנסה שנתית צפויה לפני המשך"); return; }
-    onSelect(val);
+    onSelect(val, taxYear);
   }
 
   let hint = "";
@@ -128,8 +129,28 @@ function IncomeSelector({ current, onSelect }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" dir="rtl">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+        <button onClick={onSkip} className="absolute top-4 left-4 p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          ✕
+        </button>
         <h2 className="text-lg font-bold text-gray-900 mb-4">מהי ההכנסה השנתית הצפויה שלך?</h2>
+
+        {/* Tax year selector */}
+        <div className="mb-4">
+          <label className="text-xs font-medium text-gray-600 block mb-1">שנת מס</label>
+          <select
+            value={taxYear}
+            onChange={e => setTaxYear(Number(e.target.value))}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white"
+            dir="rtl"
+          >
+            {[2026, 2025, 2024, 2023].map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+          <p className="text-[11px] text-gray-400 mt-1">שנת המס בישראל: ינואר–דצמבר</p>
+        </div>
+
         <input
           type="range" min={0} max={500000} step={5000}
           value={val} onChange={e => { setVal(Number(e.target.value)); setError(""); }}
@@ -148,6 +169,9 @@ function IncomeSelector({ current, onSelect }) {
           style={{ backgroundColor: "#1E5FA8", minHeight: "52px" }}>
           המשך ←
         </button>
+        <div className="text-center mt-3">
+          <button onClick={onSkip} className="text-sm text-gray-400 hover:text-gray-600 underline">דלג לעכשיו ←</button>
+        </div>
       </div>
     </div>
   );
@@ -158,6 +182,7 @@ export default function BusinessStepWizard({ stepKey, stepRecord, profile, user,
   const [selectedBank, setSelectedBank] = useState(null);
   const [vatType, setVatType] = useState(profile?.vat_type || null);
   const [income, setIncome] = useState(profile?.expected_annual_income || null);
+  const [taxYear, setTaxYear] = useState(profile?.tax_year || 2026);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -183,11 +208,17 @@ export default function BusinessStepWizard({ stepKey, stepRecord, profile, user,
     setReady(true);
   }
 
-  async function handleIncomeSelect(val) {
+  async function handleIncomeSelect(val, year) {
     setIncome(val);
+    setTaxYear(year);
     if (profile?.id) {
-      await base44.entities.UserProfile.update(profile.id, { expected_annual_income: val });
+      await base44.entities.UserProfile.update(profile.id, { expected_annual_income: val, tax_year: year });
     }
+    setPreStep(null);
+    setReady(true);
+  }
+
+  function handleIncomeSkip() {
     setPreStep(null);
     setReady(true);
   }
@@ -233,6 +264,7 @@ export default function BusinessStepWizard({ stepKey, stepRecord, profile, user,
         { label: "שם עסק", value: profile?.business_name || null },
         { label: "סוג עסק", value: profile?.business_type ? BIZ_TYPE_HE[profile.business_type] : null },
         { label: "הכנסה שנתית צפויה", value: income ? `₪${Number(income).toLocaleString()}` : null },
+        { label: "שנת מס", value: taxYear ? String(taxYear) : null },
       ],
     },
     nii: {
@@ -255,7 +287,7 @@ export default function BusinessStepWizard({ stepKey, stepRecord, profile, user,
 
   if (preStep === "bank") return <BankSelector onSelect={handleBankSelect} />;
   if (preStep === "vat") return <VatTypeSelector current={vatType} onSelect={handleVatSelect} />;
-  if (preStep === "income") return <IncomeSelector current={income} onSelect={handleIncomeSelect} />;
+  if (preStep === "income") return <IncomeSelector current={income} currentYear={taxYear} onSelect={handleIncomeSelect} onSkip={handleIncomeSkip} />;
   if (!ready || !cfg) return null;
 
   return (

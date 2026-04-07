@@ -4,7 +4,7 @@
   "properties": {
     "user_id": {
       "type": "string",
-      "description": "Reference to the user (created_by email or user record ID)"
+      "description": "Reference to the user"
     },
     "first_name": {
       "type": "string",
@@ -106,6 +106,11 @@
     "expected_annual_income": {
       "type": "number",
       "description": "\u05d4\u05db\u05e0\u05e1\u05d4 \u05e9\u05e0\u05ea\u05d9\u05ea \u05e6\u05e4\u05d5\u05d9\u05d4 \u05d1\u05e9\u05e7\u05dc\u05d9\u05dd"
+    },
+    "tax_year": {
+      "type": "number",
+      "default": 2026,
+      "description": "\u05e9\u05e0\u05ea \u05d4\u05de\u05e1 \u05d4\u05e0\u05d5\u05db\u05d7\u05d9\u05ea \u05dc\u05e6\u05d5\u05e8\u05da \u05d3\u05d9\u05d5\u05d5\u05d7"
     },
     "family_data": {
       "type": "array",
