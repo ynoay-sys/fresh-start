@@ -203,9 +203,9 @@ Respond ONLY with the JSON patch. No explanation. No markdown.`;
   }
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex overflow-hidden" dir="rtl">
+    <div className="flex flex-col md:flex-row md:h-[calc(100vh-3.5rem)] md:overflow-hidden" dir="rtl">
       {/* LEFT PANEL */}
-      <div className="w-[40%] flex-shrink-0 border-l border-gray-200 bg-white overflow-y-auto flex flex-col">
+      <div className="w-full md:w-[40%] md:flex-shrink-0 border-b md:border-b-0 md:border-l border-gray-200 bg-white overflow-y-auto flex flex-col">
         <div className="px-5 py-4 border-b border-gray-100">
           <h1 className="text-xl font-bold text-gray-900">דף הנחיתה שלי 🌐</h1>
         </div>
@@ -336,7 +336,7 @@ Respond ONLY with the JSON patch. No explanation. No markdown.`;
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="flex-1 bg-gray-100 flex flex-col overflow-hidden">
+      <div className="flex-1 bg-gray-100 flex flex-col md:overflow-hidden">
         {/* Toolbar */}
         <div className="flex items-center gap-2 px-5 py-3 bg-white border-b border-gray-200">
           <button onClick={() => setPreviewMode("desktop")}
@@ -352,7 +352,7 @@ Respond ONLY with the JSON patch. No explanation. No markdown.`;
         </div>
 
         {/* Preview area */}
-        <div className="flex-1 overflow-y-auto p-6 flex justify-center">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 flex justify-center">
           {!page ? (
             <div className="flex items-center justify-center text-gray-400 text-sm">
               צור דף נחיתה כדי לראות תצוגה מקדימה

@@ -52,9 +52,9 @@ function ContactCard({ contact, onEdit, onDelete, onClick }) {
       </div>
 
       {/* Name + Profession */}
-      <p className="font-bold text-gray-900 text-sm text-center mb-0.5 truncate">{contact.full_name}</p>
+      <p className="font-bold text-gray-900 text-sm text-center mb-0.5 break-words">{contact.full_name}</p>
       {contact.profession && (
-        <p className="text-xs text-gray-400 text-center mb-2 truncate">{contact.profession}</p>
+        <p className="text-xs text-gray-400 text-center mb-2 break-words">{contact.profession}</p>
       )}
 
       {/* Category badge */}
@@ -66,8 +66,8 @@ function ContactCard({ contact, onEdit, onDelete, onClick }) {
 
       {/* Contact info */}
       <div className="text-xs text-gray-500 space-y-1 mb-4">
-        {contact.phone && <p className="truncate">📞 {contact.phone}</p>}
-        {contact.email && <p className="truncate">✉️ {contact.email}</p>}
+        {contact.phone && <p className="break-words">📞 {contact.phone}</p>}
+        {contact.email && <p className="break-all">✉️ {contact.email}</p>}
       </div>
 
       {/* Actions */}

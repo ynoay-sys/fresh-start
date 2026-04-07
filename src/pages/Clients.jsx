@@ -33,19 +33,19 @@ function ClientCard({ client, upcomingMeeting, onEdit, onReminder, onMeeting }) 
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-gray-900 text-base truncate">{client.full_name}</p>
+        <p className="font-bold text-gray-900 text-base break-words">{client.full_name}</p>
         {client.phone && (
-          <a href={`tel:${client.phone}`} className="text-sm text-gray-500 hover:text-blue-600 block truncate">
+          <a href={`tel:${client.phone}`} className="text-sm text-gray-500 hover:text-blue-600 block break-words">
             📞 {client.phone}
           </a>
         )}
         {client.email && (
-          <a href={`mailto:${client.email}`} className="text-sm text-gray-500 hover:text-blue-600 block truncate">
+          <a href={`mailto:${client.email}`} className="text-sm text-gray-500 hover:text-blue-600 block break-all">
             ✉️ {client.email}
           </a>
         )}
         {client.notes && (
-          <p className="text-xs text-gray-400 mt-1 truncate">{client.notes.slice(0, 60)}{client.notes.length > 60 ? "..." : ""}</p>
+          <p className="text-xs text-gray-400 mt-1 break-words">{client.notes.slice(0, 60)}{client.notes.length > 60 ? "..." : ""}</p>
         )}
         {upcomingMeeting && (
           <p className="text-xs mt-1.5 font-medium" style={{ color: "#1E5FA8" }}>

@@ -193,7 +193,12 @@ export default function Layout() {
       {/* Top Bar */}
       <header className="fixed top-0 right-0 left-0 h-14 bg-white border-b border-gray-200 z-40 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <button className="md:hidden p-1 rounded-md hover:bg-gray-100" onClick={() => setSidebarOpen(v => !v)}>
+          <button
+            className="md:hidden hover:bg-gray-100 rounded-lg flex items-center justify-center"
+            style={{ minWidth: 44, minHeight: 44, WebkitTapHighlightColor: 'transparent', cursor: 'pointer' }}
+            onClick={() => setSidebarOpen(v => !v)}
+            onTouchEnd={e => { e.preventDefault(); setSidebarOpen(v => !v); }}
+          >
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
           <Link to="/" className="flex items-center gap-2">
@@ -354,7 +359,7 @@ export default function Layout() {
           </div>
         </aside>
 
-        <main className="flex-1 md:mr-60 min-h-[calc(100vh-3.5rem)] pb-16 md:pb-0">
+        <main className="flex-1 md:mr-60 min-h-[calc(100vh-3.5rem)] pb-20 md:pb-0">
           <Outlet />
         </main>
       </div>
@@ -362,7 +367,7 @@ export default function Layout() {
       <AchievementToast />
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[1000] md:hidden" style={{ height: 56 }}>
         <div className="flex items-center justify-around">
           {MOBILE_NAV.map(({ icon: Icon, label, path }) => {
             const active = location.pathname === path || (path === "/documents" && location.pathname.startsWith("/documents"));
