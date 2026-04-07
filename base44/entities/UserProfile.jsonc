@@ -1,0 +1,131 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the user (created_by email or user record ID)"
+    },
+    "first_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e4\u05e8\u05d8\u05d9"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05de\u05e9\u05e4\u05d7\u05d4"
+    },
+    "phone_il": {
+      "type": "string",
+      "description": "Israeli phone number"
+    },
+    "id_number_il": {
+      "type": "string",
+      "description": "\u05ea\u05e2\u05d5\u05d3\u05ea \u05d6\u05d4\u05d5\u05ea \u2014 SENSITIVE: AES-256-GCM encrypted at rest"
+    },
+    "business_type": {
+      "type": "string",
+      "enum": [
+        "freelancer",
+        "retail",
+        "studio",
+        "food",
+        "consultant",
+        "other"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e2\u05e1\u05e7"
+    },
+    "business_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e2\u05e1\u05e7"
+    },
+    "onboarding_step": {
+      "type": "number",
+      "description": "Current onboarding step (0-based)"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "starter",
+        "pro",
+        "business"
+      ],
+      "default": "free",
+      "description": "Subscription plan"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the user account is active"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05dc\u05d9\u05d3\u05d4"
+    },
+    "address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05de\u05d2\u05d5\u05e8\u05d9\u05dd"
+    },
+    "city": {
+      "type": "string",
+      "description": "\u05e2\u05d9\u05e8"
+    },
+    "bank_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05d1\u05e0\u05e7"
+    },
+    "bank_branch": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e1\u05e0\u05d9\u05e3"
+    },
+    "bank_account": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d7\u05e9\u05d1\u05d5\u05df \u05d1\u05e0\u05e7 \u2014 SENSITIVE: encrypted at rest"
+    },
+    "vat_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e2\u05d5\u05e1\u05e7 \u05de\u05d5\u05e8\u05e9\u05d4/\u05e4\u05d8\u05d5\u05e8"
+    },
+    "vat_type": {
+      "type": "string",
+      "enum": [
+        "\u05de\u05d5\u05e8\u05e9\u05d4",
+        "\u05e4\u05d8\u05d5\u05e8"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e2\u05d5\u05e1\u05e7 \u2014 \u05de\u05d5\u05e8\u05e9\u05d4 \u05d0\u05d5 \u05e4\u05d8\u05d5\u05e8"
+    },
+    "tax_file_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05ea\u05d9\u05e7 \u05d1\u05de\u05e1 \u05d4\u05db\u05e0\u05e1\u05d4"
+    },
+    "nii_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05ea\u05d9\u05e7 \u05d1\u05d1\u05d9\u05d8\u05d5\u05d7 \u05dc\u05d0\u05d5\u05de\u05d9"
+    },
+    "expected_annual_income": {
+      "type": "number",
+      "description": "\u05d4\u05db\u05e0\u05e1\u05d4 \u05e9\u05e0\u05ea\u05d9\u05ea \u05e6\u05e4\u05d5\u05d9\u05d4 \u05d1\u05e9\u05e7\u05dc\u05d9\u05dd"
+    },
+    "family_data": {
+      "type": "array",
+      "description": "Family members: [{name, dob, relation}]",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string",
+            "format": "date"
+          },
+          "relation": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": []
+}
