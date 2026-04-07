@@ -196,13 +196,21 @@ export default function TemplatesLibrary() {
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
           <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: "#1E5FA8" }} />
         </div>
-        <div className="flex flex-wrap gap-3 text-xs">
-          <span className="text-red-600">🔴 דחופים שלא הושלמו: {highUncompleted}</span>
-          <span className="text-orange-500">🟠 בינוניים שלא הושלמו: {mediumUncompleted}</span>
-          <span className="flex items-center gap-1.5 text-green-600">
-            <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
-            הושלמו: {completedCount}
-          </span>
+        <div className="flex flex-wrap gap-4">
+          {[
+            { label: "דחופים שלא הושלמו", count: highUncompleted, color: "#AA1111" },
+            { label: "בינוניים שלא הושלמו", count: mediumUncompleted, color: "#C25A00" },
+            { label: "הושלמו", count: completedCount, color: "#1A7A4A" },
+          ].map(({ label, count, color }) => (
+            <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: 13, color: "#444444" }}>{label}: {count}</span>
+              <span style={{
+                display: "inline-block", width: 12, height: 12,
+                borderRadius: "50%", backgroundColor: color,
+                border: "1px solid rgba(0,0,0,0.15)", flexShrink: 0
+              }} />
+            </span>
+          ))}
         </div>
       </div>
 
