@@ -94,6 +94,16 @@ export default function Layout() {
     checkAndUnlockAchievements().catch(() => {});
   }, []);
 
+  // Real-time sync for business opening badge
+  useEffect(() => {
+    const unsubscribe = base44.entities.BusinessOpeningStep.subscribe(async () => {
+      const u = await base44.auth.me();
+      const completed = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" });
+      setStepsCompleted(completed.length);
+    });
+    return unsubscribe;
+  }, []);
+
   useEffect(() => {
     async function loadSidebarData() {
       const u = await base44.auth.me();
@@ -168,7 +178,6 @@ export default function Layout() {
   const isDocsActive = location.pathname.startsWith("/documents");
 
   const NAV_TOP = [
-    { icon: Building2, label: "פתיחת עסק", path: "/business-opening" },
     { icon: Users, label: "לקוחות", path: "/clients", badge: clientCount },
     { icon: CalendarDays, label: "לוח זמנים", path: "/schedule", badge: todayEventCount },
     { icon: Bell, label: "התראות", path: "/notifications", badge: unreadNotifCount },
@@ -262,7 +271,11 @@ export default function Layout() {
               style={isActive("/business-opening") ? { backgroundColor: "#1E5FA8" } : {}}>
               <Building2 className="w-4 h-4 flex-shrink-0" />
               <span className="flex-1">פתיחת עסק</span>
-              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${stepsCompleted === 4 ? "bg-green-100 text-green-700" : stepsCompleted > 0 ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-600"} ${isActive("/business-opening") ? "!bg-white/25 !text-white" : ""}`}>
+              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                stepsCompleted === 4 ? "bg-green-100 text-green-700" :
+                stepsCompleted > 0 ? "bg-orange-100 text-orange-700" :
+                "bg-gray-100 text-gray-600"
+              } ${isActive("/business-opening") ? "!bg-white/25 !text-white" : ""}`}>
                 {stepsCompleted}/4
               </span>
             </Link>

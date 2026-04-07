@@ -113,19 +113,37 @@ function VatTypeSelector({ current, onSelect }) {
 
 // Income pre-step
 function IncomeSelector({ current, currentYear, onSelect, onSkip }) {
-  const [val, setVal] = useState(current || 0);
+  const [rawVal, setRawVal] = useState(current ? String(current) : "");
   const [taxYear, setTaxYear] = useState(currentYear || 2026);
   const [error, setError] = useState("");
+  const [showLowWarning, setShowLowWarning] = useState(false);
+
+  const numVal = parseInt(rawVal, 10) || 0;
+  const formatted = numVal > 0 ? `₪${numVal.toLocaleString()}` : "";
+
+  function handleInput(e) {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 7);
+    setRawVal(digits);
+    setError("");
+    setShowLowWarning(false);
+  }
 
   function handleConfirm() {
-    if (!val || val <= 0) { setError("יש להזין הכנסה צפויה או לבחור 'דלג לעכשיו'"); return; }
-    onSelect(val, taxYear);
+    if (!numVal || numVal === 0) {
+      setError("יש להזין סכום הכנסה שנתית.\nלדוגמה: 120000 (מינימום ₪1,200 לשנה)");
+      return;
+    }
+    if (numVal < 1200) {
+      setShowLowWarning(true);
+      return;
+    }
+    onSelect(numVal, taxYear);
   }
 
   let hint = "";
-  if (val > 0 && val < 75000) hint = "מדרגת מס ראשונה — 10%";
-  else if (val >= 75000 && val <= 215000) hint = "מדרגת מס שנייה — 14%–20%";
-  else if (val > 215000) hint = "מדרגות מס גבוהות — 31%–50%";
+  if (numVal > 0 && numVal < 75000) hint = "מדרגת מס ראשונה — 10%";
+  else if (numVal >= 75000 && numVal <= 215000) hint = "מדרגת מס שנייה — 14%–20%";
+  else if (numVal > 215000) hint = "מדרגות מס גבוהות — 31%–50%";
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" dir="rtl">
@@ -138,37 +156,59 @@ function IncomeSelector({ current, currentYear, onSelect, onSkip }) {
         {/* Tax year selector */}
         <div className="mb-4">
           <label className="text-xs font-medium text-gray-600 block mb-1">שנת מס</label>
-          <select
-            value={taxYear}
-            onChange={e => setTaxYear(Number(e.target.value))}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white"
-            dir="rtl"
-          >
-            {[2026, 2025, 2024, 2023].map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
+          <select value={taxYear} onChange={e => setTaxYear(Number(e.target.value))}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white" dir="rtl">
+            {[2026, 2025, 2024, 2023].map(y => <option key={y} value={y}>{y}</option>)}
           </select>
           <p className="text-[11px] text-gray-400 mt-1">שנת המס בישראל: ינואר–דצמבר</p>
         </div>
 
-        <input
-          type="range" min={0} max={500000} step={5000}
-          value={val} onChange={e => { setVal(Number(e.target.value)); setError(""); }}
-          className="w-full mb-2"
-        />
-        <div className="flex justify-between text-xs text-gray-400 mb-4">
-          <span>₪0</span><span>₪500,000+</span>
+        {/* Income input */}
+        <div className="mb-4">
+          <label className="text-xs font-medium text-gray-600 block mb-1">הכנסה שנתית (בשקלים)</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={rawVal}
+            onChange={handleInput}
+            placeholder="לדוגמה: 120000"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+            dir="ltr"
+          />
+          <div className="flex justify-between items-center mt-1">
+            {formatted ? <span className="text-sm font-bold" style={{ color: "#1E5FA8" }}>{formatted}</span> : <span />}
+            {hint && <span className="text-xs text-gray-500">{hint}</span>}
+          </div>
+          <p className="text-[11px] text-gray-400 mt-1">מקסימום 7 ספרות | מינימום ₪1,200 לשנה</p>
         </div>
-        <div className="text-center mb-2">
-          <p className="text-2xl font-bold" style={{ color: "#1E5FA8" }}>₪{val.toLocaleString()}</p>
-          {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
-        </div>
-        {error && <p className="text-sm text-red-600 font-medium mb-3">{error}</p>}
-        <button onClick={handleConfirm}
-          className="w-full py-3 rounded-xl text-white font-bold mt-3"
-          style={{ backgroundColor: "#1E5FA8", minHeight: "52px" }}>
-          המשך ←
-        </button>
+
+        {error && (
+          <p className="text-sm text-red-600 font-medium mb-3 whitespace-pre-line">{error}</p>
+        )}
+
+        {showLowWarning && (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-3">
+            <p className="text-sm text-orange-800 font-medium mb-3">הסכום שהזנת נמוך מאוד.<br />האם אתה בטוח שההכנסה השנתית הצפויה היא ₪{numVal.toLocaleString()}?</p>
+            <div className="flex gap-2">
+              <button onClick={() => onSelect(numVal, taxYear)}
+                className="flex-1 py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: "#1E5FA8" }}>
+                כן, זה נכון
+              </button>
+              <button onClick={() => setShowLowWarning(false)}
+                className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
+                תקן סכום
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!showLowWarning && (
+          <button onClick={handleConfirm}
+            className="w-full py-3 rounded-xl text-white font-bold"
+            style={{ backgroundColor: "#1E5FA8", minHeight: "52px" }}>
+            המשך ←
+          </button>
+        )}
         <div className="text-center mt-3">
           <button onClick={onSkip} className="text-sm text-gray-400 hover:text-gray-600 underline">דלג לעכשיו ←</button>
         </div>
@@ -178,11 +218,12 @@ function IncomeSelector({ current, currentYear, onSelect, onSkip }) {
 }
 
 export default function BusinessStepWizard({ stepKey, stepRecord, profile, user, onComplete, onClose }) {
-  const [preStep, setPreStep] = useState(null); // null = show wizard, "bank" / "vat" / "income"
+  const [preStep, setPreStep] = useState(null);
   const [selectedBank, setSelectedBank] = useState(null);
   const [vatType, setVatType] = useState(profile?.vat_type || null);
   const [income, setIncome] = useState(profile?.expected_annual_income || null);
   const [taxYear, setTaxYear] = useState(profile?.tax_year || 2026);
+  const [incomeSkipped, setIncomeSkipped] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -219,6 +260,7 @@ export default function BusinessStepWizard({ stepKey, stepRecord, profile, user,
   }
 
   function handleIncomeSkip() {
+    setIncomeSkipped(true);
     setPreStep(null);
     setReady(true);
   }
@@ -301,6 +343,7 @@ export default function BusinessStepWizard({ stepKey, stepRecord, profile, user,
       onComplete={onComplete}
       onClose={onClose}
       stepRecord={stepRecord}
+      isPartial={stepKey === "tax_file" && incomeSkipped}
     />
   );
 }

@@ -13,7 +13,8 @@ export default function GuidedSubmissionWizard({
   onComplete,
   onClose,
   stepRecord,
-  stepValidation = {}, // { [stepIndex]: { check: () => bool, message: string } }
+  isPartial = false,
+  stepValidation = {},
 }) {
   const savedStep = stepRecord?.draft_data?.wizardStep ?? 0;
   const [activeStep, setActiveStep] = useState(savedStep);
@@ -83,6 +84,7 @@ export default function GuidedSubmissionWizard({
         ...(stepRecord.draft_data || {}),
         confirmationNumber: confirmNum,
         screenshotUrl,
+        partial: isPartial,
       },
     });
     await checkAndUnlockAchievements().catch(() => {});
