@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Check, X, ExternalLink, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { checkAndUnlockAchievements } from "../lib/achievements";
@@ -6,6 +6,216 @@ import { checkAndUnlockAchievements } from "../lib/achievements";
 // Steps that require a file/confirmation number to be "fully complete"
 const REQUIRES_NUMBER_STEPS = ["vat_file", "tax_file", "nii"];
 
+// ── Israeli ID checksum validation ────────────────────────────────────────
+function isValidIsraeliID(id) {
+  id = String(id).padStart(9, "0");
+  if (id.length !== 9) return false;
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    let digit = parseInt(id[i]);
+    if (i % 2 === 0) {
+      sum += digit;
+    } else {
+      let doubled = digit * 2;
+      sum += doubled > 9 ? doubled - 9 : doubled;
+    }
+  }
+  return sum % 10 === 0;
+}
+
+// ── Toast component ────────────────────────────────────────────────────────
+function InvalidKeyToast({ onDismiss }) {
+  useEffect(() => {
+    const t = setTimeout(onDismiss, 10000);
+    return () => clearTimeout(t);
+  }, [onDismiss]);
+
+  return (
+    <div
+      className="fixed top-4 left-1/2 z-[9999] flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-white text-sm font-medium"
+      style={{ transform: "translateX(-50%)", backgroundColor: "#C25A00", minWidth: 280, maxWidth: 380 }}
+      dir="rtl"
+    >
+      <span className="flex-1">יש להכניס עד 9 תווים, אין להזין אותיות אלא רק מספרים</span>
+      <button onClick={onDismiss} className="p-1 rounded hover:bg-white/20 flex-shrink-0">
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+// ── Isolated confirm-number input — defined at module scope to prevent remount ──
+function ConfirmNumInput({ stepKey, onCommit, onIdValid }) {
+  const [localVal, setLocalVal] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [toastShownOnce, setToastShownOnce] = useState(false);
+  const [isIdMode, setIsIdMode] = useState(false);
+  const [idError, setIdError] = useState("");
+
+  const isVat = stepKey === "vat_file";
+  const paddedId = isIdMode && localVal ? String(localVal).padStart(9, "0") : null;
+
+  // Sync value + validity up to parent whenever they change
+  useEffect(() => {
+    if (isIdMode) {
+      const padded = localVal ? String(localVal).padStart(9, "0") : "";
+      onCommit(padded, true, localVal ? isValidIsraeliID(localVal) : null);
+    } else {
+      onCommit(localVal, false, null);
+    }
+  }, [localVal, isIdMode]);
+
+  function handleKeyDown(e) {
+    if (e.key.length === 1 && !/\d/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      if (!toastShownOnce) {
+        setShowToast(true);
+        setToastShownOnce(true);
+      }
+    }
+  }
+
+  function handleChange(e) {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+    setLocalVal(digits);
+    setIdError("");
+    // Reset toast-once when field cleared
+    if (digits === "") setToastShownOnce(false);
+  }
+
+  function handleIdModeChange(checked) {
+    setIsIdMode(checked);
+    setIdError("");
+    setLocalVal("");
+  }
+
+  // Exposed validation for ID mode — called by parent on submit
+  useEffect(() => {
+    if (!onIdValid) return;
+    // pass validator function up
+  }, []);
+
+  const hintText = isIdMode
+    ? "הכנס את מספר תעודת הזהות שלך (עד 9 ספרות)"
+    : "מספר התיק מופיע באימייל או בדף האישור של הפורטל";
+
+  return (
+    <>
+      {showToast && <InvalidKeyToast onDismiss={() => setShowToast(false)} />}
+      <div>
+        <label className="text-xs text-gray-600 block mb-1">מספר תיק/אישור (אופציונלי)</label>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={localVal}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="לדוגמה: 123456789"
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+          dir="ltr"
+          autoComplete="off"
+        />
+        {isIdMode && localVal && (
+          <p className="text-xs text-gray-400 mt-1">המספר שישמר: <span className="font-mono font-semibold text-gray-600">{paddedId}</span></p>
+        )}
+        {idError && <p className="text-xs text-red-600 mt-1">{idError}</p>}
+        <p className="text-[11px] text-gray-400 mt-1">{hintText}</p>
+
+        {isVat && (
+          <label className="flex items-center gap-2 mt-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isIdMode}
+              onChange={e => handleIdModeChange(e.target.checked)}
+              className="w-3.5 h-3.5 accent-blue-600"
+            />
+            <span className="text-xs text-gray-600">מספר זה הינו מספר תעודת הזהות שלי</span>
+          </label>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ── InstructionList — module scope ─────────────────────────────────────────
+function InstructionList({ instructions, activeStep, setActiveStep, saveProgress, validationError, goNext, goPrev }) {
+  const total = instructions.length;
+  return (
+    <div className="space-y-3">
+      {instructions.map((inst, i) => {
+        const isActive = i === activeStep;
+        const isDone = i < activeStep;
+        return (
+          <div
+            key={i}
+            onClick={() => { setActiveStep(i); saveProgress(i); }}
+            className={`rounded-xl p-3 cursor-pointer transition-all border ${
+              isActive
+                ? "bg-white border-blue-300 shadow-sm"
+                : isDone
+                ? "bg-green-50 border-green-200 opacity-70"
+                : "bg-white border-gray-200 hover:border-gray-300"
+            }`}
+            style={isActive ? { borderRightColor: "#1E5FA8", borderRightWidth: "4px" } : {}}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
+                style={{
+                  backgroundColor: isDone ? "#1A7A4A" : isActive ? "#1E5FA8" : "#E5E7EB",
+                  color: isDone || isActive ? "white" : "#6B7280",
+                }}
+              >
+                {isDone ? <Check className="w-3.5 h-3.5" /> : i + 1}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-semibold ${isDone ? "text-green-700" : isActive ? "text-gray-900" : "text-gray-500"}`}>
+                  {inst.title}
+                </p>
+                {isActive && (
+                  <>
+                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">{inst.description}</p>
+                    {inst.tip && (
+                      <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800">
+                        💡 טיפ: {inst.tip}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {validationError && (
+        <p className="text-sm text-red-600 font-medium px-1">{validationError}</p>
+      )}
+
+      <div className="flex gap-2 pt-2">
+        <button
+          onClick={goPrev}
+          disabled={activeStep === 0}
+          className="flex items-center justify-center gap-1 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-40 transition-colors"
+          style={{ minHeight: "52px", flex: "0 0 auto", paddingInline: "20px" }}
+        >
+          הקודם
+        </button>
+        <button
+          onClick={goNext}
+          disabled={activeStep === total - 1}
+          className="flex-1 flex items-center justify-center gap-1 rounded-xl text-white font-bold disabled:opacity-40 transition-colors"
+          style={{ minHeight: "52px", fontSize: "18px", backgroundColor: "#1E5FA8" }}
+        >
+          הבא ←
+        </button>
+      </div>
+      <p className="text-xs text-center text-gray-400">שלב {activeStep + 1} מתוך {total}</p>
+    </div>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────
 export default function GuidedSubmissionWizard({
   stepKey,
   stepTitle,
@@ -23,16 +233,22 @@ export default function GuidedSubmissionWizard({
   const savedStep = stepRecord?.draft_data?.wizardStep ?? 0;
   const [activeStep, setActiveStep] = useState(savedStep);
   const [confirmed, setConfirmed] = useState(false);
-  const [confirmNum, setConfirmNum] = useState("");
-  const [confirmNumError, setConfirmNumError] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [portalUnreachable, setPortalUnreachable] = useState(false);
+  const [confirmNumError, setConfirmNumError] = useState("");
+
+  // Committed state from ConfirmNumInput
+  const committedRef = useRef({ value: "", isIdMode: false, isIdValid: null });
 
   const total = instructions.length;
+
+  const handleCommit = useCallback((value, isIdMode, isIdValid) => {
+    committedRef.current = { value, isIdMode, isIdValid };
+  }, []);
 
   async function saveProgress(stepIdx) {
     if (!stepRecord?.id) return;
@@ -43,7 +259,6 @@ export default function GuidedSubmissionWizard({
   }
 
   function goNext() {
-    // Validate current step if a validator exists
     const validator = stepValidation[activeStep];
     if (validator && !validator.check()) {
       setValidationError(validator.message);
@@ -81,13 +296,24 @@ export default function GuidedSubmissionWizard({
   }
 
   async function handleMarkComplete() {
-    // Validate confirmNum if provided
-    if (confirmNum && REQUIRES_NUMBER_STEPS.includes(stepKey)) {
-      if (!/^\d{6,9}$/.test(confirmNum)) {
-        setConfirmNumError('מספר תיק/אישור חייב להכיל ספרות בלבד (6–9 ספרות)');
+    const { value: confirmNum, isIdMode, isIdValid } = committedRef.current;
+
+    // ID validation
+    if (isIdMode && confirmNum) {
+      if (!isIdValid) {
+        setConfirmNumError('מספר ת"ז לא תקין — יש להכניס ספרת ביקורת נכונה');
         return;
       }
     }
+
+    // VAT/Tax/NII: if number entered, validate it's digits only (already enforced by input)
+    if (confirmNum && REQUIRES_NUMBER_STEPS.includes(stepKey)) {
+      if (!/^\d{1,9}$/.test(confirmNum)) {
+        setConfirmNumError("מספר תיק מע״מ חייב להכיל עד 9 ספרות בלבד");
+        return;
+      }
+    }
+
     setConfirmNumError("");
     setSaving(true);
 
@@ -95,7 +321,6 @@ export default function GuidedSubmissionWizard({
     const isPartialComplete = requiresNum && !confirmNum;
     const newStatus = isPartialComplete ? "partial" : "completed";
 
-    // Save number to UserProfile if filled
     if (confirmNum && profileFieldKey && profileId) {
       await base44.entities.UserProfile.update(profileId, { [profileFieldKey]: confirmNum }).catch(() => {});
     }
@@ -124,209 +349,85 @@ export default function GuidedSubmissionWizard({
     }
   }
 
-  // ── Instruction step list (shared between desktop/mobile) ──────────────
-  function InstructionList() {
-    return (
-      <div className="space-y-3">
-        {instructions.map((inst, i) => {
-          const isActive = i === activeStep;
-          const isDone = i < activeStep;
-          return (
-            <div
-              key={i}
-              onClick={() => { setValidationError(""); setActiveStep(i); saveProgress(i); }}
-              className={`rounded-xl p-3 cursor-pointer transition-all border ${
-                isActive
-                  ? "bg-white border-blue-300 shadow-sm"
-                  : isDone
-                  ? "bg-green-50 border-green-200 opacity-70"
-                  : "bg-white border-gray-200 hover:border-gray-300"
-              }`}
-              style={isActive ? { borderRightColor: "#1E5FA8", borderRightWidth: "4px" } : {}}
-            >
-              <div className="flex items-start gap-3">
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
-                  style={{
-                    backgroundColor: isDone ? "#1A7A4A" : isActive ? "#1E5FA8" : "#E5E7EB",
-                    color: isDone || isActive ? "white" : "#6B7280",
-                  }}
-                >
-                  {isDone ? <Check className="w-3.5 h-3.5" /> : i + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold ${isDone ? "text-green-700" : isActive ? "text-gray-900" : "text-gray-500"}`}>
-                    {inst.title}
-                  </p>
-                  {isActive && (
-                    <>
-                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">{inst.description}</p>
-                      {inst.tip && (
-                        <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800">
-                          💡 טיפ: {inst.tip}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+  // Completion form — shared between desktop and mobile
+  const CompletionForm = (
+    <div className="border border-gray-200 rounded-xl p-5">
+      <label className="flex items-center gap-3 cursor-pointer mb-4">
+        <input
+          type="checkbox"
+          checked={confirmed}
+          onChange={e => setConfirmed(e.target.checked)}
+          className="w-4 h-4 rounded accent-blue-600"
+        />
+        <span className="text-sm font-semibold text-gray-800">סיימתי את כל השלבים בפורטל</span>
+      </label>
+
+      {confirmed && !success && (
+        <div className="space-y-4">
+          <ConfirmNumInput
+            stepKey={stepKey}
+            onCommit={handleCommit}
+          />
+          {confirmNumError && <p className="text-xs text-red-600 -mt-2">{confirmNumError}</p>}
+
+          <div>
+            <label className="text-xs text-gray-600 block mb-1">העלה צילום מסך של האישור (אופציונלי)</label>
+            {screenshotUrl ? (
+              <div className="flex items-center gap-2 text-sm text-green-700">
+                <Check className="w-4 h-4" />
+                צילום מסך הועלה בהצלחה ✓
               </div>
-            </div>
-          );
-        })}
+            ) : (
+              <label className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border border-dashed border-gray-300 hover:border-blue-400 text-sm text-gray-500 hover:text-blue-600 transition-colors w-fit">
+                <Upload className="w-4 h-4" />
+                {uploading ? "מעלה..." : "בחר תמונה"}
+                <input type="file" accept="image/*" className="hidden" onChange={handleScreenshotUpload} disabled={uploading} />
+              </label>
+            )}
+          </div>
 
-        {/* Validation error */}
-        {validationError && (
-          <p className="text-sm text-red-600 font-medium px-1">{validationError}</p>
-        )}
-
-        {/* Nav buttons — inline, scroll with content */}
-        <div className="flex gap-2 pt-2">
           <button
-            onClick={goPrev}
-            disabled={activeStep === 0}
-            className="flex items-center justify-center gap-1 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-40 transition-colors"
-            style={{ minHeight: "52px", flex: "0 0 auto", paddingInline: "20px" }}
+            onClick={handleMarkComplete}
+            disabled={saving}
+            className="w-full py-3 rounded-xl text-white font-bold text-base disabled:opacity-60"
+            style={{ backgroundColor: "#1A7A4A", minHeight: "52px" }}
           >
-            הקודם
-          </button>
-          <button
-            onClick={goNext}
-            disabled={activeStep === total - 1}
-            className="flex-1 flex items-center justify-center gap-1 rounded-xl text-white font-bold disabled:opacity-40 transition-colors"
-            style={{ minHeight: "52px", fontSize: "18px", backgroundColor: "#1E5FA8" }}
-          >
-            הבא ←
+            {saving ? "שומר..." : "סמן שלב כהושלם ✓"}
           </button>
         </div>
-        <p className="text-xs text-center text-gray-400">שלב {activeStep + 1} מתוך {total}</p>
-      </div>
-    );
-  }
+      )}
 
-  // ── Right / bottom action area (shared) ───────────────────────────────
-  function ActionArea() {
-    return (
-      <div className="flex flex-col gap-5">
-        {/* Prefill card */}
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-          <p className="text-sm font-bold text-blue-900 mb-3">הנתונים שיוגשו</p>
-          <div className="space-y-2">
-            {prefillData.map(({ label, value }) => (
-              <div key={label} className="flex items-start gap-2">
-                <span className="text-xs text-gray-500 w-36 flex-shrink-0 mt-0.5">{label}:</span>
-                {value ? (
-                  <span className="text-sm font-semibold text-gray-800">{value}</span>
-                ) : (
-                  <span className="text-sm text-red-500 font-medium">
-                    חסר —{" "}
-                    <a href="/profile" className="underline text-red-600">עדכן פרופיל ←</a>
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-          <p className="text-[10px] text-blue-600 mt-3">הנתונים נשמרים בפרופיל שלך ומעודכנים אוטומטית</p>
+      {success && (
+        <div className="text-center py-4">
+          <p className="text-2xl mb-2">🎉</p>
+          <p className="font-bold text-green-700 text-base">השלב הושלם בהצלחה!</p>
         </div>
+      )}
+    </div>
+  );
 
-        {/* Portal downtime */}
-        {portalUnreachable && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
-            <p className="font-semibold">הפורטל {authority} אינו זמין כרגע.</p>
-            <p className="text-xs mt-0.5">המידע שלך נשמר. נסה שוב מאוחר יותר.</p>
+  // Prefill card — shared
+  const PrefillCard = (
+    <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+      <p className="text-sm font-bold text-blue-900 mb-3">הנתונים שיוגשו</p>
+      <div className="space-y-2">
+        {prefillData.map(({ label, value }) => (
+          <div key={label} className="flex items-start gap-2">
+            <span className="text-xs text-gray-500 w-36 flex-shrink-0 mt-0.5">{label}:</span>
+            {value ? (
+              <span className="text-sm font-semibold text-gray-800">{value}</span>
+            ) : (
+              <span className="text-sm text-red-500 font-medium">
+                חסר —{" "}
+                <a href="/profile" className="underline text-red-600">עדכן פרופיל ←</a>
+              </span>
+            )}
           </div>
-        )}
-
-        {/* Open portal */}
-        <button
-          onClick={openPortal}
-          className="w-full py-4 rounded-xl text-white text-base font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: "#1E5FA8" }}
-        >
-          <ExternalLink className="w-5 h-5" />
-          פתח פורטל {authority} ←
-        </button>
-        <p className="text-xs text-gray-400 text-center -mt-3">
-          הפורטל יפתח בחלון חדש. בצע את השלבים המפורטים.
-        </p>
-
-        {/* Completion */}
-        <div className="border border-gray-200 rounded-xl p-5">
-          <label className="flex items-center gap-3 cursor-pointer mb-4">
-            <input
-              type="checkbox"
-              checked={confirmed}
-              onChange={e => setConfirmed(e.target.checked)}
-              className="w-4 h-4 rounded accent-blue-600"
-            />
-            <span className="text-sm font-semibold text-gray-800">סיימתי את כל השלבים בפורטל</span>
-          </label>
-
-          {confirmed && !success && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs text-gray-600 block mb-1">מספר תיק/אישור (אופציונלי)</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={confirmNum}
-                  onChange={e => {
-                    const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
-                    setConfirmNum(digits);
-                    setConfirmNumError("");
-                  }}
-                  onKeyDown={e => {
-                    if (e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault();
-                  }}
-                  placeholder="לדוגמה: 123456789"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
-                  dir="ltr"
-                />
-                {confirmNumError && <p className="text-xs text-red-600 mt-1">{confirmNumError}</p>}
-                <p className="text-[11px] text-gray-400 mt-1">מספר התיק מופיע באימייל או בדף האישור של הפורטל</p>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-600 block mb-1">העלה צילום מסך של האישור (אופציונלי)</label>
-                {screenshotUrl ? (
-                  <div className="flex items-center gap-2 text-sm text-green-700">
-                    <Check className="w-4 h-4" />
-                    צילום מסך הועלה בהצלחה ✓
-                  </div>
-                ) : (
-                  <label className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border border-dashed border-gray-300 hover:border-blue-400 text-sm text-gray-500 hover:text-blue-600 transition-colors w-fit">
-                    <Upload className="w-4 h-4" />
-                    {uploading ? "מעלה..." : "בחר תמונה"}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleScreenshotUpload} disabled={uploading} />
-                  </label>
-                )}
-              </div>
-
-              <button
-                onClick={handleMarkComplete}
-                disabled={saving}
-                className="w-full py-3 rounded-xl text-white font-bold text-base disabled:opacity-60"
-                style={{ backgroundColor: "#1A7A4A" }}
-              >
-                {saving ? "שומר..." : "סמן שלב כהושלם ✓"}
-              </button>
-            </div>
-          )}
-
-          {success && (
-            <div className="text-center py-4">
-              <p className="text-2xl mb-2">🎉</p>
-              <p className="font-bold text-green-700 text-base">השלב הושלם בהצלחה!</p>
-            </div>
-          )}
-        </div>
-
-        <p className="text-xs text-gray-400 text-center">
-          ⚙️ אוטומציה מלאה תהיה זמינה בגרסה הבאה.<br />
-          כרגע יש לבצע את הפעולות ידנית בפורטל.
-        </p>
+        ))}
       </div>
-    );
-  }
+      <p className="text-[10px] text-blue-600 mt-3">הנתונים נשמרים בפרופיל שלך ומעודכנים אוטומטית</p>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-2 md:p-4" dir="rtl">
@@ -342,47 +443,62 @@ export default function GuidedSubmissionWizard({
           </button>
         </div>
 
-        {/* Body — desktop: side by side | mobile: single column */}
+        {/* Body */}
         <div className="flex-1 overflow-y-auto">
-          {/* DESKTOP layout */}
+          {/* DESKTOP */}
           <div className="hidden md:flex h-full">
-            {/* Left: Instructions */}
             <div className="w-[40%] flex flex-col border-l border-gray-100 bg-gray-50 overflow-y-auto p-5">
-              <InstructionList />
+              <InstructionList
+                instructions={instructions}
+                activeStep={activeStep}
+                setActiveStep={setActiveStep}
+                saveProgress={saveProgress}
+                validationError={validationError}
+                goNext={goNext}
+                goPrev={goPrev}
+              />
             </div>
-            {/* Right: Action area */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <ActionArea />
+            <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
+              {PrefillCard}
+              {portalUnreachable && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
+                  <p className="font-semibold">הפורטל {authority} אינו זמין כרגע.</p>
+                  <p className="text-xs mt-0.5">המידע שלך נשמר. נסה שוב מאוחר יותר.</p>
+                </div>
+              )}
+              <button
+                onClick={openPortal}
+                className="w-full py-4 rounded-xl text-white text-base font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: "#1E5FA8" }}
+              >
+                <ExternalLink className="w-5 h-5" />
+                פתח פורטל {authority} ←
+              </button>
+              <p className="text-xs text-gray-400 text-center -mt-3">
+                הפורטל יפתח בחלון חדש. בצע את השלבים המפורטים.
+              </p>
+              {CompletionForm}
+              <p className="text-xs text-gray-400 text-center">
+                ⚙️ אוטומציה מלאה תהיה זמינה בגרסה הבאה.<br />
+                כרגע יש לבצע את הפעולות ידנית בפורטל.
+              </p>
             </div>
           </div>
 
-          {/* MOBILE layout — single column */}
+          {/* MOBILE */}
           <div className="md:hidden p-4 space-y-6">
-            {/* Prefill first */}
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-              <p className="text-sm font-bold text-blue-900 mb-3">הנתונים שיוגשו</p>
-              <div className="space-y-2">
-                {prefillData.map(({ label, value }) => (
-                  <div key={label} className="flex items-start gap-2">
-                    <span className="text-xs text-gray-500 w-32 flex-shrink-0 mt-0.5">{label}:</span>
-                    {value ? (
-                      <span className="text-sm font-semibold text-gray-800">{value}</span>
-                    ) : (
-                      <span className="text-sm text-red-500">
-                        חסר — <a href="/profile" className="underline">עדכן פרופיל ←</a>
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Instructions */}
+            {PrefillCard}
             <div className="bg-gray-50 rounded-xl p-4">
-              <InstructionList />
+              <InstructionList
+                instructions={instructions}
+                activeStep={activeStep}
+                setActiveStep={setActiveStep}
+                saveProgress={saveProgress}
+                validationError={validationError}
+                goNext={goNext}
+                goPrev={goPrev}
+              />
             </div>
-
-            {/* Portal button */}
             {portalUnreachable && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
                 <p className="font-semibold">הפורטל {authority} אינו זמין כרגע.</p>
@@ -396,51 +512,7 @@ export default function GuidedSubmissionWizard({
               <ExternalLink className="w-5 h-5" />
               פתח פורטל {authority} ←
             </button>
-
-            {/* Completion */}
-            <div className="border border-gray-200 rounded-xl p-5">
-              <label className="flex items-center gap-3 cursor-pointer mb-4">
-                <input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} className="w-4 h-4 accent-blue-600" />
-                <span className="text-sm font-semibold text-gray-800">סיימתי את כל השלבים בפורטל</span>
-              </label>
-              {confirmed && !success && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs text-gray-600 block mb-1">מספר תיק/אישור (אופציונלי)</label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={confirmNum}
-                      onChange={e => {
-                        const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
-                        setConfirmNum(digits);
-                        setConfirmNumError("");
-                      }}
-                      onKeyDown={e => {
-                        if (e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault();
-                      }}
-                      placeholder="לדוגמה: 123456789"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
-                      dir="ltr"
-                    />
-                    {confirmNumError && <p className="text-xs text-red-600 mt-1">{confirmNumError}</p>}
-                    <p className="text-[11px] text-gray-400 mt-1">מספר התיק מופיע באימייל או בדף האישור של הפורטל</p>
-                  </div>
-                  <button onClick={handleMarkComplete} disabled={saving}
-                    className="w-full py-3 rounded-xl text-white font-bold text-base disabled:opacity-60"
-                    style={{ backgroundColor: "#1A7A4A", minHeight: "52px" }}>
-                    {saving ? "שומר..." : "סמן שלב כהושלם ✓"}
-                  </button>
-                </div>
-              )}
-              {success && (
-                <div className="text-center py-4">
-                  <p className="text-2xl mb-2">🎉</p>
-                  <p className="font-bold text-green-700">השלב הושלם בהצלחה!</p>
-                </div>
-              )}
-            </div>
-
+            {CompletionForm}
             <p className="text-xs text-gray-400 text-center pb-2">
               ⚙️ אוטומציה מלאה תהיה זמינה בגרסה הבאה.
             </p>
