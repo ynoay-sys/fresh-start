@@ -134,6 +134,43 @@ function StepCard({ def, step, onUpdate, onOpenWizard }) {
           </button>
         )}
       </div>
+
+      {/* Details modal */}
+      {expanded && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-5">פרטי השלב — {def.title}</h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">תאריך השלמה:</span>
+                <span className="font-semibold text-gray-800">
+                  {step.submitted_at ? format(new Date(step.submitted_at), "dd/MM/yyyy") : "לא ידוע"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">מספר אישור:</span>
+                <span className="font-semibold text-gray-800">{confirmNum || "לא הוזן"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">סטאטוס:</span>
+                <span className="font-semibold text-green-700">הושלם ✓</span>
+              </div>
+              {screenshotUrl && (
+                <div className="mt-3">
+                  <p className="text-gray-500 mb-2">צילום מסך אישור:</p>
+                  <a href={screenshotUrl} target="_blank" rel="noopener noreferrer">
+                    <img src={screenshotUrl} className="w-full rounded-lg border border-gray-200 object-cover" alt="screenshot" style={{ maxHeight: 200 }} />
+                  </a>
+                </div>
+              )}
+            </div>
+            <button onClick={() => setExpanded(false)}
+              className="mt-6 w-full py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50">
+              סגור
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
