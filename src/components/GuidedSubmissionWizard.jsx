@@ -58,7 +58,7 @@ function ConfirmNumInput({ stepKey, onCommit, inputRef }) {
     if (inputRef) inputRef.current = { highlight: () => setHighlighted(true), clearHighlight: () => setHighlighted(false) };
   });
 
-  const isVat = stepKey === "vat_file";
+  const isVat = stepKey === "vat_file" || stepKey === "tax_file";
   const paddedId = isIdMode && localVal ? String(localVal).padStart(9, "0") : null;
 
   // Sync value + validity up to parent whenever they change

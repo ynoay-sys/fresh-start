@@ -97,7 +97,7 @@ function StepCard({ def, step, onUpdate, onOpenWizard }) {
             <div className={`text-sm font-medium flex items-center gap-2 ${isPartial ? "text-orange-700" : "text-green-700"}`}>
               <span className="text-base">{isPartial ? "⚠️" : "✅"}</span>
               {isPartial ? "הושלם חלקית" : "הושלם"}{step.submitted_at ? ` ב-${format(new Date(step.submitted_at), "dd/MM/yyyy")}` : ""}
-              {confirmNum && <span className="text-gray-500 font-normal text-xs">| תיק: {confirmNum}</span>}
+              {confirmNum && <span className="text-gray-500 font-normal text-xs">| מספר תיק: {confirmNum}</span>}
             </div>
             <div className="flex items-center gap-2">
               {screenshotUrl && (
