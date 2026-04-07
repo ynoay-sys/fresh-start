@@ -118,7 +118,7 @@ function IncomeSelector({ current, currentYear, onSelect, onSkip }) {
   const [error, setError] = useState("");
 
   function handleConfirm() {
-    if (!val || val <= 0) { setError("יש להזין הכנסה שנתית צפויה לפני המשך"); return; }
+    if (!val || val <= 0) { setError("יש להזין הכנסה צפויה או לבחור 'דלג לעכשיו'"); return; }
     onSelect(val, taxYear);
   }
 
