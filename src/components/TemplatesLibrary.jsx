@@ -116,8 +116,8 @@ export default function TemplatesLibrary() {
 
   async function load() {
     const user = await base44.auth.me();
-    const [tmplRes, compRes, usageRes] = await Promise.all([
-      base44.entities.DocumentTemplate.filter({ is_active: true }),
+    const tmplRes = await base44.entities.DocumentTemplate.filter({ is_active: true });
+    const [compRes, usageRes] = await Promise.all([
       base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
       base44.entities.UserFeatureUsage.filter({ created_by: user.email, feature_key: "template_download" }),
     ]);
