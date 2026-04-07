@@ -183,13 +183,12 @@ export default function Layout() {
 
   const NAV_TOP = [
     { icon: Users, label: "לקוחות", path: "/clients", badge: clientCount },
+    { icon: Package, label: "הזמנות", path: "/orders", badge: orderBadge, badgeColor: orderBadgeColor },
     { icon: CalendarDays, label: "לוח זמנים", path: "/schedule", badge: todayEventCount },
     { icon: Bell, label: "התראות", path: "/notifications", badge: unreadNotifCount },
     { icon: Target, label: "חזון ומטרות", path: "/vision", badge: activeGoalCount, badgeColor: "#5C1A8A" },
     { icon: Globe, label: "דף הנחיתה", path: "/landing-page", badge: landingPagePublished ? "פעיל" : null, badgeColor: "#1A7A4A" },
-    { icon: Package, label: "הזמנות", path: "/orders", badge: orderBadge, badgeColor: orderBadgeColor },
     { icon: Contact2, label: "אנשי קשר", path: "/contacts", badge: contactCount },
-    { icon: User, label: "פרופיל", path: "/profile" },
   ];
 
   return (
@@ -335,32 +334,39 @@ export default function Layout() {
                 )}
               </Link>
             ))}
-          </nav>
-
-          <div className="border-t border-gray-100 px-2 py-3 space-y-0.5">
-            <div className="border-t border-gray-100 my-1" />
+            {/* Bottom Items */}
+            <div className="border-t border-gray-100 my-3 mx-1" />
+            <Link to="/profile" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/profile") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              style={isActive("/profile") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <User className="w-4 h-4 flex-shrink-0" /><span>פרופיל</span>
+            </Link>
+            <Link to="/progress" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/progress") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              style={isActive("/progress") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <Trophy className="w-4 h-4" /><span>ההתקדמות שלי 🏆</span>
+            </Link>
             <Link to="/pricing" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/pricing") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/pricing") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
               style={isActive("/pricing") ? { backgroundColor: "#1E5FA8" } : {}}>
               <span className="w-4 h-4 text-center text-sm leading-none">💰</span><span>תמחור</span>
             </Link>
             <Link to="/billing" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/billing") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/billing") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
               style={isActive("/billing") ? { backgroundColor: "#1E5FA8" } : {}}>
               <span className="w-4 h-4 text-center text-sm leading-none">💳</span><span>תשלומים</span>
             </Link>
             <Link to="/settings" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/settings") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/settings") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
               style={isActive("/settings") ? { backgroundColor: "#1E5FA8" } : {}}>
               <Settings className="w-4 h-4" /><span>הגדרות</span>
             </Link>
-            <div className="border-t border-gray-100 my-1" />
-            <Link to="/progress" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/progress") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
-              style={isActive("/progress") ? { backgroundColor: "#1E5FA8" } : {}}>
-              <Trophy className="w-4 h-4" /><span>ההתקדמות שלי 🏆</span>
-            </Link>
-          </div>
+            <div className="border-t border-gray-100 my-2 mx-1" />
+            <button onClick={() => base44.auth.logout("/")}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer">
+              <LogOut className="w-4 h-4" /><span>התנתקות</span>
+            </button>
+          </nav>
         </aside>
 
         <main className="flex-1 md:mr-60 min-h-[calc(100vh-3.5rem)] pb-20 md:pb-0">

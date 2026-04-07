@@ -45,11 +45,9 @@ function TemplateCard({ template, isCompleted, usageBlocked, onComplete, onPaywa
 
   return (
     <div className={`rounded-xl border overflow-hidden flex flex-col transition-all ${isCompleted ? "bg-green-50 border-green-200" : "bg-white border-gray-200 hover:shadow-sm"}`}>
-      {/* Color strip */}
       <div className="h-2 w-full flex-shrink-0" style={{ backgroundColor: color }} />
 
       <div className="p-4 flex-1 flex flex-col">
-        {/* Authority + urgency */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold" style={{ color }}>{AUTHORITY_LABELS[template.authority]}</span>
           <span className={`text-xs font-medium ${URGENCY_COLORS[template.urgency]}`}>
@@ -57,18 +55,13 @@ function TemplateCard({ template, isCompleted, usageBlocked, onComplete, onPaywa
           </span>
         </div>
 
-        {/* Title */}
         <h3 className="font-bold text-gray-900 text-base mb-1 leading-snug">{template.title_he}</h3>
-
-        {/* Description */}
         <p className="text-xs text-gray-500 leading-relaxed mb-2 line-clamp-2">{template.description}</p>
 
-        {/* Deadline */}
         {template.deadline_note && (
           <p className="text-xs text-orange-600 mb-3">⏰ {template.deadline_note}</p>
         )}
 
-        {/* Completed banner or actions */}
         {isCompleted ? (
           <div className="mt-auto py-2 px-3 bg-green-100 rounded-lg text-center text-sm font-semibold text-green-700">
             הושלם בהצלחה ✓
@@ -99,7 +92,7 @@ function TemplateCard({ template, isCompleted, usageBlocked, onComplete, onPaywa
                   onClick={() => usageBlocked ? onPaywall(template) : setConfirming(true)}
                   className="flex-1 py-1.5 rounded-lg text-white text-xs font-medium"
                   style={{ backgroundColor: usageBlocked ? "#C25A00" : "#1A7A4A" }}>
-                  {usageBlocked ? "שדרג לסיום ✓" : "סמן כהושלם ✓"}
+                  {usageBlocked ? "שדרג לסיום ✓" : "סמנו כהושלם ✓"}
                 </button>
               </div>
             )}
@@ -147,8 +140,6 @@ export default function TemplatesLibrary() {
 
   async function handleComplete(template) {
     const user = await base44.auth.me();
-
-    // Increment usage
     const newCount = usageCount + 1;
     if (usageRecord) {
       await base44.entities.UserFeatureUsage.update(usageRecord.id, { usage_count: newCount });
@@ -160,14 +151,12 @@ export default function TemplatesLibrary() {
     }
     setUsageCount(newCount);
 
-    // Create completion record
     await base44.entities.UserTemplateCompletion.create({
       user_id: user.id,
       template_key: template.key,
       completed_at: new Date().toISOString(),
     });
 
-    // Create notification
     await base44.entities.Notification.create({
       tier: "system", type: "deadline",
       title: `טופס הושלם: ${template.title_he} ✓`,
@@ -190,6 +179,7 @@ export default function TemplatesLibrary() {
   const highUncompleted = templates.filter(t => t.urgency === "high" && !isCompleted(t.key)).length;
   const mediumUncompleted = templates.filter(t => t.urgency === "medium" && !isCompleted(t.key)).length;
   const pct = templates.length > 0 ? Math.round((completedCount / templates.length) * 100) : 0;
+  const filtersActive = authorityFilter !== "all" || urgencyFilter !== "all";
 
   if (loading) {
     return <div className="flex items-center justify-center py-16"><div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" /></div>;
@@ -206,10 +196,13 @@ export default function TemplatesLibrary() {
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
           <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: "#1E5FA8" }} />
         </div>
-        <div className="flex gap-4 text-xs">
+        <div className="flex flex-wrap gap-3 text-xs">
           <span className="text-red-600">🔴 דחופים שלא הושלמו: {highUncompleted}</span>
           <span className="text-orange-500">🟠 בינוניים שלא הושלמו: {mediumUncompleted}</span>
-          <span className="text-green-600">🟢 הושלמו: {completedCount}</span>
+          <span className="flex items-center gap-1.5 text-green-600">
+            <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
+            הושלמו: {completedCount}
+          </span>
         </div>
       </div>
 
@@ -223,7 +216,7 @@ export default function TemplatesLibrary() {
       )}
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
         <div className="flex gap-1 flex-wrap">
           {AUTHORITY_FILTERS.map(f => (
             <button key={f.key} onClick={() => setAuthorityFilter(f.key)}
@@ -243,6 +236,9 @@ export default function TemplatesLibrary() {
           ))}
         </div>
       </div>
+      {filtersActive && (
+        <p className="text-xs text-gray-400 text-right mb-3">{filtered.length} טפסים</p>
+      )}
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -258,7 +254,6 @@ export default function TemplatesLibrary() {
         ))}
       </div>
 
-      {/* Toast */}
       {toast && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium shadow-lg z-50">
           {toast}

@@ -191,7 +191,7 @@ export default function Documents() {
   });
 
   return (
-    <div className="px-4 py-8 max-w-6xl mx-auto" dir="rtl">
+    <div className="px-4 py-8 w-full max-w-6xl mx-auto overflow-x-hidden" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">המסמכים שלי</h1>
@@ -206,7 +206,7 @@ export default function Documents() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 mb-4 overflow-x-auto">
+      <div className="flex gap-1 border-b border-gray-200 mb-4 overflow-x-auto" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
         {TABS.map(tab => (
           <button
             key={tab.key}

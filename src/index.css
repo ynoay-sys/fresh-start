@@ -71,4 +71,13 @@
     direction: rtl;
     text-align: right;
   }
+
+  button, [role="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }

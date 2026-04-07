@@ -240,22 +240,22 @@ export default function Contacts() {
 
         {/* Empty State */}
         {!loading && filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="w-full flex flex-col items-center justify-center py-16 text-center px-6">
             <span className="text-6xl mb-4">👤</span>
             <p className="text-lg font-semibold text-gray-700 mb-1">עדיין אין אנשי קשר</p>
             <p className="text-sm text-gray-400 mb-6">
-              {search || activeCategory !== "all" ? "לא נמצאו אנשי קשר התואמים לחיפוש" : "הוסף את איש הקשר הראשון שלך"}
+              {search || activeCategory !== "all" ? "לא נמצאו אנשי קשר התואמים לחיפוש" : "הוסיפו את איש הקשר הראשון שלכם"}
             </p>
             {!search && activeCategory === "all" && (
               <button onClick={() => setModalContact(null)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-medium"
                 style={{ backgroundColor: "#1E5FA8" }}>
-                <Plus className="w-4 h-4" /> הוסף איש קשר
+                <Plus className="w-4 h-4" /> הוסיפו איש קשר
               </button>
             )}
           </div>
         )}
-      </div>
+        </div>
 
       {/* Modals */}
       {modalContact !== undefined && (
