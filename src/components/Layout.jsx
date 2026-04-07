@@ -108,13 +108,17 @@ export default function Layout() {
     async function loadSidebarData() {
       const u = await base44.auth.me();
       setUser(u);
-      const [notifs, docs, contacts, clients, steps, goals, templates, completions, landingPages, orders, events] = await Promise.all([
+      // Batch 1
+      const [notifs, docs, contacts, clients, steps, goals] = await Promise.all([
         base44.entities.Notification.filter({ created_by: u.email }),
         base44.entities.Document.filter({ created_by: u.email, status: "active" }),
         base44.entities.Contact.filter({ created_by: u.email }),
         base44.entities.Client.filter({ created_by: u.email }),
         base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" }),
         base44.entities.Milestone.filter({ created_by: u.email, type: "goal", status: "active" }),
+      ]);
+      // Batch 2
+      const [templates, completions, landingPages, orders, events] = await Promise.all([
         base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
         base44.entities.UserTemplateCompletion.filter({ created_by: u.email }),
         base44.entities.LandingPage.filter({ created_by: u.email }),
