@@ -143,7 +143,7 @@ export default function Profile() {
   }, []);
 
   function initSections(p) {
-    setPersonal({ first_name: p.first_name, last_name: p.last_name, date_of_birth: p.date_of_birth, address: p.address, city: p.city });
+    setPersonal({ first_name: p.first_name, last_name: p.last_name, date_of_birth: p.date_of_birth, address: p.address, city: p.city, gender: p.gender || "not_specified" });
     setBank({ bank_name: p.bank_name, bank_branch: p.bank_branch, bank_account: p.bank_account });
     setBusiness({ vat_number: p.vat_number, tax_file_number: p.tax_file_number, nii_number: p.nii_number });
     setFamily(p.family_data || []);
@@ -253,6 +253,24 @@ export default function Profile() {
             <FieldInput label="עיר" value={personal.city}
               onChange={v => { setPersonal(p => ({ ...p, city: v })); markDirty("personal"); }}
               dirty={dirty.personal} saved={!dirty.personal && justSaved.personal} />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-600">מין</label>
+              <div className="flex gap-4">
+                {[{val:"male",label:"זכר"},{val:"female",label:"נקבה"},{val:"not_specified",label:"לא צוין"}].map(opt => (
+                  <label key={opt.val} className="flex items-center gap-1.5 cursor-pointer text-sm text-gray-700">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value={opt.val}
+                      checked={(personal.gender || "not_specified") === opt.val}
+                      onChange={() => { setPersonal(p => ({ ...p, gender: opt.val })); markDirty("personal"); }}
+                      className="accent-blue-600"
+                    />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
             <div className="flex justify-start pt-1">
               <SaveButton
                 onClick={() => saveSection("personal", personal)}

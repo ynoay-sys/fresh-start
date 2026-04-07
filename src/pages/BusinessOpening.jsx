@@ -312,22 +312,20 @@ export default function BusinessOpening() {
             )}
             {/* Partial steps warning */}
             {partialSteps.length > 0 && (
-              <p className="text-xs font-medium" style={{ color: "#C25A00" }}>
-                שלבים שהושלמו חלקית:{" "}
-                {partialSteps.map((s, i) => {
+              <div className="text-xs font-medium flex flex-wrap gap-x-3 gap-y-1" style={{ color: "#C25A00" }}>
+                <span>שלבים שהושלמו חלקית:</span>
+                {partialSteps.map((s) => {
                   const def = STEP_DEFS.find(d => d.key === s.step_key);
                   return (
-                    <span key={s.step_key}>
-                      <button
-                        onClick={() => setActiveWizard(s.step_key)}
-                        className="underline hover:opacity-80">
-                        {def?.title}
-                      </button>
-                      {i < partialSteps.length - 1 ? ", " : ""}
-                    </span>
+                    <button
+                      key={s.step_key}
+                      onClick={() => setActiveWizard(s.step_key)}
+                      className="underline cursor-pointer hover:opacity-80">
+                      {def?.title} ← לחץ להשלמה
+                    </button>
                   );
-                })}{" — לחץ להשלמת הפרטים החסרים"}
-              </p>
+                })}
+              </div>
             )}
             {/* Incomplete steps */}
             {(() => {
@@ -383,6 +381,7 @@ export default function BusinessOpening() {
           stepRecord={getStep(activeWizard)}
           profile={profile}
           user={user}
+          startConfirmed={getStep(activeWizard)?.status === "partial"}
           onComplete={() => {
             setActiveWizard(null);
             base44.auth.me().then(u =>

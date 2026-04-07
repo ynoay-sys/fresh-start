@@ -24,7 +24,7 @@ function isValidIsraeliID(id) {
 }
 
 // ── Toast component ────────────────────────────────────────────────────────
-function InvalidKeyToast({ onDismiss }) {
+function InvalidKeyToast({ message, onDismiss }) {
   useEffect(() => {
     const t = setTimeout(onDismiss, 10000);
     return () => clearTimeout(t);
@@ -36,7 +36,7 @@ function InvalidKeyToast({ onDismiss }) {
       style={{ transform: "translateX(-50%)", backgroundColor: "#C25A00", minWidth: 280, maxWidth: 380 }}
       dir="rtl"
     >
-      <span className="flex-1">יש להכניס עד 9 תווים, אין להזין אותיות אלא רק מספרים</span>
+      <span className="flex-1">{message}</span>
       <button onClick={onDismiss} className="p-1 rounded hover:bg-white/20 flex-shrink-0">
         <X className="w-4 h-4" />
       </button>
@@ -75,17 +75,21 @@ function ConfirmNumInput({ stepKey, onCommit, inputRef }) {
     if (e.key.length === 1 && !/\d/.test(e.key) && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       if (!toastShownOnce) {
-        setShowToast(true);
+        setShowToast("יש להכניס עד 9 תווים, אין להזין אותיות אלא רק מספרים");
         setToastShownOnce(true);
       }
     }
   }
 
   function handleChange(e) {
-    const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
-    setLocalVal(digits);
+    const raw = e.target.value.replace(/\D/g, "");
+    if (raw.length > 9) {
+      setShowToast("אין להזין יותר מ-9 תווים");
+      return;
+    }
+    setLocalVal(raw);
     setIdError("");
-    if (digits === "") setToastShownOnce(false);
+    if (raw === "") setToastShownOnce(false);
   }
 
   function handleIdModeChange(checked) {
@@ -112,7 +116,7 @@ function ConfirmNumInput({ stepKey, onCommit, inputRef }) {
 
   return (
     <>
-      {showToast && <InvalidKeyToast onDismiss={() => setShowToast(false)} />}
+      {showToast && <InvalidKeyToast message={showToast} onDismiss={() => setShowToast(null)} />}
       <div>
         <label className="text-xs text-gray-600 block mb-1">מספר תיק/אישור (אופציונלי)</label>
         <input
@@ -242,10 +246,12 @@ export default function GuidedSubmissionWizard({
   profileFieldKey = null,
   profileId = null,
   stepValidation = {},
+  gender = "not_specified",
+  startConfirmed = false,
 }) {
   const savedStep = stepRecord?.draft_data?.wizardStep ?? 0;
   const [activeStep, setActiveStep] = useState(savedStep);
-  const [confirmed, setConfirmed] = useState(false);
+  const [confirmed, setConfirmed] = useState(startConfirmed);
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -259,6 +265,7 @@ export default function GuidedSubmissionWizard({
   const confirmInputRef = useRef(null);
   const [shortNumModal, setShortNumModal] = useState(false);
   const [shortNumInfoOpen, setShortNumInfoOpen] = useState(false);
+  const [shortTooFewModal, setShortTooFewModal] = useState(false);
 
   const total = instructions.length;
 
@@ -322,10 +329,10 @@ export default function GuidedSubmissionWizard({
       }
     }
 
-    // Warn if <9 digits, not ID mode, for steps requiring a number
-    if (confirmNum && !isIdMode && confirmNum.length < 9 && REQUIRES_NUMBER_STEPS.includes(stepKey)) {
-      setShortNumModal(true);
-      return;
+    // Warn based on digit count (not ID mode)
+    if (confirmNum && !isIdMode && REQUIRES_NUMBER_STEPS.includes(stepKey)) {
+      if (confirmNum.length < 7) { setShortTooFewModal(true); return; }
+      if (confirmNum.length < 9) { setShortNumModal(true); return; }
     }
 
     setConfirmNumError("");
@@ -450,7 +457,45 @@ export default function GuidedSubmissionWizard({
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-2 md:p-4" dir="rtl">
 
-      {/* Short number warning modal */}
+      {/* Too few digits modal (<7) */}
+      {shortTooFewModal && (
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" dir="rtl"
+          onClick={() => setShortTooFewModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-gray-900">מספר תיק ניכויים קצר מדי</h2>
+              <button onClick={() => setShortTooFewModal(false)} className="p-1 rounded hover:bg-gray-100">
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-700 mb-6 leading-relaxed">
+              יש להזין 9 ספרות של מספר תיק ניכויים.<br />
+              במידה ומספר זה הינו מספר ת״ז — יש לסמן את הוי &quot;מספר זה הינו מספר תעודת הזהות שלי&quot;.<br />
+              במידה ומספר זה אינו מספר ת״ז — יש להזין 9 ספרות.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => doSave(true)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">
+                {gender === "female" ? "שמרי ועדכני אחר כך" : "שמור ועדכן אחר כך"}
+              </button>
+              <button
+                onClick={() => {
+                  setShortTooFewModal(false);
+                  confirmInputRef.current?.highlight();
+                  setTimeout(() => confirmInputRef.current?.clearHighlight(), 3000);
+                }}
+                className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold"
+                style={{ backgroundColor: "#1E5FA8" }}>
+                עדכון מספר תיק ניכויים
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Short number warning modal (7-8 digits) */}
       {shortNumModal && (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" dir="rtl"
           onClick={() => setShortNumModal(false)}>

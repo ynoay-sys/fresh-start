@@ -217,7 +217,7 @@ function IncomeSelector({ current, currentYear, onSelect, onSkip }) {
   );
 }
 
-export default function BusinessStepWizard({ stepKey, stepRecord, profile, user, onComplete, onClose }) {
+export default function BusinessStepWizard({ stepKey, stepRecord, profile, user, onComplete, onClose, startConfirmed = false }) {
   const [preStep, setPreStep] = useState(null);
   const [selectedBank, setSelectedBank] = useState(null);
   const [vatType, setVatType] = useState(profile?.vat_type || null);
@@ -352,6 +352,8 @@ export default function BusinessStepWizard({ stepKey, stepRecord, profile, user,
       stepRecord={stepRecord}
       profileFieldKey={PROFILE_FIELD_KEYS[stepKey] || null}
       profileId={profile?.id || null}
-    />
+      gender={profile?.gender || "not_specified"}
+      startConfirmed={startConfirmed}
+      />
   );
 }

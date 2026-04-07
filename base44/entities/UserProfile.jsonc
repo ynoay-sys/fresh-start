@@ -22,6 +22,16 @@
       "type": "string",
       "description": "\u05ea\u05e2\u05d5\u05d3\u05ea \u05d6\u05d4\u05d5\u05ea \u2014 SENSITIVE: AES-256-GCM encrypted at rest"
     },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "male",
+        "female",
+        "not_specified"
+      ],
+      "default": "not_specified",
+      "description": "\u05de\u05d9\u05df"
+    },
     "business_type": {
       "type": "string",
       "enum": [
