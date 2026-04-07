@@ -16,18 +16,22 @@ const STEP_DEFS = [
 ];
 
 const STATUS_LABELS = {
-  not_started:     { label: "טרם התחיל",   cls: "bg-gray-100 text-gray-600" },
-  in_progress:     { label: "בתהליך",      cls: "bg-blue-100 text-blue-700 animate-pulse" },
-  completed:       { label: "הושלם ✓",     cls: "bg-green-100 text-green-700" },
-  manual_fallback: { label: "ידני",        cls: "bg-orange-100 text-orange-700" },
-  skipped:         { label: "דולג",        cls: "bg-gray-100 text-gray-400" },
-  queued:          { label: "ממתין",       cls: "bg-gray-100 text-gray-500" },
+  not_started:     { label: "טרם התחיל",        cls: "bg-gray-100 text-gray-600" },
+  in_progress:     { label: "בתהליך",           cls: "bg-blue-100 text-blue-700 animate-pulse" },
+  completed:       { label: "הושלם ✓",          cls: "bg-green-100 text-green-700" },
+  partial:         { label: "הושלם חלקית",      cls: "bg-orange-100 text-orange-700" },
+  manual_fallback: { label: "ידני",             cls: "bg-orange-100 text-orange-700" },
+  skipped:         { label: "דולג",             cls: "bg-gray-100 text-gray-400" },
+  queued:          { label: "ממתין",            cls: "bg-gray-100 text-gray-500" },
 };
 
 function StepCard({ def, step, onUpdate, onOpenWizard }) {
   const [expanded, setExpanded] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [updating, setUpdating] = useState(false);
   const status = step.status || "not_started";
+  const isPartial = status === "partial";
+  const isDone = status === "completed" || isPartial;
   const statusInfo = STATUS_LABELS[status] || STATUS_LABELS.not_started;
   const confirmNum = step.draft_data?.confirmationNumber;
   const screenshotUrl = step.draft_data?.screenshotUrl;
@@ -37,6 +41,7 @@ function StepCard({ def, step, onUpdate, onOpenWizard }) {
     setUpdating(true);
     const data = { status: s };
     if (s === "completed") data.submitted_at = new Date().toISOString();
+    if (s === "not_started") { data.draft_data = {}; data.submitted_at = null; }
     await base44.entities.BusinessOpeningStep.update(step.id, data);
     onUpdate(step.id, data);
     setUpdating(false);
@@ -44,7 +49,7 @@ function StepCard({ def, step, onUpdate, onOpenWizard }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+    <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4" id={`step-${def.key}`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <span className="text-3xl">{def.icon}</span>
@@ -84,19 +89,15 @@ function StepCard({ def, step, onUpdate, onOpenWizard }) {
               style={{ backgroundColor: "#1E5FA8" }}>
               המשך מדריך ←
             </button>
-            <button onClick={() => setStatus("completed")} disabled={updating}
-              className="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50">
-              סמן כהושלם ידנית
-            </button>
           </>
         )}
 
-        {status === "completed" && (
+        {isDone && (
           <div className="flex flex-1 items-center justify-between flex-wrap gap-2">
-            <div className="text-sm text-green-700 font-medium flex items-center gap-2">
-              <span className="text-base">✅</span>
-              הושלם{step.submitted_at ? ` ב-${format(new Date(step.submitted_at), "dd/MM/yyyy")}` : ""}
-              {confirmNum && <span className="text-gray-500 font-normal text-xs">| אישור: {confirmNum}</span>}
+            <div className={`text-sm font-medium flex items-center gap-2 ${isPartial ? "text-orange-700" : "text-green-700"}`}>
+              <span className="text-base">{isPartial ? "⚠️" : "✅"}</span>
+              {isPartial ? "הושלם חלקית" : "הושלם"}{step.submitted_at ? ` ב-${format(new Date(step.submitted_at), "dd/MM/yyyy")}` : ""}
+              {confirmNum && <span className="text-gray-500 font-normal text-xs">| תיק: {confirmNum}</span>}
             </div>
             <div className="flex items-center gap-2">
               {screenshotUrl && (
@@ -108,7 +109,13 @@ function StepCard({ def, step, onUpdate, onOpenWizard }) {
                 className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">
                 {expanded ? "סגור" : "צפה בפרטים"}
               </button>
-              <button onClick={() => setStatus("not_started")} disabled={updating}
+              {isPartial && (
+                <button onClick={() => onOpenWizard(def.key)}
+                  className="text-xs px-3 py-1.5 rounded-lg text-white font-medium" style={{ backgroundColor: "#C25A00" }}>
+                  השלם פרטים ←
+                </button>
+              )}
+              <button onClick={() => setConfirmReset(true)} disabled={updating}
                 className="text-xs text-gray-400 hover:text-gray-600 underline disabled:opacity-50">
                 בטל סימון
               </button>
@@ -135,6 +142,27 @@ function StepCard({ def, step, onUpdate, onOpenWizard }) {
         )}
       </div>
 
+      {/* Confirm reset modal */}
+      {confirmReset && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <p className="text-3xl mb-3">⚠️</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">ביטול סימון שלב</h2>
+            <p className="text-sm text-gray-600 mb-5">האם אתה בטוח שברצונך לבטל את סימון השלב?<br />יש לציין כי פרטים שנמחקו לא ניתן לשחזר.</p>
+            <div className="flex gap-3">
+              <button onClick={async () => { setConfirmReset(false); await setStatus("not_started"); }}
+                className="flex-1 py-2.5 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600">
+                כן, למחוק
+              </button>
+              <button onClick={() => setConfirmReset(false)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50">
+                לא למחוק
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Details modal */}
       {expanded && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" dir="rtl">
@@ -148,12 +176,14 @@ function StepCard({ def, step, onUpdate, onOpenWizard }) {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">מספר אישור:</span>
+                <span className="text-gray-500">מספר תיק/אישור:</span>
                 <span className="font-semibold text-gray-800">{confirmNum || "לא הוזן"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">סטאטוס:</span>
-                <span className="font-semibold text-green-700">הושלם ✓</span>
+                <span className={`font-semibold ${isPartial ? "text-orange-600" : "text-green-700"}`}>
+                  {isPartial ? "הושלם חלקית" : "הושלם ✓"}
+                </span>
               </div>
               {screenshotUrl && (
                 <div className="mt-3">
@@ -182,8 +212,8 @@ export default function BusinessOpening() {
   const [profile, setProfile] = useState(null);
   const [user, setUser] = useState(null);
   const [celebrated, setCelebrated] = useState(false);
-  const [activeWizard, setActiveWizard] = useState(null); // stepKey or null
-  const [portalStatus, setPortalStatus] = useState({}); // key -> "ok" | "error"
+  const [activeWizard, setActiveWizard] = useState(null);
+  const [portalStatus, setPortalStatus] = useState({});
 
   useEffect(() => {
     async function load() {
@@ -202,7 +232,6 @@ export default function BusinessOpening() {
     load();
   }, []);
 
-  // Check portal health passively
   useEffect(() => {
     if (!steps.length) return;
     STEP_DEFS.forEach(async def => {
@@ -220,6 +249,7 @@ export default function BusinessOpening() {
   }
 
   const completedCount = steps.filter(s => s.status === "completed").length;
+  const partialSteps = steps.filter(s => s.status === "partial");
   const allDone = completedCount === 4 && steps.length === 4;
 
   useEffect(() => {
@@ -250,7 +280,6 @@ export default function BusinessOpening() {
     <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">פתיחת עסק</h1>
 
-      {/* Completion summary */}
       {allDone && <CompletionSummaryCard steps={steps} profile={profile} />}
 
       {/* Progress Bar */}
@@ -264,13 +293,15 @@ export default function BusinessOpening() {
             style={{ width: `${(completedCount / 4) * 100}%`, backgroundColor: "#1E5FA8" }} />
         </div>
 
-        {!allDone && (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
+        {allDone ? (
+          <p className="text-sm text-green-700 font-medium">כל השלבים הושלמו! 🎉</p>
+        ) : (
+          <div className="flex flex-col gap-2 text-sm">
             {estimatedMinutes > 0 && (
               <span className="text-gray-500">⏱ זמן משוער להשלמה: {estimatedMinutes} דקות</span>
             )}
             {nextStep && (
-              <div className="flex items-center gap-2 sm:mr-auto">
+              <div className="flex items-center gap-2">
                 <span className="text-gray-500">השלב הבא: <strong className="text-gray-800">{nextStep.title}</strong></span>
                 <button onClick={() => setActiveWizard(nextStep.key)}
                   className="text-xs px-3 py-1.5 rounded-lg text-white font-medium"
@@ -279,6 +310,48 @@ export default function BusinessOpening() {
                 </button>
               </div>
             )}
+            {/* Partial steps warning */}
+            {partialSteps.length > 0 && (
+              <p className="text-xs font-medium" style={{ color: "#C25A00" }}>
+                שלבים שהושלמו חלקית:{" "}
+                {partialSteps.map((s, i) => {
+                  const def = STEP_DEFS.find(d => d.key === s.step_key);
+                  return (
+                    <span key={s.step_key}>
+                      <button
+                        onClick={() => setActiveWizard(s.step_key)}
+                        className="underline hover:opacity-80">
+                        {def?.title}
+                      </button>
+                      {i < partialSteps.length - 1 ? ", " : ""}
+                    </span>
+                  );
+                })}{" — לחץ להשלמת הפרטים החסרים"}
+              </p>
+            )}
+            {/* Incomplete steps */}
+            {(() => {
+              const incomplete = STEP_DEFS.filter(d => {
+                const s = getStep(d.key);
+                return s.status !== "completed" && s.status !== "partial";
+              });
+              if (incomplete.length === 0) return null;
+              return (
+                <p className="text-xs text-gray-500">
+                  שלבים שטרם הושלמו:{" "}
+                  {incomplete.map((d, i) => (
+                    <span key={d.key}>
+                      <button
+                        onClick={() => document.getElementById(`step-${d.key}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
+                        className="underline text-blue-600 hover:text-blue-800">
+                        {d.title}
+                      </button>
+                      {i < incomplete.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </p>
+              );
+            })()}
           </div>
         )}
       </div>
@@ -288,7 +361,7 @@ export default function BusinessOpening() {
         const step = getStep(def.key);
         return (
           <div key={def.key}>
-            {portalStatus[def.key] === "error" && step.status !== "completed" && (
+            {portalStatus[def.key] === "error" && step.status !== "completed" && step.status !== "partial" && (
               <div className="mb-2">
                 <PortalDowntimeBanner authority={def.authority} portalUrl={def.portalUrl} />
               </div>
@@ -312,7 +385,6 @@ export default function BusinessOpening() {
           user={user}
           onComplete={() => {
             setActiveWizard(null);
-            // Reload steps
             base44.auth.me().then(u =>
               base44.entities.BusinessOpeningStep.filter({ created_by: u.email })
                 .then(setSteps)

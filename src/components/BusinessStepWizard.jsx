@@ -265,6 +265,13 @@ export default function BusinessStepWizard({ stepKey, stepRecord, profile, user,
     setReady(true);
   }
 
+  // Profile field key per step for saving number to UserProfile
+  const PROFILE_FIELD_KEYS = {
+    vat_file: "vat_number",
+    tax_file: "tax_file_number",
+    nii: "nii_number",
+  };
+
   // Build config per stepKey
   const configs = {
     bank_account: {
@@ -343,7 +350,8 @@ export default function BusinessStepWizard({ stepKey, stepRecord, profile, user,
       onComplete={onComplete}
       onClose={onClose}
       stepRecord={stepRecord}
-      isPartial={stepKey === "tax_file" && incomeSkipped}
+      profileFieldKey={PROFILE_FIELD_KEYS[stepKey] || null}
+      profileId={profile?.id || null}
     />
   );
 }

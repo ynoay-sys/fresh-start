@@ -3,6 +3,9 @@ import { Check, X, ExternalLink, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { checkAndUnlockAchievements } from "../lib/achievements";
 
+// Steps that require a file/confirmation number to be "fully complete"
+const REQUIRES_NUMBER_STEPS = ["vat_file", "tax_file", "nii"];
+
 export default function GuidedSubmissionWizard({
   stepKey,
   stepTitle,
@@ -13,13 +16,15 @@ export default function GuidedSubmissionWizard({
   onComplete,
   onClose,
   stepRecord,
-  isPartial = false,
+  profileFieldKey = null,
+  profileId = null,
   stepValidation = {},
 }) {
   const savedStep = stepRecord?.draft_data?.wizardStep ?? 0;
   const [activeStep, setActiveStep] = useState(savedStep);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmNum, setConfirmNum] = useState("");
+  const [confirmNumError, setConfirmNumError] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -76,15 +81,32 @@ export default function GuidedSubmissionWizard({
   }
 
   async function handleMarkComplete() {
+    // Validate confirmNum if provided
+    if (confirmNum && REQUIRES_NUMBER_STEPS.includes(stepKey)) {
+      if (!/^\d{6,9}$/.test(confirmNum)) {
+        setConfirmNumError('מספר תיק/אישור חייב להכיל ספרות בלבד (6–9 ספרות)');
+        return;
+      }
+    }
+    setConfirmNumError("");
     setSaving(true);
+
+    const requiresNum = REQUIRES_NUMBER_STEPS.includes(stepKey);
+    const isPartialComplete = requiresNum && !confirmNum;
+    const newStatus = isPartialComplete ? "partial" : "completed";
+
+    // Save number to UserProfile if filled
+    if (confirmNum && profileFieldKey && profileId) {
+      await base44.entities.UserProfile.update(profileId, { [profileFieldKey]: confirmNum }).catch(() => {});
+    }
+
     await base44.entities.BusinessOpeningStep.update(stepRecord.id, {
-      status: "completed",
+      status: newStatus,
       submitted_at: new Date().toISOString(),
       draft_data: {
         ...(stepRecord.draft_data || {}),
         confirmationNumber: confirmNum,
         screenshotUrl,
-        partial: isPartial,
       },
     });
     await checkAndUnlockAchievements().catch(() => {});
@@ -242,16 +264,25 @@ export default function GuidedSubmissionWizard({
           {confirmed && !success && (
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-gray-600 block mb-1">מספר אישור / מספר תיק (אופציונלי)</label>
+                <label className="text-xs text-gray-600 block mb-1">מספר תיק/אישור (אופציונלי)</label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   value={confirmNum}
-                  onChange={e => setConfirmNum(e.target.value)}
+                  onChange={e => {
+                    const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+                    setConfirmNum(digits);
+                    setConfirmNumError("");
+                  }}
+                  onKeyDown={e => {
+                    if (e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault();
+                  }}
                   placeholder="לדוגמה: 123456789"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
-                  dir="rtl"
+                  dir="ltr"
                 />
-                <p className="text-[11px] text-gray-400 mt-1">מספר האישור מופיע באימייל או בדף האישור של הפורטל</p>
+                {confirmNumError && <p className="text-xs text-red-600 mt-1">{confirmNumError}</p>}
+                <p className="text-[11px] text-gray-400 mt-1">מספר התיק מופיע באימייל או בדף האישור של הפורטל</p>
               </div>
 
               <div>
@@ -375,11 +406,25 @@ export default function GuidedSubmissionWizard({
               {confirmed && !success && (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs text-gray-600 block mb-1">מספר אישור / מספר תיק (אופציונלי)</label>
-                    <input type="text" value={confirmNum} onChange={e => setConfirmNum(e.target.value)}
+                    <label className="text-xs text-gray-600 block mb-1">מספר תיק/אישור (אופציונלי)</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={confirmNum}
+                      onChange={e => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+                        setConfirmNum(digits);
+                        setConfirmNumError("");
+                      }}
+                      onKeyDown={e => {
+                        if (e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault();
+                      }}
                       placeholder="לדוגמה: 123456789"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400" dir="rtl" />
-                    <p className="text-[11px] text-gray-400 mt-1">מספר האישור מופיע באימייל או בדף האישור של הפורטל</p>
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+                      dir="ltr"
+                    />
+                    {confirmNumError && <p className="text-xs text-red-600 mt-1">{confirmNumError}</p>}
+                    <p className="text-[11px] text-gray-400 mt-1">מספר התיק מופיע באימייל או בדף האישור של הפורטל</p>
                   </div>
                   <button onClick={handleMarkComplete} disabled={saving}
                     className="w-full py-3 rounded-xl text-white font-bold text-base disabled:opacity-60"

@@ -1,0 +1,68 @@
+{
+  "name": "BusinessOpeningStep",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner user reference"
+    },
+    "step_key": {
+      "type": "string",
+      "enum": [
+        "vat_file",
+        "tax_file",
+        "nii",
+        "bank_account",
+        "license"
+      ],
+      "description": "Business opening step identifier"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "submitted",
+        "completed",
+        "partial",
+        "manual_fallback",
+        "queued"
+      ],
+      "default": "not_started",
+      "description": "Step completion status"
+    },
+    "agent_log": {
+      "type": "array",
+      "description": "Log entries from AI agent processing",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "draft_data": {
+      "type": "object",
+      "description": "Draft form data collected for this step",
+      "additionalProperties": true
+    },
+    "submission_screenshot": {
+      "type": "string",
+      "description": "URL to screenshot of submission confirmation"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this step was submitted"
+    }
+  },
+  "required": []
+}
