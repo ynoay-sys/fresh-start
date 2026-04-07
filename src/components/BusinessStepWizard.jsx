@@ -76,22 +76,36 @@ function BankSelector({ onSelect }) {
 
 // VAT type pre-step
 function VatTypeSelector({ current, onSelect }) {
+  const [selected, setSelected] = useState(current || null);
+  const [error, setError] = useState("");
+
+  function handleConfirm() {
+    if (!selected) { setError("יש לבחור סוג עוסק לפני המשך"); return; }
+    onSelect(selected);
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
         <h2 className="text-lg font-bold text-gray-900 mb-4">בחר את סוג הרישום המתאים לך:</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           {[
-            { key: "מורשה", title: "עוסק מורשה", lines: ["מחזור שנתי מעל ₪120,000", "גובה מע״מ: 17% על כל עסקה", "מגיש דוח מע״מ כל חודש/חודשיים"] },
-            { key: "פטור", title: "עוסק פטור", lines: ["מחזור שנתי עד ₪120,000", "פטור מגביית מע״מ", "מגיש דוח שנתי בלבד"] },
+            { key: "מורשה", title: "עוסק מורשה", lines: ["מחזור שנתי מעל ₪120,000", "גובה מע\u05f4מ: 17% על כל עסקה", "מגיש דוח מע\u05f4מ כל חודש/חודשיים"] },
+            { key: "פטור", title: "עוסק פטור", lines: ["מחזור שנתי עד ₪120,000", "פטור מגביית מע\u05f4מ", "מגיש דוח שנתי בלבד"] },
           ].map(opt => (
-            <button key={opt.key} onClick={() => onSelect(opt.key)}
-              className={`rounded-xl border-2 p-4 text-right transition-all hover:border-blue-400 ${current === opt.key ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}>
+            <button key={opt.key} onClick={() => { setSelected(opt.key); setError(""); }}
+              className={`rounded-xl border-2 p-4 text-right transition-all hover:border-blue-400 ${selected === opt.key ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}>
               <p className="font-bold text-gray-900 mb-2">{opt.title}</p>
               {opt.lines.map(l => <p key={l} className="text-xs text-gray-500">{l}</p>)}
             </button>
           ))}
         </div>
+        {error && <p className="text-sm text-red-600 font-medium mb-3">{error}</p>}
+        <button onClick={handleConfirm}
+          className="w-full py-3 rounded-xl text-white font-bold"
+          style={{ backgroundColor: "#1E5FA8", minHeight: "52px" }}>
+          המשך ←
+        </button>
       </div>
     </div>
   );
@@ -99,11 +113,18 @@ function VatTypeSelector({ current, onSelect }) {
 
 // Income pre-step
 function IncomeSelector({ current, onSelect }) {
-  const [val, setVal] = useState(current || 120000);
+  const [val, setVal] = useState(current || 0);
+  const [error, setError] = useState("");
+
+  function handleConfirm() {
+    if (!val || val <= 0) { setError("יש להזין הכנסה שנתית צפויה לפני המשך"); return; }
+    onSelect(val);
+  }
+
   let hint = "";
-  if (val < 75000) hint = "מדרגת מס ראשונה — 10%";
-  else if (val <= 215000) hint = "מדרגת מס שנייה — 14%–20%";
-  else hint = "מדרגות מס גבוהות — 31%–50%";
+  if (val > 0 && val < 75000) hint = "מדרגת מס ראשונה — 10%";
+  else if (val >= 75000 && val <= 215000) hint = "מדרגת מס שנייה — 14%–20%";
+  else if (val > 215000) hint = "מדרגות מס גבוהות — 31%–50%";
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" dir="rtl">
@@ -111,19 +132,20 @@ function IncomeSelector({ current, onSelect }) {
         <h2 className="text-lg font-bold text-gray-900 mb-4">מהי ההכנסה השנתית הצפויה שלך?</h2>
         <input
           type="range" min={0} max={500000} step={5000}
-          value={val} onChange={e => setVal(Number(e.target.value))}
+          value={val} onChange={e => { setVal(Number(e.target.value)); setError(""); }}
           className="w-full mb-2"
         />
         <div className="flex justify-between text-xs text-gray-400 mb-4">
           <span>₪0</span><span>₪500,000+</span>
         </div>
-        <div className="text-center mb-4">
+        <div className="text-center mb-2">
           <p className="text-2xl font-bold" style={{ color: "#1E5FA8" }}>₪{val.toLocaleString()}</p>
-          <p className="text-sm text-gray-600 mt-1">{hint}</p>
+          {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
         </div>
-        <button onClick={() => onSelect(val)}
-          className="w-full py-3 rounded-xl text-white font-bold"
-          style={{ backgroundColor: "#1E5FA8" }}>
+        {error && <p className="text-sm text-red-600 font-medium mb-3">{error}</p>}
+        <button onClick={handleConfirm}
+          className="w-full py-3 rounded-xl text-white font-bold mt-3"
+          style={{ backgroundColor: "#1E5FA8", minHeight: "52px" }}>
           המשך ←
         </button>
       </div>
