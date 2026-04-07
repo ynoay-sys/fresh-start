@@ -23,12 +23,16 @@ export default function Notifications() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [filter, setFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
 
   async function load() {
+    setError(false);
+    setLoading(true);
     const user = await base44.auth.me();
-    const results = await base44.entities.Notification.filter({ created_by: user.email }, "-created_date");
+    const results = await base44.entities.Notification.filter({ created_by: user.email }, "-created_date").catch(() => null);
+    if (results === null) { setError(true); setLoading(false); return; }
     setNotifications(results);
     setLoading(false);
   }
@@ -86,6 +90,12 @@ export default function Notifications() {
       {loading ? (
         <div className="flex justify-center py-16">
           <div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" />
+        </div>
+      ) : error ? (
+        <div className="text-center py-16">
+          <p className="text-4xl mb-3">⚠️</p>
+          <p className="text-gray-600 font-medium mb-4">אירעה שגיאה בטעינת הנתונים</p>
+          <button onClick={load} className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: "#1E5FA8" }}>נסה שוב</button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">

@@ -47,7 +47,7 @@ function InvalidKeyToast({ message, onDismiss }) {
 // ── Isolated confirm-number input — defined at module scope to prevent remount ──
 function ConfirmNumInput({ stepKey, onCommit, inputRef }) {
   const [localVal, setLocalVal] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const [showToast, setShowToast] = useState(null);
   const [toastShownOnce, setToastShownOnce] = useState(false);
   const [isIdMode, setIsIdMode] = useState(false);
   const [idError, setIdError] = useState("");

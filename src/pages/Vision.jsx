@@ -13,6 +13,7 @@ export default function Vision() {
   const [completedGoals, setCompletedGoals] = useState([]);
   const [tasksByGoal, setTasksByGoal] = useState({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [showVisionModal, setShowVisionModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [editGoal, setEditGoal] = useState(null);
@@ -20,22 +21,21 @@ export default function Vision() {
   const [completedExpanded, setCompletedExpanded] = useState(false);
 
   async function load() {
+    setError(false);
+    setLoading(true);
     const user = await base44.auth.me();
-    const [milestones] = await Promise.all([
-      base44.entities.Milestone.filter({ created_by: user.email }),
-    ]);
+    const milestones = await base44.entities.Milestone.filter({ created_by: user.email }).catch(() => null);
+    if (milestones === null) { setError(true); setLoading(false); return; }
 
     const vis = milestones.find(m => m.type === "vision");
     const activeG = milestones.filter(m => m.type === "goal" && m.status !== "completed")
       .sort((a, b) => (a.due_date || "9999") < (b.due_date || "9999") ? -1 : 1);
     const completedG = milestones.filter(m => m.type === "goal" && m.status === "completed");
     const allTasks = milestones.filter(m => m.type === "task");
-
     const byGoal = {};
     for (const g of [...activeG, ...completedG]) {
       byGoal[g.id] = allTasks.filter(t => t.parent_id === g.id);
     }
-
     setVision(vis || null);
     setGoals(activeG);
     setCompletedGoals(completedG);
@@ -61,13 +61,19 @@ export default function Vision() {
     load();
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" />
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4" dir="rtl">
+      <p className="text-4xl">⚠️</p>
+      <p className="text-gray-600 font-medium">אירעה שגיאה בטעינת הנתונים</p>
+      <button onClick={load} className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: "#1E5FA8" }}>נסה שוב</button>
+    </div>
+  );
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8" dir="rtl">

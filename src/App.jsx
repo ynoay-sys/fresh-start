@@ -27,6 +27,7 @@ import PublicLandingPage from './pages/PublicLandingPage';
 import Pricing from './pages/Pricing';
 import AutomationTest from './pages/admin/AutomationTest';
 import Billing from './pages/Billing';
+import Settings from './pages/Settings';
 
 function ComingSoon({ title }) {
   return (
@@ -76,7 +77,7 @@ const AuthenticatedApp = () => {
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/progress" element={<Progress />} />
-        <Route path="/settings" element={<ComingSoon title="הגדרות" />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/schema" element={<SchemaDocumentation />} />
       </Route>
       <Route path="/p/:subdomain" element={<PublicLandingPage />} />
