@@ -160,7 +160,7 @@ function DocumentCard({ doc, onDelete, onSign, onConfidenceUpdate }) {
 
 export default function Documents() {
   const navigate = useNavigate();
-  useEffect(() => { trackEvent('page_view', { module: '/documents' }); }, []);
+  useEffect(() => { trackEvent('page_view', { module: '/documents' }); document.title = 'מסמכים | Fresh Start'; }, []);
   const handleSign = (doc) => { trackEvent('document_signed', { hasLegalCheck: false }); navigate(`/documents/sign/${doc.id}`); };
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -197,7 +197,7 @@ export default function Documents() {
   const TABS_LIST = TABS.map(t => ({ key: t.key, label: t.label }));
 
   return (
-    <div className="px-3 py-8 w-full max-w-6xl mx-auto overflow-x-hidden box-border" dir="rtl">
+    <div style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box', padding: '32px 16px' }} dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">המסמכים שלי</h1>
@@ -243,7 +243,7 @@ export default function Documents() {
 
       {/* Document Grid */}
       {activeTab !== "templates" && !loading && filtered.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: 12, width: '100%', boxSizing: 'border-box' }} className="sm:grid-cols-2-override lg:grid-cols-3-override">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, width: '100%', boxSizing: 'border-box' }}>
           {filtered.map(doc => (
             <DocumentCard key={doc.id} doc={doc} onDelete={setDeleteTarget} onSign={handleSign} onConfidenceUpdate={handleConfidenceUpdate} />
           ))}

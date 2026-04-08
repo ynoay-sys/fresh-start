@@ -198,19 +198,15 @@ export default function TemplatesLibrary() {
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
           <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: "#1E5FA8" }} />
         </div>
-        <div className="flex flex-wrap gap-4">
+        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 16, justifyContent: 'flex-end', width: '100%', padding: '8px 0' }}>
           {[
             { label: "דחופים שלא הושלמו", count: highUncompleted, color: "#AA1111" },
             { label: "בינוניים שלא הושלמו", count: mediumUncompleted, color: "#C25A00" },
             { label: "הושלמו", count: completedCount, color: "#1A7A4A" },
           ].map(({ label, count, color }) => (
-            <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+            <span key={label} style={{ display: 'inline-flex', flexDirection: 'row', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
               <span style={{ fontSize: 13, color: "#444444" }}>{label}: {count}</span>
-              <span style={{
-                display: "inline-block", width: 12, height: 12,
-                borderRadius: "50%", backgroundColor: color,
-                border: "1px solid rgba(0,0,0,0.15)", flexShrink: 0
-              }} />
+              <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: color, border: '1px solid rgba(0,0,0,0.2)', flexShrink: 0, display: 'inline-block' }} />
             </span>
           ))}
         </div>
@@ -226,6 +222,7 @@ export default function TemplatesLibrary() {
       )}
 
       {/* Filters */}
+      <p style={{ fontSize: 13, fontWeight: 600, color: '#555', textAlign: 'right', marginBottom: 6 }}>סוג טופס</p>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
         <div className="flex gap-1 flex-wrap">
           {AUTHORITY_FILTERS.map(f => (
@@ -236,7 +233,9 @@ export default function TemplatesLibrary() {
             </button>
           ))}
         </div>
-        <div className="flex gap-1 flex-wrap">
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#555', textAlign: 'right', marginBottom: 6, marginTop: 12 }}>דחיפות</p>
+          <div className="flex gap-1 flex-wrap">
           {URGENCY_FILTERS.map(f => (
             <button key={f.key} onClick={() => setUrgencyFilter(f.key)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${urgencyFilter === f.key ? "text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
@@ -244,6 +243,7 @@ export default function TemplatesLibrary() {
               {f.label}
             </button>
           ))}
+          </div>
         </div>
       </div>
       <p className="text-xs text-gray-400 text-right mb-3">

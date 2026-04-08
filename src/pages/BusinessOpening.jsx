@@ -215,6 +215,8 @@ export default function BusinessOpening() {
   const [activeWizard, setActiveWizard] = useState(null);
   const [portalStatus, setPortalStatus] = useState({});
 
+  useEffect(() => { document.title = 'פתיחת עסק | Fresh Start'; }, []);
+
   useEffect(() => {
     async function load(attempt = 0) {
       try {

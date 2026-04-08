@@ -67,6 +67,8 @@ export default function Progress() {
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => { document.title = 'ההתקדמות שלי | Fresh Start'; }, []);
+
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();

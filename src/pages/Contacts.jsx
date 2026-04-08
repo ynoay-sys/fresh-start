@@ -126,7 +126,7 @@ export default function Contacts() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); document.title = 'אנשי קשר | Fresh Start'; }, []);
 
   async function handleDelete(contact) {
     await base44.entities.Contact.delete(contact.id);
@@ -216,7 +216,7 @@ export default function Contacts() {
               { key: "all", label: `הכל (${contacts.length})` },
               ...FILTER_CATEGORIES.map(cat => ({
                 key: cat,
-                label: `${CATEGORY_ICONS[cat]} ${CATEGORY_LABELS[cat]}`
+                label: CATEGORY_LABELS[cat]
               }))
             ]}
             activeKey={activeCategory}
@@ -247,10 +247,10 @@ export default function Contacts() {
 
         {/* Empty State */}
         {!loading && filtered.length === 0 && (
-          <div className="w-full flex flex-col items-center justify-center py-16 text-center px-6">
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '48px 24px', boxSizing: 'border-box' }}>
             <span className="text-6xl mb-4">👤</span>
-            <p className="text-lg font-semibold text-gray-700 mb-1">עדיין אין אנשי קשר</p>
-            <p className="text-sm text-gray-400 mb-6">
+            <p className="text-lg font-semibold text-gray-700 mb-1" style={{ textAlign: 'center' }}>עדיין אין אנשי קשר</p>
+            <p className="text-sm text-gray-400 mb-6" style={{ textAlign: 'center' }}>
               {search || activeCategory !== "all" ? "לא נמצאו אנשי קשר התואמים לחיפוש" : "הוסיפו את איש הקשר הראשון שלכם"}
             </p>
             {!search && activeCategory === "all" && (

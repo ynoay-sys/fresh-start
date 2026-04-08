@@ -52,6 +52,8 @@ export default function LandingPageBuilder() {
   const [domainSaved, setDomainSaved] = useState(false);
   const messagesEndRef = useRef(null);
 
+  useEffect(() => { document.title = 'דף הנחיתה | Fresh Start'; }, []);
+
   useEffect(() => {
     async function load() {
       const u = await base44.auth.me();

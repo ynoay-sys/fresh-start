@@ -35,6 +35,8 @@ export default function Orders() {
   const [syncing, setSyncing] = useState(false);
   const [user, setUser] = useState(null);
 
+  useEffect(() => { document.title = 'הזמנות | Fresh Start'; }, []);
+
   useEffect(() => {
     const flag = localStorage.getItem("emailConnected");
     const saved = localStorage.getItem("connectedEmail");

@@ -94,6 +94,8 @@ export default function Clients() {
     setLoading(false);
   }
 
+  useEffect(() => { document.title = 'לקוחות | Fresh Start'; }, []);
+
   useEffect(() => { load(); }, []);
 
   function getUpcomingMeeting(clientId) {

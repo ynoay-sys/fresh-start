@@ -33,6 +33,8 @@ export default function Schedule() {
     setLoading(false);
   }
 
+  useEffect(() => { document.title = 'לוח זמנים | Fresh Start'; }, []);
+
   useEffect(() => { loadEvents(); }, []);
 
   // Monthly navigation (RTL: → = prev, ← = next)

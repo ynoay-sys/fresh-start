@@ -114,6 +114,8 @@ export default function Profile() {
   const [business, setBusiness] = useState({});
   const [family, setFamily] = useState([]);
 
+  useEffect(() => { document.title = 'פרופיל | Fresh Start'; }, []);
+
   useEffect(() => {
     async function load() {
       const u = await base44.auth.me();

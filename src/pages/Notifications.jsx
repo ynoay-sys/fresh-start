@@ -38,7 +38,7 @@ export default function Notifications() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); document.title = 'התראות | Fresh Start'; }, []);
 
   async function handleMarkAllRead() {
     const unread = notifications.filter(n => !n.is_read);

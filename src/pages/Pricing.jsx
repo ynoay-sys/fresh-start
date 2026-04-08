@@ -60,6 +60,7 @@ function FeaturePricingCard({ config, usageRecord }) {
 }
 
 export default function Pricing() {
+  useEffect(() => { document.title = 'תמחור | Fresh Start'; }, []);
   const [usageMap, setUsageMap] = useState({});
   const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistDone, setWaitlistDone] = useState(

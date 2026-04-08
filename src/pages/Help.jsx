@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp, ChevronLeft } from "lucide-react";
 
@@ -64,6 +65,7 @@ function FaqItem({ q, a }) {
 
 export default function Help() {
   const navigate = useNavigate();
+  useEffect(() => { document.title = 'עזרה | Fresh Start'; }, []);
   const [search, setSearch] = useState("");
   const q = search.toLowerCase().trim();
 

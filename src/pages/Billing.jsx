@@ -16,6 +16,8 @@ export default function Billing() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => { document.title = 'תשלומים | Fresh Start'; }, []);
+
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
@@ -109,27 +111,6 @@ export default function Billing() {
         <>
           {/* Mobile cards */}
           <div className="md:hidden space-y-3">
-            {payments.map(p => {
-              const cfg = PRICING_CONFIG[p.feature_key];
-              const statusInfo = STATUS_LABELS[p.status] || { label: p.status, cls: "bg-gray-100 text-gray-600" };
-              return (
-                <div key={p.id} className="bg-white border border-gray-200 rounded-xl p-4 w-full">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">{cfg?.icon || "💳"}</span>
-                    <span className="font-bold text-gray-800 text-sm">{cfg?.label_he || p.feature_key}</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mb-1">תאריך: {p.created_date ? format(new Date(p.created_date), "dd/MM/yyyy HH:mm") : "—"}</p>
-                  <p className="text-xs text-gray-800 font-bold mb-1">סכום: ₪{p.amount_ils}</p>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs text-gray-500">סטטוס:</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusInfo.cls}`}>{statusInfo.label}</span>
-                  </div>
-                  {p.gateway_ref && <p className="text-xs text-gray-400 font-mono truncate">עסקה: {p.gateway_ref}</p>}
-                </div>
-              );
-            })}
-          </div>
-          {/* Desktop table */}
           <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">

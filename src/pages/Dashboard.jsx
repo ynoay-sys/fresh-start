@@ -42,7 +42,7 @@ export default function Dashboard() {
   const [monthPayments, setMonthPayments] = useState(0);
   const [emailSigCount, setEmailSigCount] = useState(null);
 
-  useEffect(() => { trackEvent('page_view', { module: '/dashboard' }); }, []);
+  useEffect(() => { trackEvent('page_view', { module: '/dashboard' }); document.title = 'לוח בקרה | Fresh Start'; }, []);
 
   useEffect(() => {
     async function load() {
@@ -144,7 +144,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">שלום 👋</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">{(() => { const h = new Date().getHours(); const g = h >= 6 && h < 12 ? 'בוקר טוב' : h >= 12 && h < 17 ? 'צהריים טובים' : h >= 17 && h < 21 ? 'ערב טוב' : 'לילה טוב'; return `${g} 👋`; })()}</h1>
       <p className="text-sm text-gray-500 mb-8">ברוך הבא ל-Fresh Start — הפלטפורמה לעצמאים בישראל</p>
 
       {/* Stats Row */}

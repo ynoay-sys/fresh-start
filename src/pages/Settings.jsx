@@ -63,6 +63,8 @@ export default function Settings() {
   const [deleteInput, setDeleteInput] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
 
+  useEffect(() => { document.title = 'הגדרות | Fresh Start'; }, []);
+
   useEffect(() => {
     base44.auth.me().then(u => {
       setUser(u);

@@ -43,6 +43,8 @@ export default function Vision() {
     setLoading(false);
   }
 
+  useEffect(() => { document.title = 'חזון ומטרות | Fresh Start'; }, []);
+
   useEffect(() => { load(); }, []);
 
   async function handleDeleteGoal(goal) {
