@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import BusinessProgressMap from "../components/BusinessProgressMap";
 import { ACHIEVEMENT_DEFS } from "../lib/achievements";
+import WelcomeModal from "../components/WelcomeModal";
+import { trackEvent } from "../lib/trackEvent";
 
 
 function StatCard({ emoji, label, value, sub, onClick }) {
@@ -20,6 +22,8 @@ function StatCard({ emoji, label, value, sub, onClick }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem("welcomeShown"));
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
   const [docCount, setDocCount] = useState(null);
   const [contactCount, setContactCount] = useState(null);
   const [clientCount, setClientCount] = useState(null);
@@ -37,10 +41,11 @@ export default function Dashboard() {
   const [templateUsage, setTemplateUsage] = useState(0);
   const [monthPayments, setMonthPayments] = useState(0);
 
+  useEffect(() => { trackEvent('module_visited', { module: '/dashboard' }); }, []);
+
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      // Batch 1
       const [docs, contacts, clients, completedSteps, allSteps, eventsRes, notifsRes] = await Promise.all([
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
         base44.entities.Contact.filter({ created_by: user.email }),
@@ -106,12 +111,35 @@ export default function Dashboard() {
         return d.getMonth() === nowDate.getMonth() && d.getFullYear() === nowDate.getFullYear() && p.status === "completed";
       });
       setMonthPayments(thisMonth.reduce((s, p) => s + (p.amount_ils || 0), 0));
+
+      // Profile completion banner
+      const profileRec = (await base44.entities.UserProfile.filter({ created_by: user.email }))[0];
+      if (profileRec) {
+        const fields = ['first_name','last_name','phone_il','business_name','vat_number','address'];
+        const filled = fields.filter(f => !!profileRec[f]).length;
+        const pct = Math.round((filled / fields.length) * 100);
+        const dismissed = localStorage.getItem('profileBannerDismissed');
+        const daysSinceReg = user.created_date ? (Date.now() - new Date(user.created_date).getTime()) / 86400000 : 0;
+        if (pct < 50 && daysSinceReg > 1 && !dismissed) setShowProfileBanner(true);
+      }
     }
     load();
   }, []);
 
   return (
     <div className="px-4 py-8 max-w-4xl mx-auto" dir="rtl">
+      {showWelcome && <WelcomeModal onComplete={() => setShowWelcome(false)} />}
+
+      {showProfileBanner && (
+        <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-6">
+          <p className="text-sm text-yellow-800">הפרופיל שלך לא מלא — השלמת הפרופיל משפרת את הדיוק של הטפסים האוטומטיים</p>
+          <div className="flex items-center gap-2 flex-shrink-0 mr-3">
+            <button onClick={() => navigate('/profile')} className="text-xs font-medium px-3 py-1.5 rounded-lg text-white" style={{ backgroundColor: '#C25A00' }}>השלם פרופיל ←</button>
+            <button onClick={() => { setShowProfileBanner(false); localStorage.setItem('profileBannerDismissed','1'); }} className="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+          </div>
+        </div>
+      )}
+
       <h1 className="text-2xl font-bold text-gray-900 mb-2">שלום 👋</h1>
       <p className="text-sm text-gray-500 mb-8">ברוך הבא ל-Fresh Start — הפלטפורמה לעצמאים בישראל</p>
 

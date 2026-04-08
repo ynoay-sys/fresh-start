@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { trackEvent } from "./trackEvent";
 
 export const ACHIEVEMENT_DEFS = [
   {
@@ -137,6 +138,7 @@ export async function checkAndUnlockAchievements() {
   }
 
   for (const a of newlyUnlocked) {
+    trackEvent('achievement_unlocked', { achievementKey: a.key });
     enqueueToast(a);
   }
 

@@ -4,6 +4,7 @@ import { Search, Plus, Trash2, Edit } from "lucide-react";
 import TabBar from "../components/TabBar";
 import ContactModal from "../components/ContactModal";
 import ContactDrawer from "../components/ContactDrawer";
+import { trackEvent } from "../lib/trackEvent";
 
 const CATEGORY_LABELS = {
   family: "משפחה", advisor: "יועצים", lawyer: "עורכי דין",
@@ -133,7 +134,8 @@ export default function Contacts() {
     setDeleteTarget(null);
   }
 
-  async function handleSaved() {
+  async function handleSaved(isNew, category) {
+    if (isNew) trackEvent('contact_added', { category: category || 'unknown' });
     setModalContact(undefined);
     setLoading(true);
     await load();

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import PaywallModal from "./PaywallModal";
+import { trackEvent } from "../lib/trackEvent";
 
 const AUTHORITY_COLORS = {
   tax_authority: "#1E5FA8",
@@ -151,6 +152,7 @@ export default function TemplatesLibrary() {
     }
     setUsageCount(newCount);
 
+    trackEvent('template_completed', { templateKey: template.key });
     await base44.entities.UserTemplateCompletion.create({
       user_id: user.id,
       template_key: template.key,

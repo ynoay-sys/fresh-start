@@ -26,8 +26,13 @@ import Orders from './pages/Orders';
 import PublicLandingPage from './pages/PublicLandingPage';
 import Pricing from './pages/Pricing';
 import AutomationTest from './pages/admin/AutomationTest';
+import AnalyticsDashboard from './pages/admin/AnalyticsDashboard';
+import LaunchChecklist from './pages/admin/LaunchChecklist';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
+import Help from './pages/Help';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 
 function ComingSoon({ title }) {
   return (
@@ -82,6 +87,11 @@ const AuthenticatedApp = () => {
       </Route>
       <Route path="/p/:subdomain" element={<PublicLandingPage />} />
       <Route path="/admin/automation-test" element={<AutomationTest />} />
+      <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
+      <Route path="/admin/launch-checklist" element={<LaunchChecklist />} />
+      <Route path="/help" element={<Help />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
         <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

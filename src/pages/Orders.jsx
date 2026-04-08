@@ -7,6 +7,7 @@ import OrderCard from "../components/OrderCard";
 import AddOrderModal from "../components/AddOrderModal";
 import EmailConnectModal from "../components/EmailConnectModal";
 import AIParseModal from "../components/AIParseModal";
+import { trackEvent } from "../lib/trackEvent";
 
 const STATUS_TABS = [
   { key: "all", label: "הכל" },

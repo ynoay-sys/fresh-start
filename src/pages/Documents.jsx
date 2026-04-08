@@ -7,6 +7,7 @@ import LegalCheckButton from "../components/LegalCheckButton";
 import TabBar from "../components/TabBar";
 import DocumentChatbot from "../components/DocumentChatbot";
 import TemplatesLibrary from "../components/TemplatesLibrary";
+import { trackEvent } from "../lib/trackEvent";
 
 const TABS = [
   { key: "all", label: "הכל" },
@@ -158,7 +159,8 @@ function DocumentCard({ doc, onDelete, onSign, onConfidenceUpdate }) {
 
 export default function Documents() {
   const navigate = useNavigate();
-  const handleSign = (doc) => navigate(`/documents/sign/${doc.id}`);
+  useEffect(() => { trackEvent('module_visited', { module: '/documents' }); }, []);
+  const handleSign = (doc) => { trackEvent('document_signed', { hasLegalCheck: false }); navigate(`/documents/sign/${doc.id}`); };
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
