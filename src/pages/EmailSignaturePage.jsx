@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { Copy, Trash2, Monitor, Smartphone } from "lucide-react";
+import { Trash2, Monitor, Smartphone } from "lucide-react";
+import html2canvas from "html2canvas";
 import { format } from "date-fns";
 import { generateSignatureHtml } from "../lib/generateSignatureHtml";
 import InstallGuideModal from "../components/InstallGuideModal";
@@ -32,10 +33,11 @@ export default function EmailSignaturePage() {
   const [usageCount, setUsageCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [showInstall, setShowInstall] = useState(false);
+  const previewRef = useRef(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [mobilePreview, setMobilePreview] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [firstFreeToast, setFirstFreeToast] = useState(false);
 
   useEffect(() => {
@@ -152,11 +154,15 @@ export default function EmailSignaturePage() {
     setGeneratedHtml(sig.html_content || "");
   }
 
-  function copyHtml() {
-    navigator.clipboard.writeText(generatedHtml || previewHtml).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+  async function handleDownload() {
+    if (!previewRef.current) return;
+    setDownloading(true);
+    const canvas = await html2canvas(previewRef.current, { backgroundColor: "#ffffff", scale: 2 });
+    const link = document.createElement("a");
+    link.download = `חתימה-אימייל-${form.fullName?.split(" ")[0] || "שלי"}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+    setDownloading(false);
   }
 
   const f = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
@@ -266,20 +272,27 @@ export default function EmailSignaturePage() {
           </button>
 
           {/* Section D: Export */}
-          {(generatedHtml) && (
-            <div className="flex gap-2">
-              <button onClick={copyHtml}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                <Copy className="w-4 h-4" />
-                {copied ? "HTML הועתק ✓" : "העתק HTML"}
-              </button>
-              <button onClick={() => setShowInstall(true)}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium"
-                style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}>
-                📖 הוראות התקנה
-              </button>
-            </div>
-          )}
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-50"
+              style={{ backgroundColor: "#1E5FA8" }}
+            >
+              {downloading ? "מוריד..." : "⬇️ הורד חתימה"}
+            </button>
+            <button onClick={() => setShowInstall(true)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium"
+              style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}>
+              📖 הוראות התקנה
+            </button>
+            <a
+              href={`mailto:${form.email || ""}?subject=${encodeURIComponent("החתימה שלי")}&body=${encodeURIComponent("מצורפת תמונת החתימה שלך מ-Fresh Start")}`}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50"
+            >
+              📧 שלח לאימייל שלי
+            </a>
+          </div>
         </div>
 
         {/* RIGHT PANEL: Preview */}
@@ -304,7 +317,7 @@ export default function EmailSignaturePage() {
             <div className="p-6 min-h-64 flex items-start justify-start">
               <div style={{ maxWidth: mobilePreview ? 320 : "100%", width: "100%" }}>
                 <p className="text-xs text-gray-400 mb-3 border-b border-gray-100 pb-2">— חתימה —</p>
-                <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+                <div ref={previewRef} dangerouslySetInnerHTML={{ __html: previewHtml }} />
               </div>
             </div>
           </div>
@@ -354,8 +367,9 @@ export default function EmailSignaturePage() {
       {/* Modals */}
       {showInstall && (
         <InstallGuideModal
-          html={generatedHtml || previewHtml}
           onClose={() => setShowInstall(false)}
+          onDownload={() => { setShowInstall(false); handleDownload(); }}
+          userEmail={form.email}
         />
       )}
       {showPaywall && (

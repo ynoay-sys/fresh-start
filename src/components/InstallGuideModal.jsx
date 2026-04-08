@@ -1,48 +1,32 @@
 import { useState } from "react";
-import { X, Copy } from "lucide-react";
+import { X } from "lucide-react";
 
 const TABS = [
   { key: "gmail", label: "Gmail" },
   { key: "outlook", label: "Outlook" },
-  { key: "apple", label: "Apple Mail" },
+  { key: "whatsapp", label: "WhatsApp עסקי" },
 ];
 
 const STEPS = {
   gmail: [
-    'פתח את Gmail ועבור להגדרות (⚙️)',
-    "לחץ על 'ראה את כל ההגדרות'",
-    "גלול למטה ל'חתימה' ולחץ '+ צור חתימה חדשה'",
-    "בתיבה שנפתחת, לחץ על הכפתור '<>' (HTML)",
-    "הדבק את קוד ה-HTML שהעתקת",
-    "לחץ 'שמור שינויים' בתחתית הדף",
+    "הורד את תמונת החתימה בלחיצה על 'הורד חתימה'",
+    "בגמייל: הגדרות ← חתימה ← הוסף תמונה ← העלה מהמחשב ← בחר את הקובץ שהורדת",
+    "לחץ שמור שינויים — זהו!",
   ],
   outlook: [
-    "פתח Outlook ועבור לקובץ → אפשרויות",
-    "בחר 'דואר' → 'חתימות'",
-    "לחץ 'חדש' וצור חתימה",
-    "לחץ על כפתור HTML בעורך",
-    "הדבק את קוד ה-HTML",
-    "לחץ 'אישור'",
+    "הורד את תמונת החתימה",
+    "Outlook: קובץ ← אפשרויות ← דואר ← חתימות ← חדש ← הכנס תמונה ← בחר את הקובץ",
+    "לחץ אישור — זהו!",
   ],
-  apple: [
-    "פתח Mail → העדפות → חתימות",
-    "הוסף חתימה חדשה (+)",
-    "בטל את הסימון 'צור חתימה כטקסט בלבד'",
-    "גרור את קובץ ה-HTML לחלון החתימה",
-    "או: פתח את קוד ה-HTML בדפדפן, בחר הכל והעתק, הדבק ב-Apple Mail",
+  whatsapp: [
+    "הורד את תמונת החתימה",
+    "שמור אותה בטלפון",
+    "השתמש בה כתמונת פרופיל עסקית ב-WhatsApp",
   ],
 };
 
-export default function InstallGuideModal({ onClose, html }) {
+export default function InstallGuideModal({ onClose, onDownload, userEmail }) {
   const [activeTab, setActiveTab] = useState("gmail");
-  const [copied, setCopied] = useState(false);
-
-  function copyHtml() {
-    navigator.clipboard.writeText(html || "").then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
@@ -84,16 +68,21 @@ export default function InstallGuideModal({ onClose, html }) {
           </ol>
         </div>
 
-        {/* Copy button */}
-        <div className="px-6 pb-6">
+        {/* Action buttons */}
+        <div className="px-6 pb-6 flex flex-col gap-2">
           <button
-            onClick={copyHtml}
+            onClick={onDownload}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-medium"
-            style={{ backgroundColor: copied ? "#1A7A4A" : "#1E5FA8" }}
+            style={{ backgroundColor: "#1E5FA8" }}
           >
-            <Copy className="w-4 h-4" />
-            {copied ? "HTML הועתק ✓" : "העתק את קוד ה-HTML"}
+            ⬇️ הורד חתימה כתמונה
           </button>
+          <a
+            href={`mailto:${userEmail || ""}?subject=${encodeURIComponent("החתימה שלי")}&body=${encodeURIComponent("מצורפת תמונת החתימה שלך מ-Fresh Start")}`}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50"
+          >
+            📧 שלח לאימייל שלי
+          </a>
         </div>
       </div>
     </div>
