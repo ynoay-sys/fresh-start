@@ -16,6 +16,7 @@ const TABS = [
   { key: "license", label: "רישיונות" },
   { key: "receipt", label: "קבלות" },
   { key: "form", label: "טפסים" },
+  { key: "other", label: "אחר" },
   { key: "templates", label: "ספריית טפסים" },
 ];
 
