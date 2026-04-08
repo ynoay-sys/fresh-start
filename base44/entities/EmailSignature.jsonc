@@ -1,0 +1,46 @@
+{
+  "name": "EmailSignature",
+  "type": "object",
+  "properties": {
+    "html_content": {
+      "type": "string",
+      "description": "Generated HTML signature"
+    },
+    "style": {
+      "type": "string",
+      "enum": [
+        "modern",
+        "classic",
+        "minimal"
+      ],
+      "description": "Signature style"
+    },
+    "primary_color": {
+      "type": "string",
+      "description": "Primary color hex"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "business_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "include_avatar": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": []
+}

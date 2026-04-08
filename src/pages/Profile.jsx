@@ -414,6 +414,19 @@ export default function Profile() {
         )}
       </div>
 
+      {/* Email Signature Link */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 mb-4 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-blue-900">✉️ חתימת אימייל מקצועית</p>
+          <p className="text-xs text-blue-700 mt-0.5">צור חתימה לאימייל מפרטי הפרופיל שלך</p>
+        </div>
+        <button onClick={() => navigate("/documents/email-signature")}
+          className="text-sm font-medium px-4 py-2 rounded-lg text-white flex-shrink-0"
+          style={{ backgroundColor: "#1E5FA8" }}>
+          → יצירת חתימה ←
+        </button>
+      </div>
+
       {/* Section 4: משפחה */}
       <div className="bg-white rounded-xl border border-gray-200 mb-4 overflow-hidden">
         <SectionHeader

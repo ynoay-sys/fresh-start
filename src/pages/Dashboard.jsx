@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [aiUsage, setAiUsage] = useState(0);
   const [templateUsage, setTemplateUsage] = useState(0);
   const [monthPayments, setMonthPayments] = useState(0);
+  const [emailSigCount, setEmailSigCount] = useState(null);
 
   useEffect(() => { trackEvent('page_view', { module: '/dashboard' }); }, []);
 
@@ -111,6 +112,9 @@ export default function Dashboard() {
         return d.getMonth() === nowDate.getMonth() && d.getFullYear() === nowDate.getFullYear() && p.status === "completed";
       });
       setMonthPayments(thisMonth.reduce((s, p) => s + (p.amount_ils || 0), 0));
+
+      const emailSigs = await base44.entities.EmailSignature.filter({ created_by: user.email });
+      setEmailSigCount(emailSigs.length);
 
       // Profile completion banner
       const profileRec = (await base44.entities.UserProfile.filter({ created_by: user.email }))[0];
@@ -407,6 +411,27 @@ export default function Dashboard() {
               );
             })}
           </div>
+        )}
+      </div>
+
+      {/* Email Signature Widget */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-gray-800">✉️ חתימת אימייל</h2>
+          <button onClick={() => navigate("/documents/email-signature")} className="text-xs font-medium" style={{ color: "#1E5FA8" }}>
+            {emailSigCount > 0 ? "ערוך ←" : "יצירת חתימה ←"}
+          </button>
+        </div>
+        {emailSigCount === 0 || emailSigCount === null ? (
+          <div className="text-center py-3">
+            <p className="text-sm text-gray-500 mb-3">צור חתימה מקצועית לאימייל שלך</p>
+            <button onClick={() => navigate("/documents/email-signature")}
+              className="px-4 py-2 rounded-lg text-white text-xs font-medium" style={{ backgroundColor: "#1E5FA8" }}>
+              יצירת חתימה ←
+            </button>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-700">יש לך <strong>{emailSigCount}</strong> חתימות שמורות ✓</p>
         )}
       </div>
 

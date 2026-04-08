@@ -160,6 +160,7 @@ export default function Layout() {
   const DOC_SUB = [
     { label: "ארכיון", path: "/documents" },
     { label: "העלאה", path: "/documents/upload" },
+    { label: "חתימת אימייל", path: "/documents/email-signature" },
     { label: `טפסים${urgentTemplatesCount > 0 ? ` (${urgentTemplatesCount})` : ""}`, path: "/documents/templates" },
     { label: "חתימה", path: "/documents/sign/create" },
   ];

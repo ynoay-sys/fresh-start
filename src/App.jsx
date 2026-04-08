@@ -31,6 +31,7 @@ import LaunchChecklist from './pages/admin/LaunchChecklist';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import Help from './pages/Help';
+import EmailSignaturePage from './pages/EmailSignaturePage';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
         <Route path="/documents/upload" element={<DocumentUpload />} />
         <Route path="/documents/templates" element={<DocumentTemplatesPage />} />
         <Route path="/documents/sign/create" element={<SignatureCreate />} />
+        <Route path="/documents/email-signature" element={<EmailSignaturePage />} />
         <Route path="/documents/sign/:documentId" element={<DocumentSign />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/orders" element={<Orders />} />
