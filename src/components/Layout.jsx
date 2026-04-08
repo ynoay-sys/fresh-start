@@ -374,6 +374,16 @@ export default function Layout() {
               style={isActive("/settings") ? { backgroundColor: "#1E5FA8" } : {}}>
               <Settings className="w-4 h-4" /><span>הגדרות</span>
             </Link>
+            <Link to="/terms" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/terms") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              style={isActive("/terms") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <span className="w-4 h-4 text-center text-sm leading-none">📋</span><span>תנאי שימוש</span>
+            </Link>
+            <Link to="/privacy" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/privacy") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              style={isActive("/privacy") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <span className="w-4 h-4 text-center text-sm leading-none">🔒</span><span>מדיניות פרטיות</span>
+            </Link>
             <div className="border-t border-gray-100 my-2 mx-1" />
             <Link to="/help" onClick={closeSidebar}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/help") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
