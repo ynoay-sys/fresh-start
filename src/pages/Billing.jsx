@@ -111,6 +111,29 @@ export default function Billing() {
         <>
           {/* Mobile cards */}
           <div className="md:hidden space-y-3">
+            {payments.map(p => {
+              const cfg = PRICING_CONFIG[p.feature_key];
+              const statusInfo = STATUS_LABELS[p.status] || { label: p.status, cls: "bg-gray-100 text-gray-600" };
+              return (
+                <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="flex items-center gap-1.5 font-medium text-gray-800 text-sm">
+                      <span>{cfg?.icon || "💳"}</span>
+                      <span>{cfg?.label_he || p.feature_key}</span>
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusInfo.cls}`}>{statusInfo.label}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>{p.created_date ? format(new Date(p.created_date), "dd/MM/yyyy") : "—"}</span>
+                    <span className="font-bold text-gray-900 text-sm">₪{p.amount_ils}</span>
+                  </div>
+                  {p.gateway_ref && <p className="text-xs text-gray-400 font-mono mt-1">{p.gateway_ref}</p>}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop table */}
           <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
