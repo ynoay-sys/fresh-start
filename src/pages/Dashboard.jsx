@@ -41,7 +41,7 @@ export default function Dashboard() {
   const [templateUsage, setTemplateUsage] = useState(0);
   const [monthPayments, setMonthPayments] = useState(0);
 
-  useEffect(() => { trackEvent('module_visited', { module: '/dashboard' }); }, []);
+  useEffect(() => { trackEvent('page_view', { module: '/dashboard' }); }, []);
 
   useEffect(() => {
     async function load() {

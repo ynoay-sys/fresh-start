@@ -160,7 +160,7 @@ function DocumentCard({ doc, onDelete, onSign, onConfidenceUpdate }) {
 
 export default function Documents() {
   const navigate = useNavigate();
-  useEffect(() => { trackEvent('module_visited', { module: '/documents' }); }, []);
+  useEffect(() => { trackEvent('page_view', { module: '/documents' }); }, []);
   const handleSign = (doc) => { trackEvent('document_signed', { hasLegalCheck: false }); navigate(`/documents/sign/${doc.id}`); };
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);

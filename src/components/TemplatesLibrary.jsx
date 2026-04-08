@@ -152,7 +152,7 @@ export default function TemplatesLibrary() {
     }
     setUsageCount(newCount);
 
-    trackEvent('template_completed', { templateKey: template.key });
+    trackEvent('government_form_completed', { templateKey: template.key });
     await base44.entities.UserTemplateCompletion.create({
       user_id: user.id,
       template_key: template.key,
