@@ -216,20 +216,29 @@ export default function BusinessOpening() {
   const [portalStatus, setPortalStatus] = useState({});
 
   useEffect(() => {
-    async function load() {
-      const u = await base44.auth.me();
-      setUser(u);
-      let existing = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
-      if (existing.length === 0) {
-        const keys = ["bank_account", "vat_file", "tax_file", "nii"];
-        existing = await Promise.all(keys.map(k => base44.entities.BusinessOpeningStep.create({ step_key: k, status: "not_started" })));
+    async function load(attempt = 0) {
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        let existing = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
+        if (existing.length === 0) {
+          const keys = ["bank_account", "vat_file", "tax_file", "nii"];
+          existing = await Promise.all(keys.map(k => base44.entities.BusinessOpeningStep.create({ step_key: k, status: "not_started" })));
+        }
+        setSteps(existing);
+        const profiles = await base44.entities.UserProfile.filter({ created_by: u.email });
+        setProfile(profiles[0] || null);
+        setLoading(false);
+      } catch (err) {
+        if (attempt < 3) {
+          setTimeout(() => load(attempt + 1), 1000 * (attempt + 1));
+        } else {
+          setLoading(false);
+        }
       }
-      setSteps(existing);
-      const profiles = await base44.entities.UserProfile.filter({ created_by: u.email });
-      setProfile(profiles[0] || null);
-      setLoading(false);
     }
-    load();
+    const delay = setTimeout(() => load(), 300);
+    return () => clearTimeout(delay);
   }, []);
 
   useEffect(() => {
