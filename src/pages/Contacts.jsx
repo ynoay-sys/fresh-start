@@ -185,7 +185,7 @@ export default function Contacts() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 px-4 md:px-6 py-8">
+      <div className="flex-1 min-w-0 overflow-x-hidden px-4 md:px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">אנשי קשר</h1>
