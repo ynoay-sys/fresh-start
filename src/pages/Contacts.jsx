@@ -43,7 +43,7 @@ function ContactCard({ contact, onEdit, onDelete, onClick }) {
   return (
     <div
       className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col cursor-pointer"
-      style={{width:'100%', maxWidth:'100%', boxSizing:'border-box', padding:'12px 16px', overflowX:'hidden'}}
+      style={{width:'100%', maxWidth:'100%', boxSizing:'border-box', padding:'12px 16px', overflowX:'hidden', marginBottom:'8px'}}
       onClick={onClick}
     >
       {/* Avatar */}
@@ -55,9 +55,9 @@ function ContactCard({ contact, onEdit, onDelete, onClick }) {
       </div>
 
       {/* Name + Profession */}
-      <p className="font-bold text-gray-900 text-sm text-center mb-0.5 break-words">{contact.full_name}</p>
+      <p style={{fontWeight:'bold', fontSize:'14px', color:'#111827', textAlign:'center', marginBottom:'2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'100%', display:'block'}}>{contact.full_name}</p>
       {contact.profession && (
-        <p className="text-xs text-gray-400 text-center mb-2 break-words">{contact.profession}</p>
+        <p style={{fontSize:'12px', color:'#9CA3AF', textAlign:'center', marginBottom:'8px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'100%', display:'block'}}>{contact.profession}</p>
       )}
 
       {/* Category badge */}
@@ -68,9 +68,9 @@ function ContactCard({ contact, onEdit, onDelete, onClick }) {
       </div>
 
       {/* Contact info */}
-      <div className="text-xs text-gray-500 space-y-1 mb-4">
-        {contact.phone && <p className="break-words">📞 {contact.phone}</p>}
-        {contact.email && <p className="break-all">✉️ {contact.email}</p>}
+      <div style={{fontSize:'12px', color:'#6B7280', marginBottom:'16px', width:'100%'}}>
+        {contact.phone && <p style={{overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'100%', display:'block', marginBottom:'4px'}}>📞 {contact.phone}</p>}
+        {contact.email && <p style={{overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'100%', display:'block'}}>✉️ {contact.email}</p>}
       </div>
 
       {/* Actions */}
@@ -157,7 +157,7 @@ export default function Contacts() {
   const FILTER_CATEGORIES = Object.keys(CATEGORY_LABELS);
 
   return (
-    <div className="flex min-h-screen" dir="rtl">
+    <div style={{width:'100%', maxWidth:'100vw', overflowX:'hidden', boxSizing:'border-box'}} dir="rtl">
       {/* Category Sidebar */}
       <aside className="hidden md:flex flex-col w-52 border-l border-gray-100 bg-white px-3 py-6 shrink-0">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">קטגוריות</p>
@@ -186,7 +186,7 @@ export default function Contacts() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 min-w-0 overflow-x-hidden px-4 md:px-6 py-8">
+      <div style={{flex:1, minWidth:0, overflowX:'hidden', padding:'32px 12px', boxSizing:'border-box', maxWidth:'100%'}}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">אנשי קשר</h1>
@@ -211,7 +211,7 @@ export default function Contacts() {
         </div>
 
         {/* Mobile category tabs */}
-        <div className="mb-4 md:hidden">
+        <div style={{width:'100%', maxWidth:'100%', overflowX:'hidden', boxSizing:'border-box', marginBottom:'16px'}} className="md:hidden">
           <TabBar
             tabs={[
               { key: "all", label: `הכל (${contacts.length})` },

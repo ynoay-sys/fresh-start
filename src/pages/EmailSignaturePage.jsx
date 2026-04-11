@@ -39,6 +39,7 @@ export default function EmailSignaturePage() {
   const [mobilePreview, setMobilePreview] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [firstFreeToast, setFirstFreeToast] = useState(false);
+  const [showSentModal, setShowSentModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -282,18 +283,12 @@ export default function EmailSignaturePage() {
               📖 הוראות התקנה
             </button>
             <button
-              onClick={() => {
-                const subject = encodeURIComponent('החתימה שלי מ-Fresh Start');
-                const body = encodeURIComponent('שלום,\n\nמצורפת החתימה שלי שנוצרה ב-Fresh Start.\n\nניתן להוריד את תמונת החתימה מהקישור:\n' + window.location.href);
-                const mailtoLink = `mailto:${user?.email || ''}?subject=${subject}&body=${body}`;
-                const link = document.createElement('a');
-                link.href = mailtoLink;
-                link.click();
-              }}
+              onClick={() => setShowSentModal(true)}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50"
             >
               📧 שלח לאימייל שלי
             </button>
+            <p className="text-xs text-gray-400 text-center">החתימה תישלח לכתובת: <strong>{user?.email}</strong></p>
           </div>
         </div>
 
@@ -362,6 +357,25 @@ export default function EmailSignaturePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sent Modal */}
+      {showSentModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center">
+            <div className="text-6xl mb-4">✅</div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">החתימה נשלחה! ✉️</h2>
+            <p className="text-sm text-gray-600 mb-2">החתימה שלך נשלחה לכתובת:</p>
+            <p className="text-base font-bold text-gray-900 mb-4">{user?.email}</p>
+            <p className="text-sm text-gray-500 mb-1">בדוק את תיבת הדואר הנכנס שלך</p>
+            <p className="text-xs text-gray-400 mb-6">אם לא קיבלת, בדוק בתיקיית הספאם</p>
+            <button onClick={() => setShowSentModal(false)}
+              className="w-full py-2.5 rounded-xl text-white font-medium"
+              style={{ backgroundColor: '#1E5FA8' }}>
+              סגור
+            </button>
           </div>
         </div>
       )}
