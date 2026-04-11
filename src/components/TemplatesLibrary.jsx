@@ -198,17 +198,34 @@ export default function TemplatesLibrary() {
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
           <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: "#1E5FA8" }} />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 16, justifyContent: 'flex-end', width: '100%', padding: '8px 0' }}>
-          {[
-            { label: "דחופים שלא הושלמו", count: highUncompleted, color: "#AA1111" },
-            { label: "בינוניים שלא הושלמו", count: mediumUncompleted, color: "#C25A00" },
-            { label: "הושלמו", count: completedCount, color: "#1A7A4A" },
-          ].map(({ label, count, color }) => (
-            <span key={label} style={{ display: 'inline-flex', flexDirection: 'row', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
-              <span style={{ fontSize: 13, color: "#444444" }}>{label}: {count}</span>
-              <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: color, border: '1px solid rgba(0,0,0,0.2)', flexShrink: 0, display: 'inline-block' }} />
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '16px',
+          justifyContent: 'flex-end',
+          width: '100%',
+          padding: '8px 0'
+        }}>
+          <div style={{display:'inline-flex', flexDirection:'row', alignItems:'center', gap:'6px', whiteSpace:'nowrap'}}>
+            <span style={{fontSize:'13px', color:'#444'}}>
+              {'דחופים שלא הושלמו: ' + highUncompleted}
             </span>
-          ))}
+            <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:'#AA1111', border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}></span>
+          </div>
+          <div style={{display:'inline-flex', flexDirection:'row', alignItems:'center', gap:'6px', whiteSpace:'nowrap'}}>
+            <span style={{fontSize:'13px', color:'#444'}}>
+              {'בינוניים שלא הושלמו: ' + mediumUncompleted}
+            </span>
+            <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:'#C25A00', border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}></span>
+          </div>
+          <div style={{display:'inline-flex', flexDirection:'row', alignItems:'center', gap:'6px', whiteSpace:'nowrap'}}>
+            <span style={{fontSize:'13px', color:'#444'}}>
+              {'הושלמו: ' + completedCount}
+            </span>
+            <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:'#1A7A4A', border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}></span>
+          </div>
         </div>
       </div>
 
