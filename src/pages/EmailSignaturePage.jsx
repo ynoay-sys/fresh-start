@@ -39,7 +39,6 @@ export default function EmailSignaturePage() {
   const [mobilePreview, setMobilePreview] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [firstFreeToast, setFirstFreeToast] = useState(false);
-  const [showSentModal, setShowSentModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -275,20 +274,45 @@ export default function EmailSignaturePage() {
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-50"
               style={{ backgroundColor: "#1E5FA8" }}
             >
-              {downloading ? "מוריד..." : "⬇️ הורד חתימה"}
+              {downloading ? "מוריד..." : "הורד חתימה כתמונה ⬇️"}
             </button>
-            <button onClick={() => setShowInstall(true)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium"
-              style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}>
-              📖 הוראות התקנה
-            </button>
+            <div className="relative group">
+              <button
+                onClick={() => window.open('https://mail.google.com', '_blank')}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium"
+                style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}
+              >
+                📧 פתח Gmail לשמירת החתימה
+              </button>
+              <div className="hidden group-hover:block absolute bottom-full mb-2 right-0 left-0 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 text-center z-10">
+                הורד את התמונה תחילה, ואז הוסף אותה בהגדרות Gmail
+              </div>
+            </div>
             <button
-              onClick={() => setShowSentModal(true)}
+              onClick={() => {
+                const html = previewHtml || generatedHtml;
+                const blob = new Blob([`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>חתימת אימייל</title></head><body style="padding:24px;font-family:Arial,sans-serif;">${html}</body></html>`], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'חתימה-אימייל.html';
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50"
             >
-              📧 שלח לאימייל שלי
+              📄 שמור כ-HTML
             </button>
-            <p className="text-xs text-gray-400 text-center">החתימה תישלח לכתובת: <strong>{user?.email}</strong></p>
+            <div className="rounded-xl p-4 text-sm text-right" style={{ backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE' }}>
+              <p className="font-bold text-blue-800 mb-2">💡 כיצד להשתמש בחתימה:</p>
+              <ol className="text-blue-700 space-y-1 text-xs list-decimal list-inside">
+                <li>לחץ 'הורד חתימה כתמונה'</li>
+                <li>שמור את הקובץ במחשב שלך</li>
+                <li>פתח Gmail ← הגדרות ← חתימה</li>
+                <li>לחץ 'הוסף תמונה' ← 'העלה מהמחשב'</li>
+                <li>בחר את הקובץ שהורדת</li>
+              </ol>
+            </div>
           </div>
         </div>
 
@@ -357,25 +381,6 @@ export default function EmailSignaturePage() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Sent Modal */}
-      {showSentModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center">
-            <div className="text-6xl mb-4">✅</div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">החתימה נשלחה! ✉️</h2>
-            <p className="text-sm text-gray-600 mb-2">החתימה שלך נשלחה לכתובת:</p>
-            <p className="text-base font-bold text-gray-900 mb-4">{user?.email}</p>
-            <p className="text-sm text-gray-500 mb-1">בדוק את תיבת הדואר הנכנס שלך</p>
-            <p className="text-xs text-gray-400 mb-6">אם לא קיבלת, בדוק בתיקיית הספאם</p>
-            <button onClick={() => setShowSentModal(false)}
-              className="w-full py-2.5 rounded-xl text-white font-medium"
-              style={{ backgroundColor: '#1E5FA8' }}>
-              סגור
-            </button>
           </div>
         </div>
       )}
