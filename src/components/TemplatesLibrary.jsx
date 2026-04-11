@@ -166,9 +166,9 @@ export default function TemplatesLibrary() {
       action_url: "/documents/templates", is_read: false,
     });
 
+    setCompletions(prev => [...prev, { template_key: template.key }]);
     setToast("הטופס סומן כהושלם ✓");
     setTimeout(() => setToast(""), 3000);
-    load();
   }
 
   const filtered = templates.filter(t => {
