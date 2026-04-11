@@ -42,7 +42,8 @@ function ContactCard({ contact, onEdit, onDelete, onClick }) {
 
   return (
     <div
-      className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col p-5 cursor-pointer"
+      className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col cursor-pointer"
+      style={{width:'100%', maxWidth:'100%', boxSizing:'border-box', padding:'12px 16px', overflowX:'hidden'}}
       onClick={onClick}
     >
       {/* Avatar */}
@@ -233,7 +234,7 @@ export default function Contacts() {
 
         {/* Grid */}
         {!loading && filtered.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div style={{width:'100%', maxWidth:'100%', boxSizing:'border-box', overflowX:'hidden', display:'flex', flexDirection:'column', gap:'8px'}}>
             {filtered.map(c => (
               <ContactCard
                 key={c.id} contact={c}

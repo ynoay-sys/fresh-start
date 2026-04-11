@@ -54,7 +54,8 @@ export default function EmailSignaturePage() {
 
       const p = profiles[0] || {};
       const lp = landingPages[0];
-      const website = lp?.subdomain ? `freshstart.app/${lp.subdomain}` : "";
+      const validSubdomain = lp?.subdomain && lp.subdomain !== '-' && lp.is_published;
+      const website = validSubdomain ? lp.subdomain : "";
 
       setForm(f => ({
         ...f,
@@ -251,13 +252,7 @@ export default function EmailSignaturePage() {
                 </div>
               </div>
 
-              {/* Avatar */}
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.includeAvatar}
-                  onChange={e => f("includeAvatar", e.target.checked)}
-                  className="accent-blue-600 w-4 h-4" />
-                <span className="text-sm text-gray-700">הכלל תמונת פרופיל (ראשי תיבות)</span>
-              </label>
+
             </div>
           </div>
 
@@ -286,12 +281,19 @@ export default function EmailSignaturePage() {
               style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}>
               📖 הוראות התקנה
             </button>
-            <a
-              href={`mailto:${form.email || ""}?subject=${encodeURIComponent("החתימה שלי")}&body=${encodeURIComponent("מצורפת תמונת החתימה שלך מ-Fresh Start")}`}
+            <button
+              onClick={() => {
+                const subject = encodeURIComponent('החתימה שלי מ-Fresh Start');
+                const body = encodeURIComponent('שלום,\n\nמצורפת החתימה שלי שנוצרה ב-Fresh Start.\n\nניתן להוריד את תמונת החתימה מהקישור:\n' + window.location.href);
+                const mailtoLink = `mailto:${user?.email || ''}?subject=${subject}&body=${body}`;
+                const link = document.createElement('a');
+                link.href = mailtoLink;
+                link.click();
+              }}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50"
             >
               📧 שלח לאימייל שלי
-            </a>
+            </button>
           </div>
         </div>
 

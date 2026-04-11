@@ -188,7 +188,7 @@ export default function TemplatesLibrary() {
   }
 
   return (
-    <div dir="rtl">
+    <div dir="rtl" style={{direction:'rtl', textAlign:'right'}}>
       {/* Progress summary */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
         <div className="flex items-center justify-between mb-2">
@@ -198,32 +198,17 @@ export default function TemplatesLibrary() {
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
           <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: "#1E5FA8" }} />
         </div>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: '16px',
-          justifyContent: 'flex-end',
-          width: '100%',
-          padding: '8px 0'
-        }}>
+        <div style={{direction:'rtl', display:'flex', flexDirection:'row', flexWrap:'wrap', alignItems:'center', gap:'16px', justifyContent:'flex-start', width:'100%', padding:'8px 0'}}>
           <div style={{display:'inline-flex', flexDirection:'row', alignItems:'center', gap:'6px', whiteSpace:'nowrap'}}>
-            <span style={{fontSize:'13px', color:'#444'}}>
-              {'דחופים שלא הושלמו: ' + highUncompleted}
-            </span>
+            <span style={{fontSize:'13px', color:'#444444'}}>דחופים שלא הושלמו: {highUncompleted}</span>
             <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:'#AA1111', border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}></span>
           </div>
           <div style={{display:'inline-flex', flexDirection:'row', alignItems:'center', gap:'6px', whiteSpace:'nowrap'}}>
-            <span style={{fontSize:'13px', color:'#444'}}>
-              {'בינוניים שלא הושלמו: ' + mediumUncompleted}
-            </span>
+            <span style={{fontSize:'13px', color:'#444444'}}>בינוניים שלא הושלמו: {mediumUncompleted}</span>
             <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:'#C25A00', border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}></span>
           </div>
           <div style={{display:'inline-flex', flexDirection:'row', alignItems:'center', gap:'6px', whiteSpace:'nowrap'}}>
-            <span style={{fontSize:'13px', color:'#444'}}>
-              {'הושלמו: ' + completedCount}
-            </span>
+            <span style={{fontSize:'13px', color:'#444444'}}>הושלמו: {completedCount}</span>
             <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:'#1A7A4A', border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}></span>
           </div>
         </div>
