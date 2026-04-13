@@ -15,10 +15,8 @@ export default function OnboardingChecklist() {
   const [checks, setChecks] = useState({});
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
-  const [dismissed, setDismissed] = useState(() => !!localStorage.getItem("onboardingComplete"));
 
   useEffect(() => {
-    if (dismissed) return;
     async function load() {
       const user = await base44.auth.me();
       const [profiles, docs, clients, milestones, steps] = await Promise.all([
@@ -28,38 +26,25 @@ export default function OnboardingChecklist() {
         base44.entities.Milestone.filter({ created_by: user.email, type: "vision" }),
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email, status: "completed" }),
       ]);
-      const newChecks = {
+      setChecks({
         profile: !!(profiles[0]?.first_name),
         document: docs.length > 0,
         client: clients.length > 0,
         vision: milestones.length > 0,
         business: steps.length > 0,
-      };
-      setChecks(newChecks);
+      });
       setLoading(false);
-
-      const doneCount = Object.values(newChecks).filter(Boolean).length;
-      if (doneCount >= 5) {
-        localStorage.setItem("onboardingComplete", "true");
-        setTimeout(() => setDismissed(true), 3000);
-      }
     }
     load();
-  }, [dismissed]);
+  }, []);
 
-  if (dismissed || loading) return null;
+  if (loading) return null;
 
   const doneCount = Object.values(checks).filter(Boolean).length;
   const allDone = doneCount >= 5;
   const pct = Math.round((doneCount / 5) * 100);
 
-  if (allDone) {
-    return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-6 text-center" dir="rtl">
-        <p className="text-lg font-bold text-green-700">🎉 כל הצעדים הראשונים הושלמו! אתה מוכן!</p>
-      </div>
-    );
-  }
+  if (allDone) return null;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl mb-6 overflow-hidden" dir="rtl">

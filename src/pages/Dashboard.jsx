@@ -3,7 +3,7 @@ import { formatDistanceToNow, isToday, isYesterday, format, isAfter } from "date
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import BusinessProgressMap from "../components/BusinessProgressMap";
-import OnboardingChecklist from "../components/OnboardingChecklist";
+import OnboardingChecklist from "../components/OnboardingChecklist.jsx";
 import LaunchCelebration from "../components/LaunchCelebration";
 import { ACHIEVEMENT_DEFS } from "../lib/achievements";
 import WelcomeModal from "../components/WelcomeModal";
