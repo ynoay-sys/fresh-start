@@ -60,11 +60,14 @@ export default function Dashboard() {
         base44.entities.Notification.filter({ created_by: user.email }),
       ]);
       // Batch 2
-      const [milestonesRes, allTemplates, completions, achievementsRes, landingPages, ordersRes, usageRecords, payments] = await Promise.all([
+      const [milestonesRes, allTemplates, completions, achievementsRes] = await Promise.all([
         base44.entities.Milestone.filter({ created_by: user.email }),
         base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
         base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
         base44.entities.Achievement.filter({ created_by: user.email }),
+      ]);
+      // Batch 3
+      const [landingPages, ordersRes, usageRecords, payments] = await Promise.all([
         base44.entities.LandingPage.filter({ created_by: user.email }),
         base44.entities.Order.filter({ created_by: user.email }, "-created_date"),
         base44.entities.UserFeatureUsage.filter({ created_by: user.email }),
