@@ -19,13 +19,11 @@ export default function OnboardingChecklist() {
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      const [profiles, docs, clients, milestones, steps] = await Promise.all([
-        base44.entities.UserProfile.filter({ created_by: user.email }),
-        base44.entities.Document.filter({ created_by: user.email }),
-        base44.entities.Client.filter({ created_by: user.email }),
-        base44.entities.Milestone.filter({ created_by: user.email, type: "vision" }),
-        base44.entities.BusinessOpeningStep.filter({ created_by: user.email, status: "completed" }),
-      ]);
+      const profiles = await base44.entities.UserProfile.filter({ created_by: user.email });
+      const docs = await base44.entities.Document.filter({ created_by: user.email });
+      const clients = await base44.entities.Client.filter({ created_by: user.email });
+      const milestones = await base44.entities.Milestone.filter({ created_by: user.email, type: "vision" });
+      const steps = await base44.entities.BusinessOpeningStep.filter({ created_by: user.email, status: "completed" });
       setChecks({
         profile: !!(profiles[0]?.first_name),
         document: docs.length > 0,
