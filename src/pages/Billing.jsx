@@ -66,6 +66,9 @@ export default function Billing() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8" dir="rtl" style={{ overflowX: 'hidden', width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
+      <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#1E5FA8', cursor: 'pointer', fontSize: '14px', fontFamily: 'Rubik, sans-serif', padding: '8px 0', marginBottom: '8px' }}>
+        <span>→</span><span>חזרה</span>
+      </button>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">היסטוריית תשלומים</h1>
         {payments.length > 0 && (

@@ -137,8 +137,11 @@ AUTOMATION_MODE = ${results.mode}`;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4" dir="rtl">
+    <div className="min-h-screen bg-gray-50 py-10 px-4" dir="rtl" style={{ fontFamily: 'Rubik, sans-serif' }}>
       <div className="max-w-2xl mx-auto space-y-6">
+        <button onClick={() => window.history.back()} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#1E5FA8', cursor: 'pointer', fontSize: '14px', fontFamily: 'Rubik, sans-serif', padding: '8px 0' }}>
+          <span>→</span><span>חזרה</span>
+        </button>
 
         {/* Header */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center">

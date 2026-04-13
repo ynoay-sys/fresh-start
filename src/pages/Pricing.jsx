@@ -89,6 +89,9 @@ export default function Pricing() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8" dir="rtl">
+      <button onClick={() => window.history.back()} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#1E5FA8', cursor: 'pointer', fontSize: '14px', fontFamily: 'Rubik, sans-serif', padding: '8px 0', marginBottom: '8px' }}>
+        <span>→</span><span>חזרה</span>
+      </button>
       {/* Header */}
       <div className="text-center mb-10">
         <span className="inline-block px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full mb-4">
