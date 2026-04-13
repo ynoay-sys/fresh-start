@@ -119,17 +119,20 @@ export default function Dashboard() {
       const emailSigs = await base44.entities.EmailSignature.filter({ created_by: user.email });
       setEmailSigCount(emailSigs.length);
 
+      // Profile completion banner
+      const profileRec = (await base44.entities.UserProfile.filter({ created_by: user.email }))[0];
+
       // Launch celebration check
       if (!localStorage.getItem('launchCelebrated')) {
+        const visionsRes = await base44.entities.Milestone.filter({ created_by: user.email, type: 'vision' });
         const allOnboardingDone = !!(profileRec?.first_name) &&
           docs.length > 0 && clients.length > 0 &&
-          (await base44.entities.Milestone.filter({ created_by: user.email, type: 'vision' })).length > 0 &&
+          visionsRes.length > 0 &&
           completedSteps.length >= 4;
         if (allOnboardingDone) setShowCelebration(true);
       }
 
       // Profile completion banner
-      const profileRec = (await base44.entities.UserProfile.filter({ created_by: user.email }))[0];
       if (profileRec) {
         const fields = ['first_name','last_name','phone_il','business_name','vat_number','address'];
         const filled = fields.filter(f => !!profileRec[f]).length;
