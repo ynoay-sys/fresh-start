@@ -1,4 +1,6 @@
 import { Toaster } from "@/components/ui/toaster"
+import { lazy, Suspense } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -21,17 +23,17 @@ import Schedule from './pages/Schedule';
 import Notifications from './pages/Notifications';
 import Vision from './pages/Vision';
 import DocumentTemplatesPage from './pages/DocumentTemplatesPage';
-import LandingPageBuilder from './pages/LandingPageBuilder';
+const LandingPageBuilder = lazy(() => import('./pages/LandingPageBuilder'));
 import Orders from './pages/Orders';
 import PublicLandingPage from './pages/PublicLandingPage';
 import Pricing from './pages/Pricing';
 import AutomationTest from './pages/admin/AutomationTest';
-import AnalyticsDashboard from './pages/admin/AnalyticsDashboard';
+const AnalyticsDashboard = lazy(() => import('./pages/admin/AnalyticsDashboard'));
 import LaunchChecklist from './pages/admin/LaunchChecklist';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import Help from './pages/Help';
-import EmailSignaturePage from './pages/EmailSignaturePage';
+const EmailSignaturePage = lazy(() => import('./pages/EmailSignaturePage'));
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 
@@ -71,7 +73,7 @@ const AuthenticatedApp = () => {
         <Route path="/documents/upload" element={<DocumentUpload />} />
         <Route path="/documents/templates" element={<DocumentTemplatesPage />} />
         <Route path="/documents/sign/create" element={<SignatureCreate />} />
-        <Route path="/documents/email-signature" element={<EmailSignaturePage />} />
+        <Route path="/documents/email-signature" element={<Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><EmailSignaturePage /></Suspense>} />
         <Route path="/documents/sign/:documentId" element={<DocumentSign />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/orders" element={<Orders />} />
@@ -80,7 +82,7 @@ const AuthenticatedApp = () => {
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/vision" element={<Vision />} />
-        <Route path="/landing-page" element={<LandingPageBuilder />} />
+        <Route path="/landing-page" element={<Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><LandingPageBuilder /></Suspense>} />
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/progress" element={<Progress />} />
@@ -89,7 +91,7 @@ const AuthenticatedApp = () => {
       </Route>
       <Route path="/p/:subdomain" element={<PublicLandingPage />} />
       <Route path="/admin/automation-test" element={<AutomationTest />} />
-      <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
+      <Route path="/admin/analytics" element={<Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><AnalyticsDashboard /></Suspense>} />
       <Route path="/admin/launch-checklist" element={<LaunchChecklist />} />
       <Route path="/help" element={<Help />} />
       <Route path="/terms" element={<Terms />} />
@@ -101,6 +103,7 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
@@ -109,6 +112,7 @@ function App() {
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

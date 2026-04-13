@@ -348,8 +348,9 @@ export default function Layout() {
                 )}
               </Link>
             ))}
-            {/* Bottom Items */}
-            <div className="border-t border-gray-100 my-3 mx-1" />
+
+            {/* Section 2 — Personal */}
+            <hr style={{border:'none', borderTop:'1px solid #E5E7EB', margin:'8px 0'}}/>
             <Link to="/profile" onClick={closeSidebar}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/profile") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
               style={isActive("/profile") ? { backgroundColor: "#1E5FA8" } : {}}>
@@ -360,10 +361,13 @@ export default function Layout() {
               style={isActive("/progress") ? { backgroundColor: "#1E5FA8" } : {}}>
               <Trophy className="w-4 h-4" /><span>ההתקדמות שלי 🏆</span>
             </Link>
+
+            {/* Section 3 — Business */}
+            <hr style={{border:'none', borderTop:'1px solid #E5E7EB', margin:'8px 0'}}/>
             <Link to="/pricing" onClick={closeSidebar}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/pricing") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
               style={isActive("/pricing") ? { backgroundColor: "#1E5FA8" } : {}}>
-              <span className="w-4 h-4 text-center text-sm leading-none">💰</span><span>תמחור</span>
+              <span className="w-4 h-4 text-center text-sm leading-none">💰</span><span>תמחיר</span>
             </Link>
             <Link to="/billing" onClick={closeSidebar}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/billing") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
@@ -375,6 +379,27 @@ export default function Layout() {
               style={isActive("/settings") ? { backgroundColor: "#1E5FA8" } : {}}>
               <Settings className="w-4 h-4" /><span>הגדרות</span>
             </Link>
+
+            {/* Section 4 — Admin */}
+            <hr style={{border:'none', borderTop:'1px solid #E5E7EB', margin:'8px 0'}}/>
+            <Link to="/admin/analytics" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-xs font-medium transition-colors text-gray-500 hover:bg-gray-100 ${isActive("/admin/analytics") ? "!text-white" : ""}`}
+              style={isActive("/admin/analytics") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <span>📊</span><span>אנליטיקה</span>
+            </Link>
+            <Link to="/admin/launch-checklist" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-xs font-medium transition-colors text-gray-500 hover:bg-gray-100 ${isActive("/admin/launch-checklist") ? "!text-white" : ""}`}
+              style={isActive("/admin/launch-checklist") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <span>🚀</span><span>מוכנות לשחרור</span>
+            </Link>
+
+            {/* Help, Terms, Privacy, Logout */}
+            <hr style={{border:'none', borderTop:'1px solid #E5E7EB', margin:'8px 0'}}/>
+            <Link to="/help" onClick={closeSidebar}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/help") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              style={isActive("/help") ? { backgroundColor: "#1E5FA8" } : {}}>
+              <span className="w-4 h-4 text-center text-sm leading-none">❓</span><span>עזרה</span>
+            </Link>
             <Link to="/terms" onClick={closeSidebar}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/terms") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
               style={isActive("/terms") ? { backgroundColor: "#1E5FA8" } : {}}>
@@ -385,23 +410,7 @@ export default function Layout() {
               style={isActive("/privacy") ? { backgroundColor: "#1E5FA8" } : {}}>
               <span className="w-4 h-4 text-center text-sm leading-none">🔒</span><span>מדיניות פרטיות</span>
             </Link>
-            <div className="border-t border-gray-100 my-2 mx-1" />
-            <Link to="/help" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/help") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
-              style={isActive("/help") ? { backgroundColor: "#1E5FA8" } : {}}>
-              <span className="w-4 h-4 text-center text-sm leading-none">❓</span><span>עזרה</span>
-            </Link>
-            <Link to="/admin/analytics" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/admin/analytics") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
-              style={isActive("/admin/analytics") ? { backgroundColor: "#1E5FA8" } : {}}>
-              <span className="w-4 h-4 text-center text-sm leading-none">📊</span><span>אנליטיקה</span>
-            </Link>
-            <Link to="/admin/launch-checklist" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/admin/launch-checklist") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
-              style={isActive("/admin/launch-checklist") ? { backgroundColor: "#1E5FA8" } : {}}>
-              <span className="w-4 h-4 text-center text-sm leading-none">🚀</span><span>מוכנות לשחרור</span>
-            </Link>
-            <div className="border-t border-gray-100 my-2 mx-1" />
+            <hr style={{border:'none', borderTop:'1px solid #E5E7EB', margin:'8px 0'}}/>
             <button onClick={() => base44.auth.logout("/")}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer">
               <LogOut className="w-4 h-4" /><span>התנתקות</span>

@@ -3,6 +3,8 @@ import { formatDistanceToNow, isToday, isYesterday, format, isAfter } from "date
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import BusinessProgressMap from "../components/BusinessProgressMap";
+import OnboardingChecklist from "../components/OnboardingChecklist";
+import LaunchCelebration from "../components/LaunchCelebration";
 import { ACHIEVEMENT_DEFS } from "../lib/achievements";
 import WelcomeModal from "../components/WelcomeModal";
 import { trackEvent } from "../lib/trackEvent";
@@ -41,6 +43,7 @@ export default function Dashboard() {
   const [templateUsage, setTemplateUsage] = useState(0);
   const [monthPayments, setMonthPayments] = useState(0);
   const [emailSigCount, setEmailSigCount] = useState(null);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   useEffect(() => { trackEvent('page_view', { module: '/dashboard' }); document.title = 'לוח בקרה | Fresh Start'; }, []);
 
@@ -116,6 +119,15 @@ export default function Dashboard() {
       const emailSigs = await base44.entities.EmailSignature.filter({ created_by: user.email });
       setEmailSigCount(emailSigs.length);
 
+      // Launch celebration check
+      if (!localStorage.getItem('launchCelebrated')) {
+        const allOnboardingDone = !!(profileRec?.first_name) &&
+          docs.length > 0 && clients.length > 0 &&
+          (await base44.entities.Milestone.filter({ created_by: user.email, type: 'vision' })).length > 0 &&
+          completedSteps.length >= 4;
+        if (allOnboardingDone) setShowCelebration(true);
+      }
+
       // Profile completion banner
       const profileRec = (await base44.entities.UserProfile.filter({ created_by: user.email }))[0];
       if (profileRec) {
@@ -132,6 +144,7 @@ export default function Dashboard() {
 
   return (
     <div className="px-4 py-8 max-w-4xl mx-auto" dir="rtl">
+      {showCelebration && <LaunchCelebration onDismiss={() => setShowCelebration(false)} />}
       {showWelcome && <WelcomeModal onComplete={() => setShowWelcome(false)} />}
 
       {showProfileBanner && (
@@ -155,6 +168,9 @@ export default function Dashboard() {
         <StatCard emoji="✅" label="שלבי פתיחה" value={stepsCompleted != null ? `${stepsCompleted}/4` : "—"} onClick={() => navigate("/business-opening")} />
         <StatCard emoji="📈" label="התקדמות" value="←" onClick={() => navigate("/progress")} />
       </div>
+
+      {/* Onboarding Checklist */}
+      <OnboardingChecklist />
 
       {/* Business Opening Widget */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
