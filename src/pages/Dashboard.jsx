@@ -50,10 +50,12 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      const [docs, contacts, clients, completedSteps, allSteps, eventsRes, notifsRes] = await Promise.all([
+      const [docs, contacts, clients] = await Promise.all([
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
         base44.entities.Contact.filter({ created_by: user.email }),
         base44.entities.Client.filter({ created_by: user.email }),
+      ]);
+      const [completedSteps, allSteps, eventsRes, notifsRes] = await Promise.all([
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email, status: "completed" }),
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
         base44.entities.ScheduleEvent.filter({ created_by: user.email }),
