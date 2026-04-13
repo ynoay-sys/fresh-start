@@ -39,6 +39,8 @@ export default function EmailSignaturePage() {
   const [mobilePreview, setMobilePreview] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [firstFreeToast, setFirstFreeToast] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -186,6 +188,11 @@ export default function EmailSignaturePage() {
           החתימה הראשונה שלך — חינם! 🎉
         </div>
       )}
+      {showToast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-white text-sm font-medium shadow-lg z-50" style={{ backgroundColor: '#1A7A4A' }}>
+          {toastMessage}
+        </div>
+      )}
 
       {savedSigs.length >= MAX_SIGS && (
         <div className="mb-4 px-5 py-3 rounded-xl bg-orange-50 border border-orange-200 text-orange-800 text-sm font-medium">
@@ -269,48 +276,42 @@ export default function EmailSignaturePage() {
           {/* Section D: Export */}
           <div className="flex flex-col gap-2">
             <button
-              onClick={handleDownload}
-              disabled={downloading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-50"
+              onClick={() => {
+                const el = document.getElementById('signature-preview');
+                if (el) {
+                  const range = document.createRange();
+                  range.selectNode(el);
+                  const sel = window.getSelection();
+                  sel.removeAllRanges();
+                  sel.addRange(range);
+                  document.execCommand('copy');
+                  sel.removeAllRanges();
+                  setToastMessage('החתימה הועתקה ללוח! ✓');
+                  setShowToast(true);
+                  setTimeout(() => setShowToast(false), 3000);
+                }
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-medium"
               style={{ backgroundColor: "#1E5FA8" }}
             >
-              {downloading ? "מוריד..." : "הורד חתימה כתמונה ⬇️"}
+              📋 העתק חתימה ללוח
             </button>
-            <div className="relative group">
-              <button
-                onClick={() => window.open('https://mail.google.com', '_blank')}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium"
-                style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}
-              >
-                📧 פתח Gmail לשמירת החתימה
-              </button>
-              <div className="hidden group-hover:block absolute bottom-full mb-2 right-0 left-0 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 text-center z-10">
-                הורד את התמונה תחילה, ואז הוסף אותה בהגדרות Gmail
-              </div>
-            </div>
             <button
-              onClick={() => {
-                const html = previewHtml || generatedHtml;
-                const blob = new Blob([`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>חתימת אימייל</title></head><body style="padding:24px;font-family:Arial,sans-serif;">${html}</body></html>`], { type: 'text/html;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'חתימה-אימייל.html';
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50"
+              onClick={handleDownload}
+              disabled={downloading}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium disabled:opacity-50"
+              style={{ borderColor: "#1E5FA8", color: "#1E5FA8" }}
             >
-              📄 שמור כ-HTML
+              {downloading ? 'מוריד...' : 'הורד כתמונה ⬇️'}
             </button>
-            <div className="rounded-xl p-4 text-sm text-right" style={{ backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE' }}>
-              <p className="font-bold text-blue-800 mb-2">💡 כיצד להשתמש בחתימה:</p>
-              <ol className="text-blue-700 space-y-1 text-xs list-decimal list-inside">
-                <li>לחץ 'הורד חתימה כתמונה'</li>
-                <li>שמור את הקובץ במחשב שלך</li>
-                <li>פתח Gmail ← הגדרות ← חתימה</li>
-                <li>לחץ 'הוסף תמונה' ← 'העלה מהמחשב'</li>
-                <li>בחר את הקובץ שהורדת</li>
+            <div style={{ background:'#EAF2FB', border:'1px solid #B8D4F0', borderRadius:'12px', padding:'16px', marginTop:'8px', direction:'rtl', textAlign:'right' }}>
+              <p style={{ fontWeight:'bold', color:'#1E5FA8', marginBottom:'12px' }}>📋 כיצד להוסיף את החתימה ל-Gmail:</p>
+              <ol style={{ paddingRight:'20px', margin:0, lineHeight:'1.8', color:'#333', fontSize:'14px' }}>
+                <li>לחץ "העתק חתימה ללוח" למעלה</li>
+                <li>פתח Gmail ← הגדרות ← ראה את כל ההגדרות</li>
+                <li>גלול ל"חתימה" ← לחץ "צור חתימה חדשה"</li>
+                <li>בתיבת העריכה: לחץ Ctrl+V (או Cmd+V במק)</li>
+                <li>לחץ "שמור שינויים" — זהו! ✅</li>
               </ol>
             </div>
           </div>
@@ -338,7 +339,7 @@ export default function EmailSignaturePage() {
             <div className="p-6 min-h-64 flex items-start justify-start">
               <div style={{ maxWidth: mobilePreview ? 320 : "100%", width: "100%" }}>
                 <p className="text-xs text-gray-400 mb-3 border-b border-gray-100 pb-2">— חתימה —</p>
-                <div ref={previewRef} dangerouslySetInnerHTML={{ __html: previewHtml }} />
+                <div id="signature-preview" ref={previewRef} dangerouslySetInnerHTML={{ __html: previewHtml }} />
               </div>
             </div>
           </div>
