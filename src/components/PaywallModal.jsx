@@ -59,7 +59,7 @@ export default function PaywallModal({ featureKey, usedCount = 0, onClose, onPay
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" style={{ overflow:'hidden', width:'100%', boxSizing:'border-box' }}>
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900">🔒 תכונה בתשלום</h2>
@@ -94,14 +94,15 @@ export default function PaywallModal({ featureKey, usedCount = 0, onClose, onPay
                   dir="ltr"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 text-left"
                 />
-                <div className="flex gap-3">
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', width:'100%', boxSizing:'border-box', overflow:'hidden' }}>
                   <input
                     type="text"
                     value={expiry}
                     onChange={e => setExpiry(formatExpiry(e.target.value))}
                     placeholder="MM/YY"
                     dir="ltr"
-                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 text-left"
+                    style={{ width:'100%', boxSizing:'border-box', minWidth:0 }}
+                    className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 text-left"
                   />
                   <input
                     type="password"
@@ -109,7 +110,8 @@ export default function PaywallModal({ featureKey, usedCount = 0, onClose, onPay
                     onChange={e => setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
                     placeholder="CVV"
                     dir="ltr"
-                    className="w-24 border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 text-left"
+                    style={{ width:'100%', boxSizing:'border-box', minWidth:0 }}
+                    className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 text-left"
                   />
                 </div>
                 <input
