@@ -270,11 +270,11 @@ export default function BusinessOpening() {
     }
   }, [allDone]);
 
-  const getStep = (key) => steps.find(s => s.step_key === key) || { status: "not_started" };
+  const getStep = (key) => steps.find(s => s.step_key === key);
 
   const notStartedSteps = STEP_DEFS.filter(d => {
     const s = getStep(d.key);
-    return s.status === "not_started" || s.status === "queued";
+    return !s || s.status === "not_started" || s.status === "queued";
   });
   const estimatedMinutes = notStartedSteps.length * 30;
   const nextStep = notStartedSteps[0];
@@ -342,7 +342,7 @@ export default function BusinessOpening() {
             {(() => {
               const incomplete = STEP_DEFS.filter(d => {
                 const s = getStep(d.key);
-                return s.status !== "completed" && s.status !== "partial";
+                return !s || (s.status !== "completed" && s.status !== "partial");
               });
               if (incomplete.length === 0) return null;
               return (
@@ -368,6 +368,7 @@ export default function BusinessOpening() {
       {/* Step Cards */}
       {STEP_DEFS.map(def => {
         const step = getStep(def.key);
+        if (!step) return null;
         return (
           <div key={def.key}>
             {portalStatus[def.key] === "error" && step.status !== "completed" && step.status !== "partial" && (
@@ -389,7 +390,7 @@ export default function BusinessOpening() {
       {activeWizard && (
         <BusinessStepWizard
           stepKey={activeWizard}
-          stepRecord={getStep(activeWizard)}
+          stepRecord={getStep(activeWizard) || { status: "not_started" }}
           profile={profile}
           user={user}
           startConfirmed={getStep(activeWizard)?.status === "partial"}

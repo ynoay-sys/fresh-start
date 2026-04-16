@@ -96,7 +96,7 @@ const AuthenticatedApp = () => {
       <Route path="/help" element={<Help />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
-        <Route path="*" element={<PageNotFound />} />
+      <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
