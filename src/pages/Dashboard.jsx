@@ -44,6 +44,7 @@ export default function Dashboard() {
   const [monthPayments, setMonthPayments] = useState(0);
   const [emailSigCount, setEmailSigCount] = useState(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [onboardingChecks, setOnboardingChecks] = useState(null);
 
   useEffect(() => { trackEvent('page_view', { module: '/dashboard' }); document.title = 'לוח בקרה | Fresh Start'; }, []);
 
@@ -121,15 +122,28 @@ export default function Dashboard() {
       });
       setMonthPayments(thisMonth.reduce((s, p) => s + (p.amount_ils || 0), 0));
 
-      const emailSigs = await base44.entities.EmailSignature.filter({ created_by: user.email });
+      const [emailSigs, profileArr] = await Promise.all([
+        base44.entities.EmailSignature.filter({ created_by: user.email }),
+        base44.entities.UserProfile.filter({ created_by: user.email }),
+      ]);
       setEmailSigCount(emailSigs.length);
 
       // Profile completion banner
-      const profileRec = (await base44.entities.UserProfile.filter({ created_by: user.email }))[0];
+      const profileRec = profileArr[0];
 
-      // Launch celebration check
+      // Onboarding checks (reuse already-fetched data)
+      const visionsForChecklist = milestonesRes.filter(m => m.type === "vision");
+      setOnboardingChecks({
+        profile: !!(profileRec?.first_name),
+        document: docs.length > 0,
+        client: clients.length > 0,
+        vision: visionsForChecklist.length > 0,
+        business: completedSteps.length > 0,
+      });
+
+      // Launch celebration check (reuse already-fetched milestones)
       if (!localStorage.getItem('launchCelebrated')) {
-        const visionsRes = await base44.entities.Milestone.filter({ created_by: user.email, type: 'vision' });
+        const visionsRes = milestonesRes.filter(m => m.type === 'vision');
         const allOnboardingDone = !!(profileRec?.first_name) &&
           docs.length > 0 && clients.length > 0 &&
           visionsRes.length > 0 &&
@@ -178,7 +192,7 @@ export default function Dashboard() {
       </div>
 
       {/* Onboarding Checklist */}
-      <OnboardingChecklist />
+      <OnboardingChecklist checks={onboardingChecks} />
 
       {/* Business Opening Widget */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">

@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
 
 const ITEMS = [
   { key: "profile", label: "השלם את הפרופיל שלך", link: "/profile" },
@@ -10,33 +9,12 @@ const ITEMS = [
   { key: "business", label: "השלם שלב אחד בפתיחת העסק", link: "/business-opening" },
 ];
 
-export default function OnboardingChecklist() {
+// checks: { profile, document, client, vision, business } — all booleans, passed from parent
+export default function OnboardingChecklist({ checks }) {
   const navigate = useNavigate();
-  const [checks, setChecks] = useState({});
-  const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const user = await base44.auth.me();
-      const profiles = await base44.entities.UserProfile.filter({ created_by: user.email });
-      const docs = await base44.entities.Document.filter({ created_by: user.email });
-      const clients = await base44.entities.Client.filter({ created_by: user.email });
-      const milestones = await base44.entities.Milestone.filter({ created_by: user.email, type: "vision" });
-      const steps = await base44.entities.BusinessOpeningStep.filter({ created_by: user.email, status: "completed" });
-      setChecks({
-        profile: !!(profiles[0]?.first_name),
-        document: docs.length > 0,
-        client: clients.length > 0,
-        vision: milestones.length > 0,
-        business: steps.length > 0,
-      });
-      setLoading(false);
-    }
-    load();
-  }, []);
-
-  if (loading) return null;
+  if (!checks) return null;
 
   const doneCount = Object.values(checks).filter(Boolean).length;
   const allDone = doneCount >= 5;
