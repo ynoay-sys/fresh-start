@@ -1,4 +1,4 @@
-import { X, Phone, Mail, Globe, Clock, Edit } from "lucide-react";
+import { X, Phone, Mail, Globe, Clock, Edit, Trash2 } from "lucide-react";
 
 const CATEGORY_LABELS = {
   family: "משפחה", advisor: "יועצים", lawyer: "עורכי דין",
@@ -21,7 +21,7 @@ function Row({ label, value }) {
   );
 }
 
-export default function ContactDrawer({ contact, onClose, onEdit }) {
+export default function ContactDrawer({ contact, onClose, onEdit, onDelete }) {
   if (!contact) return null;
 
   const initials = contact.full_name?.split(" ").map(w => w[0]).slice(0, 2).join("") || "?";
@@ -36,9 +36,16 @@ export default function ContactDrawer({ contact, onClose, onEdit }) {
       <div className="relative bg-white w-full max-w-sm h-full overflow-y-auto shadow-2xl flex flex-col z-10">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <button onClick={onEdit} className="flex items-center gap-1.5 text-sm font-medium" style={{ color: "#1E5FA8" }}>
-            <Edit className="w-4 h-4" /> ערוך
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={onEdit} className="flex items-center gap-1.5 text-sm font-medium" style={{ color: "#1E5FA8" }}>
+              <Edit className="w-4 h-4" /> ערוך
+            </button>
+            {onDelete && (
+              <button onClick={() => onDelete(contact)} className="flex items-center gap-1.5 text-sm font-medium text-red-500 hover:text-red-700">
+                <Trash2 className="w-4 h-4" /> מחק
+              </button>
+            )}
+          </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-5 h-5" />
           </button>

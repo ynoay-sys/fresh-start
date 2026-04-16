@@ -119,6 +119,7 @@ export default function Contacts() {
   const [modalContact, setModalContact] = useState(undefined); // undefined=closed, null=add, obj=edit
   const [drawerContact, setDrawerContact] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [toast, setToast] = useState("");
 
   async function load() {
     const user = await base44.auth.me();
@@ -133,6 +134,9 @@ export default function Contacts() {
     await base44.entities.Contact.delete(contact.id);
     setContacts(c => c.filter(x => x.id !== contact.id));
     setDeleteTarget(null);
+    setDrawerContact(null);
+    setToast(`${contact.full_name} נמחק ✓`);
+    setTimeout(() => setToast(""), 3000);
   }
 
   async function handleSaved(isNew, category) {
@@ -158,6 +162,7 @@ export default function Contacts() {
 
   return (
     <div style={{width:'100%', maxWidth:'100vw', overflowX:'hidden', boxSizing:'border-box'}} dir="rtl">
+      <div style={{display:'flex', flexDirection:'row', width:'100%'}}>
       {/* Category Sidebar */}
       <aside className="hidden md:flex flex-col w-52 border-l border-gray-100 bg-white px-3 py-6 shrink-0">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">קטגוריות</p>
@@ -264,6 +269,7 @@ export default function Contacts() {
           </div>
         )}
         </div>
+      </div>{/* end flex row */}
 
       {/* Modals */}
       {modalContact !== undefined && (
@@ -278,6 +284,7 @@ export default function Contacts() {
           contact={drawerContact}
           onClose={() => setDrawerContact(null)}
           onEdit={() => { setModalContact(drawerContact); setDrawerContact(null); }}
+          onDelete={(c) => { setDrawerContact(null); setDeleteTarget(c); }}
         />
       )}
       {deleteTarget && (
@@ -286,6 +293,11 @@ export default function Contacts() {
           onConfirm={() => handleDelete(deleteTarget)}
           onCancel={() => setDeleteTarget(null)}
         />
+      )}
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium shadow-lg z-50">
+          {toast}
+        </div>
       )}
     </div>
   );
