@@ -51,37 +51,23 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      // Batch 1 — core counts
+      // Batch A — core counts (3 requests)
       const [docs, contacts, clients] = await Promise.all([
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
         base44.entities.Contact.filter({ created_by: user.email }),
         base44.entities.Client.filter({ created_by: user.email }),
       ]);
-      // Batch 2 — steps + events + notifications
-      const [completedSteps, allSteps, eventsRes, notifsRes] = await Promise.all([
-        base44.entities.BusinessOpeningStep.filter({ created_by: user.email, status: "completed" }),
+      setDocCount(docs.length);
+      setContactCount(contacts.length);
+      setClientCount(clients.length);
+
+      // Batch B — steps + events (3 requests)
+      const [allSteps, eventsRes, notifsRes] = await Promise.all([
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
         base44.entities.ScheduleEvent.filter({ created_by: user.email }),
         base44.entities.Notification.filter({ created_by: user.email }),
       ]);
-      // Batch 3 — milestones + templates
-      const [milestonesRes, allTemplates, completions, achievementsRes] = await Promise.all([
-        base44.entities.Milestone.filter({ created_by: user.email }),
-        base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
-        base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
-        base44.entities.Achievement.filter({ created_by: user.email }),
-      ]);
-      // Batch 4 — commerce + usage
-      const [landingPages, ordersRes, usageRecords, payments] = await Promise.all([
-        base44.entities.LandingPage.filter({ created_by: user.email }),
-        base44.entities.Order.filter({ created_by: user.email }, "-created_date"),
-        base44.entities.UserFeatureUsage.filter({ created_by: user.email }),
-        base44.entities.Payment.filter({ created_by: user.email }),
-      ]);
-
-      setDocCount(docs.length);
-      setContactCount(contacts.length);
-      setClientCount(clients.length);
+      const completedSteps = allSteps.filter(s => s.status === "completed");
       setStepsCompleted(completedSteps.length);
       setSteps(allSteps);
 
@@ -97,6 +83,12 @@ export default function Dashboard() {
         .slice(0, 3);
       setRecentNotifs(unread);
 
+      // Batch C — milestones + profile (2 requests)
+      const [milestonesRes, profileArr] = await Promise.all([
+        base44.entities.Milestone.filter({ created_by: user.email }),
+        base44.entities.UserProfile.filter({ created_by: user.email }),
+      ]);
+
       const active = milestonesRes.filter(m => m.type === "goal" && m.status === "active").slice(0, 3);
       setActiveGoals(active);
       const allTasks = milestonesRes.filter(m => m.type === "task");
@@ -104,35 +96,7 @@ export default function Dashboard() {
       for (const g of active) { byGoal[g.id] = allTasks.filter(t => t.parent_id === g.id); }
       setTasksByGoal(byGoal);
 
-      const completedKeys = completions.map(c => c.template_key);
-      setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
-      setAchievements(achievementsRes);
-      setLandingPage(landingPages[0] || null);
-
-      const activeOrdersList = ordersRes.filter(o => o.status === "in_transit" || o.status === "delayed").slice(0, 3);
-      setActiveOrders(activeOrdersList);
-
-      const aiRec = usageRecords.find(r => r.feature_key === "ai_query");
-      const tmplRec = usageRecords.find(r => r.feature_key === "template_download");
-      setAiUsage(aiRec?.usage_count || 0);
-      setTemplateUsage(tmplRec?.usage_count || 0);
-
-      const nowDate = new Date();
-      const thisMonth = payments.filter(p => {
-        const d = new Date(p.created_date);
-        return d.getMonth() === nowDate.getMonth() && d.getFullYear() === nowDate.getFullYear() && p.status === "completed";
-      });
-      setMonthPayments(thisMonth.reduce((s, p) => s + (p.amount_ils || 0), 0));
-
-      // Batch 5 — email sig + profile
-      const emailSigs = await base44.entities.EmailSignature.filter({ created_by: user.email });
-      const profileArr = await base44.entities.UserProfile.filter({ created_by: user.email });
-      setEmailSigCount(emailSigs.length);
-
-      // Profile completion banner
       const profileRec = profileArr[0];
-
-      // Onboarding checks (reuse already-fetched data)
       const visionsForChecklist = milestonesRes.filter(m => m.type === "vision");
       setOnboardingChecks({
         profile: !!(profileRec?.first_name),
@@ -142,7 +106,47 @@ export default function Dashboard() {
         business: completedSteps.length > 0,
       });
 
-      // Launch celebration check (reuse already-fetched milestones)
+      // Batch D — templates + completions (2 requests)
+      const [allTemplates, completions] = await Promise.all([
+        base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
+        base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
+      ]);
+      const completedKeys = completions.map(c => c.template_key);
+      setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
+
+      // Batch E — orders + achievements (2 requests)
+      const [ordersRes, achievementsRes] = await Promise.all([
+        base44.entities.Order.filter({ created_by: user.email }, "-created_date"),
+        base44.entities.Achievement.filter({ created_by: user.email }),
+      ]);
+      setAchievements(achievementsRes);
+      const activeOrdersList = ordersRes.filter(o => o.status === "in_transit" || o.status === "delayed").slice(0, 3);
+      setActiveOrders(activeOrdersList);
+
+      // Batch F — usage + landing + email sig (3 requests)
+      const [usageRecords, landingPages, emailSigs] = await Promise.all([
+        base44.entities.UserFeatureUsage.filter({ created_by: user.email }),
+        base44.entities.LandingPage.filter({ created_by: user.email }),
+        base44.entities.EmailSignature.filter({ created_by: user.email }),
+      ]);
+      setLandingPage(landingPages[0] || null);
+      setEmailSigCount(emailSigs.length);
+
+      const aiRec = usageRecords.find(r => r.feature_key === "ai_query");
+      const tmplRec = usageRecords.find(r => r.feature_key === "template_download");
+      setAiUsage(aiRec?.usage_count || 0);
+      setTemplateUsage(tmplRec?.usage_count || 0);
+
+      // payments — single request
+      const payments = await base44.entities.Payment.filter({ created_by: user.email });
+      const nowDate = new Date();
+      const thisMonth = payments.filter(p => {
+        const d = new Date(p.created_date);
+        return d.getMonth() === nowDate.getMonth() && d.getFullYear() === nowDate.getFullYear() && p.status === "completed";
+      });
+      setMonthPayments(thisMonth.reduce((s, p) => s + (p.amount_ils || 0), 0));
+
+      // Launch celebration check
       if (!localStorage.getItem('launchCelebrated')) {
         const visionsRes = milestonesRes.filter(m => m.type === 'vision');
         const allOnboardingDone = !!(profileRec?.first_name) &&
