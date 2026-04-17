@@ -162,7 +162,8 @@ export default function Dashboard() {
         if (pct < 50 && daysSinceReg > 1 && !dismissed) setShowProfileBanner(true);
       }
     }
-    load();
+    const t = setTimeout(() => load(), 1200);
+    return () => clearTimeout(t);
   }, []);
 
   return (

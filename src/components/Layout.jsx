@@ -178,7 +178,7 @@ export default function Layout() {
       setTodayEventCount(events.filter(e => new Date(e.start_time).toDateString() === todayStr).length);
     }
     // Stagger to avoid rate-limiting when Dashboard also loads on mount
-    const t = setTimeout(() => loadSidebarData().catch(() => {}), 800);
+    const t = setTimeout(() => loadSidebarData().catch(() => {}), 300);
     return () => clearTimeout(t);
   }, []);
 
