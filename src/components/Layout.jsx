@@ -143,42 +143,52 @@ export default function Layout() {
     async function loadSidebarData() {
       const u = await base44.auth.me();
       setUser(u);
-      // Batch 1
-      const [notifs, docs, contacts, clients, steps, goals] = await Promise.all([
+
+      // Step 1 — critical: notifs + user counts (3 requests)
+      const [notifs, docs, clients] = await Promise.all([
         base44.entities.Notification.filter({ created_by: u.email }),
         base44.entities.Document.filter({ created_by: u.email, status: "active" }),
-        base44.entities.Contact.filter({ created_by: u.email }),
         base44.entities.Client.filter({ created_by: u.email }),
-        base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" }),
-        base44.entities.Milestone.filter({ created_by: u.email, type: "goal", status: "active" }),
-      ]);
-      // Batch 2
-      const [templates, completions, landingPages, orders, events] = await Promise.all([
-        base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
-        base44.entities.UserTemplateCompletion.filter({ created_by: u.email }),
-        base44.entities.LandingPage.filter({ created_by: u.email }),
-        base44.entities.Order.filter({ created_by: u.email }),
-        base44.entities.ScheduleEvent.filter({ created_by: u.email }),
       ]);
       setAllNotifs(notifs);
       setUnreadCount(notifs.filter(n => !n.is_read).length);
       setDocCount(docs.length);
-      setContactCount(contacts.length);
       setClientCount(clients.length);
+
+      // Step 2 — contacts + steps + goals (3 requests)
+      const [contacts, steps, goals] = await Promise.all([
+        base44.entities.Contact.filter({ created_by: u.email }),
+        base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" }),
+        base44.entities.Milestone.filter({ created_by: u.email, type: "goal", status: "active" }),
+      ]);
+      setContactCount(contacts.length);
       setStepsCompleted(steps.length);
       setActiveGoalCount(goals.length);
-      const completedKeys = completions.map(c => c.template_key);
-      setUrgentTemplatesCount(templates.filter(t => !completedKeys.includes(t.key)).length);
-      setLandingPagePublished(landingPages[0]?.is_published || false);
+
+      // Step 3 — orders + events (2 requests)
+      const [orders, events] = await Promise.all([
+        base44.entities.Order.filter({ created_by: u.email }),
+        base44.entities.ScheduleEvent.filter({ created_by: u.email }),
+      ]);
       const delayed = orders.filter(o => o.status === "delayed" || (o.status === "in_transit" && o.expected_date && new Date(o.expected_date) < new Date())).length;
       const inTransit = orders.filter(o => o.status === "in_transit").length;
       if (delayed > 0) { setOrderBadge(delayed); setOrderBadgeColor("#AA1111"); }
       else if (inTransit > 0) { setOrderBadge(inTransit); setOrderBadgeColor("#1E5FA8"); }
       const todayStr = new Date().toDateString();
       setTodayEventCount(events.filter(e => new Date(e.start_time).toDateString() === todayStr).length);
+
+      // Step 4 — templates + completions + landing (3 requests)
+      const [templates, completions, landingPages] = await Promise.all([
+        base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
+        base44.entities.UserTemplateCompletion.filter({ created_by: u.email }),
+        base44.entities.LandingPage.filter({ created_by: u.email }),
+      ]);
+      const completedKeys = completions.map(c => c.template_key);
+      setUrgentTemplatesCount(templates.filter(t => !completedKeys.includes(t.key)).length);
+      setLandingPagePublished(landingPages[0]?.is_published || false);
     }
-    // Stagger to avoid rate-limiting when Dashboard also loads on mount
-    const t = setTimeout(() => loadSidebarData().catch(() => {}), 300);
+    // Layout starts at 200ms; Dashboard is delayed to 3000ms so they don't overlap
+    const t = setTimeout(() => loadSidebarData().catch(() => {}), 200);
     return () => clearTimeout(t);
   }, []);
 
