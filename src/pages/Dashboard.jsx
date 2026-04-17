@@ -51,25 +51,27 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
+      // Batch 1 — core counts
       const [docs, contacts, clients] = await Promise.all([
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
         base44.entities.Contact.filter({ created_by: user.email }),
         base44.entities.Client.filter({ created_by: user.email }),
       ]);
+      // Batch 2 — steps + events + notifications
       const [completedSteps, allSteps, eventsRes, notifsRes] = await Promise.all([
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email, status: "completed" }),
         base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
         base44.entities.ScheduleEvent.filter({ created_by: user.email }),
         base44.entities.Notification.filter({ created_by: user.email }),
       ]);
-      // Batch 2
+      // Batch 3 — milestones + templates
       const [milestonesRes, allTemplates, completions, achievementsRes] = await Promise.all([
         base44.entities.Milestone.filter({ created_by: user.email }),
         base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
         base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
         base44.entities.Achievement.filter({ created_by: user.email }),
       ]);
-      // Batch 3
+      // Batch 4 — commerce + usage
       const [landingPages, ordersRes, usageRecords, payments] = await Promise.all([
         base44.entities.LandingPage.filter({ created_by: user.email }),
         base44.entities.Order.filter({ created_by: user.email }, "-created_date"),
@@ -122,10 +124,9 @@ export default function Dashboard() {
       });
       setMonthPayments(thisMonth.reduce((s, p) => s + (p.amount_ils || 0), 0));
 
-      const [emailSigs, profileArr] = await Promise.all([
-        base44.entities.EmailSignature.filter({ created_by: user.email }),
-        base44.entities.UserProfile.filter({ created_by: user.email }),
-      ]);
+      // Batch 5 — email sig + profile
+      const emailSigs = await base44.entities.EmailSignature.filter({ created_by: user.email });
+      const profileArr = await base44.entities.UserProfile.filter({ created_by: user.email });
       setEmailSigCount(emailSigs.length);
 
       // Profile completion banner

@@ -177,7 +177,9 @@ export default function Layout() {
       const todayStr = new Date().toDateString();
       setTodayEventCount(events.filter(e => new Date(e.start_time).toDateString() === todayStr).length);
     }
-    loadSidebarData().catch(() => {});
+    // Stagger to avoid rate-limiting when Dashboard also loads on mount
+    const t = setTimeout(() => loadSidebarData().catch(() => {}), 800);
+    return () => clearTimeout(t);
   }, []);
 
   // Auto-expand docs menu when on a docs route
