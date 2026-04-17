@@ -10,6 +10,7 @@ import NotificationBellPanel from "./NotificationBellPanel";
 import AchievementToast from "./AchievementToast";
 import { checkAndUnlockAchievements } from "../lib/achievements";
 import { generateNotifications } from "../lib/generateNotifications";
+import { isAdmin } from "../lib/userRole";
 
 const MOBILE_NAV = [
   { icon: Building2, label: "פתיחת עסק", path: "/business-opening" },
@@ -93,10 +94,39 @@ export default function Layout() {
   const [docsExpanded, setDocsExpanded] = useState(
     location.pathname.startsWith("/documents")
   );
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
 
   useEffect(() => {
     generateNotifications().catch(() => {});
     checkAndUnlockAchievements().catch(() => {});
+    isAdmin().then(setUserIsAdmin);
+  }, []);
+
+  // Session timeout
+  useEffect(() => {
+    let warnTimeout;
+    let logoutTimeout;
+    const resetAll = () => {
+      clearTimeout(warnTimeout);
+      clearTimeout(logoutTimeout);
+      warnTimeout = setTimeout(() => {
+        const stay = window.confirm('הפעלתך עומדת לפוג עקב חוסר פעילות.\n\nלחץ אישור כדי להישאר מחובר.');
+        if (!stay) { window.location.href = '/login'; return; }
+        resetAll();
+      }, 25 * 60 * 1000);
+      logoutTimeout = setTimeout(() => {
+        window.alert('הפעלתך פגה. אנא התחבר מחדש.');
+        window.location.href = '/login';
+      }, 30 * 60 * 1000);
+    };
+    resetAll();
+    const events = ['click', 'keydown', 'scroll', 'mousemove', 'touchstart'];
+    events.forEach(e => window.addEventListener(e, resetAll, { passive: true }));
+    return () => {
+      clearTimeout(warnTimeout);
+      clearTimeout(logoutTimeout);
+      events.forEach(e => window.removeEventListener(e, resetAll));
+    };
   }, []);
 
   // Real-time sync for business opening badge
@@ -380,18 +410,38 @@ export default function Layout() {
               <Settings className="w-4 h-4" /><span>הגדרות</span>
             </Link>
 
-            {/* Section 4 — Admin */}
-            <hr style={{border:'none', borderTop:'1px solid #E5E7EB', margin:'8px 0'}}/>
-            <Link to="/admin/analytics" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-xs font-medium transition-colors text-gray-500 hover:bg-gray-100 ${isActive("/admin/analytics") ? "!text-white" : ""}`}
-              style={isActive("/admin/analytics") ? { backgroundColor: "#1E5FA8" } : {}}>
-              <span>📊</span><span>אנליטיקה</span>
-            </Link>
-            <Link to="/admin/launch-checklist" onClick={closeSidebar}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-xs font-medium transition-colors text-gray-500 hover:bg-gray-100 ${isActive("/admin/launch-checklist") ? "!text-white" : ""}`}
-              style={isActive("/admin/launch-checklist") ? { backgroundColor: "#1E5FA8" } : {}}>
-              <span>🚀</span><span>מוכנות לשחרור</span>
-            </Link>
+            {/* Section 4 — Admin (visible to admins only) */}
+            {userIsAdmin && (
+              <>
+                <hr style={{border:'none', borderTop:'1px solid #E5E7EB', margin:'8px 0'}}/>
+                <p className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">ניהול מערכת</p>
+                <Link to="/admin/users" onClick={closeSidebar}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-xs font-medium transition-colors text-gray-500 hover:bg-gray-100 ${isActive("/admin/users") ? "!text-white" : ""}`}
+                  style={isActive("/admin/users") ? { backgroundColor: "#1E5FA8" } : {}}>
+                  <span>👥</span><span>ניהול משתמשים</span>
+                </Link>
+                <Link to="/admin/content" onClick={closeSidebar}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-xs font-medium transition-colors text-gray-500 hover:bg-gray-100 ${isActive("/admin/content") ? "!text-white" : ""}`}
+                  style={isActive("/admin/content") ? { backgroundColor: "#1E5FA8" } : {}}>
+                  <span>📝</span><span>ניהול תוכן</span>
+                </Link>
+                <Link to="/admin/analytics" onClick={closeSidebar}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-xs font-medium transition-colors text-gray-500 hover:bg-gray-100 ${isActive("/admin/analytics") ? "!text-white" : ""}`}
+                  style={isActive("/admin/analytics") ? { backgroundColor: "#1E5FA8" } : {}}>
+                  <span>📊</span><span>אנליטיקה</span>
+                </Link>
+                <Link to="/admin/launch-checklist" onClick={closeSidebar}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-xs font-medium transition-colors text-gray-500 hover:bg-gray-100 ${isActive("/admin/launch-checklist") ? "!text-white" : ""}`}
+                  style={isActive("/admin/launch-checklist") ? { backgroundColor: "#1E5FA8" } : {}}>
+                  <span>🚀</span><span>מוכנות לשחרור</span>
+                </Link>
+                <Link to="/admin/automation-test" onClick={closeSidebar}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-xs font-medium transition-colors text-gray-500 hover:bg-gray-100 ${isActive("/admin/automation-test") ? "!text-white" : ""}`}
+                  style={isActive("/admin/automation-test") ? { backgroundColor: "#1E5FA8" } : {}}>
+                  <span>⚙️</span><span>בדיקת אוטומציה</span>
+                </Link>
+              </>
+            )}
 
             {/* Help, Terms, Privacy, Logout */}
             <hr style={{border:'none', borderTop:'1px solid #E5E7EB', margin:'8px 0'}}/>

@@ -1,0 +1,38 @@
+{
+  "name": "PricingConfig",
+  "type": "object",
+  "properties": {
+    "feature_key": {
+      "type": "string",
+      "enum": [
+        "template_download",
+        "ai_query",
+        "email_sig",
+        "domain",
+        "automation",
+        "extra_storage"
+      ],
+      "description": "Feature identifier"
+    },
+    "label_he": {
+      "type": "string",
+      "description": "Hebrew label"
+    },
+    "price_ils": {
+      "type": "number",
+      "description": "Price in ILS"
+    },
+    "free_quota": {
+      "type": "number",
+      "default": 0,
+      "description": "Free usage quota"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Emoji icon"
+    }
+  },
+  "required": [
+    "feature_key"
+  ]
+}

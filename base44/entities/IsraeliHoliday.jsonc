@@ -1,0 +1,28 @@
+{
+  "name": "IsraeliHoliday",
+  "type": "object",
+  "properties": {
+    "name_he": {
+      "type": "string",
+      "description": "Hebrew holiday name"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Holiday date"
+    },
+    "year": {
+      "type": "number",
+      "description": "Year"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this holiday is active"
+    }
+  },
+  "required": [
+    "name_he",
+    "date"
+  ]
+}

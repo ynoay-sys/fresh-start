@@ -140,6 +140,17 @@
           }
         }
       }
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "super_admin",
+        "admin",
+        "partner",
+        "user"
+      ],
+      "default": "user",
+      "description": "App role for access control"
     }
   },
   "required": []

@@ -1,21 +1,6 @@
 import { base44 } from "@/api/base44Client";
 
-const ISRAELI_HOLIDAYS_2026 = [
-  { name: "פורים", date: "2026-03-03" },
-  { name: "פסח (ערב)", date: "2026-04-01" },
-  { name: "פסח", date: "2026-04-02" },
-  { name: "שביעי של פסח", date: "2026-04-08" },
-  { name: "יום הזיכרון לשואה ולגבורה", date: "2026-04-23" },
-  { name: "יום הזיכרון", date: "2026-05-11" },
-  { name: "יום העצמאות", date: "2026-05-12" },
-  { name: "ל״ג בעומר", date: "2026-05-16" },
-  { name: "שבועות", date: "2026-05-22" },
-  { name: "ראש השנה", date: "2026-09-11" },
-  { name: "יום כיפור", date: "2026-09-20" },
-  { name: "סוכות", date: "2026-09-25" },
-  { name: "שמחת תורה", date: "2026-10-03" },
-  { name: "חנוכה", date: "2026-12-14" },
-];
+// Holidays are now loaded from the IsraeliHoliday entity
 
 function formatDate(dateStr) {
   const d = new Date(dateStr);
@@ -68,12 +53,14 @@ export async function generateNotifications() {
   }
 
   // 2. Israeli holidays within 14 days
-  for (const holiday of ISRAELI_HOLIDAYS_2026) {
+  const dbHolidays = await base44.entities.IsraeliHoliday.filter({ is_active: true });
+  for (const holiday of dbHolidays) {
     const diff = daysDiff(holiday.date);
     if (diff >= 0 && diff <= 14) {
-      const title = `חג מתקרב: ${holiday.name} 🎉`;
+      const holidayName = holiday.name_he || holiday.name;
+      const title = `חג מתקרב: ${holidayName} 🎉`;
       if (!await notifExists(existingNotifs, title, "holiday")) {
-        toCreate.push({ tier:"national", type:"holiday", title, body:`החג ${holiday.name} מתקרב ב-${formatDate(holiday.date)}. כדאי להתכונן מראש.`, scheduled_for: new Date(holiday.date).toISOString(), is_read: false });
+        toCreate.push({ tier:"national", type:"holiday", title, body:`החג ${holidayName} מתקרב ב-${formatDate(holiday.date)}. כדאי להתכונן מראש.`, scheduled_for: new Date(holiday.date).toISOString(), is_read: false });
       }
     }
   }

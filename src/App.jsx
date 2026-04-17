@@ -30,6 +30,11 @@ import Pricing from './pages/Pricing';
 import AutomationTest from './pages/admin/AutomationTest';
 const AnalyticsDashboard = lazy(() => import('./pages/admin/AnalyticsDashboard'));
 import LaunchChecklist from './pages/admin/LaunchChecklist';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminContent from './pages/admin/AdminContent';
+import AdminRoute from './components/AdminRoute';
+import Marketing from './pages/Marketing';
+import Register from './pages/Register';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import Help from './pages/Help';
@@ -65,6 +70,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      <Route path="/register" element={<Register />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -89,10 +95,13 @@ const AuthenticatedApp = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/schema" element={<SchemaDocumentation />} />
       </Route>
+      <Route path="/marketing" element={<Marketing />} />
       <Route path="/p/:subdomain" element={<PublicLandingPage />} />
-      <Route path="/admin/automation-test" element={<AutomationTest />} />
-      <Route path="/admin/analytics" element={<Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><AnalyticsDashboard /></Suspense>} />
-      <Route path="/admin/launch-checklist" element={<LaunchChecklist />} />
+      <Route path="/admin/automation-test" element={<AdminRoute><AutomationTest /></AdminRoute>} />
+      <Route path="/admin/analytics" element={<AdminRoute><Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><AnalyticsDashboard /></Suspense></AdminRoute>} />
+      <Route path="/admin/launch-checklist" element={<AdminRoute><LaunchChecklist /></AdminRoute>} />
+      <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+      <Route path="/admin/content" element={<AdminRoute><AdminContent /></AdminRoute>} />
       <Route path="/help" element={<Help />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
