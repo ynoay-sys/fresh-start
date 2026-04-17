@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import BackButton from "../components/BackButton";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import BusinessProgressMap from "../components/BusinessProgressMap";
@@ -110,6 +111,7 @@ export default function Progress() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8" dir="rtl">
+      <BackButton />
       <h1 className="text-2xl font-bold text-gray-900 mb-8">ההתקדמות שלי</h1>
 
       {/* SECTION 1: Business Opening Journey */}

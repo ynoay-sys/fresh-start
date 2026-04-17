@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import BackButton from "../../components/BackButton";
 import { Search, Download, X, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 
@@ -142,6 +143,7 @@ export default function AdminUsers() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8" dir="rtl">
+      <BackButton />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">ניהול משתמשים</h1>
         <button onClick={exportCSV}

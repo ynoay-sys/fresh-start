@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import BackButton from "../components/BackButton";
 import { base44 } from "@/api/base44Client";
 import { Trash2, Monitor, Smartphone } from "lucide-react";
 import html2canvas from "html2canvas";
@@ -180,6 +181,7 @@ export default function EmailSignaturePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8" dir="rtl">
+      <BackButton />
       <h1 className="text-2xl font-bold text-gray-900 mb-2">יצירת חתימת אימייל</h1>
       <p className="text-sm text-gray-500 mb-6">צור חתימה מקצועית לאימייל שלך תוך שניות</p>
 

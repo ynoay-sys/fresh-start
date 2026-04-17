@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import BackButton from "../components/BackButton";
 import { base44 } from "@/api/base44Client";
 import { Check, XCircle } from "lucide-react";
 
@@ -205,6 +206,7 @@ export default function SignatureCreate() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-10" dir="rtl">
+      <BackButton />
       <h1 className="text-2xl font-bold text-gray-900 mb-2">צור חתימה</h1>
       <p className="text-sm text-gray-500 mb-6">צור את החתימה הדיגיטלית שלך לחתימה על מסמכים</p>
 

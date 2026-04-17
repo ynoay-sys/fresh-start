@@ -1,8 +1,6 @@
-import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import BackButton from "../components/BackButton";
 
 export default function Privacy() {
-  const navigate = useNavigate();
   const sections = [
     { title: "איסוף מידע", body: "אנו אוספים: פרטי חשבון (שם, אימייל, טלפון), מידע עסקי (שם עסק, סוג עסק), מסמכים שהעלאת, נתוני שימוש ואנליטיקה." },
     { title: "שימוש במידע", body: "המידע משמש לספק את השירות, לשפר את המוצר, ולתקשר איתך. אנו לא מוכרים מידע לצדדים שלישיים." },
@@ -13,9 +11,7 @@ export default function Privacy() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm font-medium mb-6" style={{ color: "#1E5FA8" }}>
-        <ChevronLeft className="w-4 h-4" />חזרה
-      </button>
+      <BackButton />
       <h1 className="text-2xl font-bold text-gray-900 mb-2">מדיניות פרטיות</h1>
       <p className="text-xs text-gray-400 mb-8">עודכן לאחרונה: אפריל 2026</p>
       <div className="space-y-5">

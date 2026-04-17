@@ -1,8 +1,6 @@
-import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import BackButton from "../components/BackButton";
 
 export default function Terms() {
-  const navigate = useNavigate();
   const sections = [
     { title: "כללי", body: "Fresh Start היא פלטפורמה לניהול עסקים לעצמאים בישראל. השימוש בשירות מהווה הסכמה לתנאים אלו." },
     { title: "החתימה האלקטרונית", body: "הפלטפורמה מספקת חתימה אלקטרונית פשוטה (SES). Fresh Start אינה אחראית לתוקף המשפטי של מסמכים חתומים. מומלץ להתייעץ עם עורך דין." },
@@ -14,9 +12,7 @@ export default function Terms() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm font-medium mb-6" style={{ color: "#1E5FA8" }}>
-        <ChevronLeft className="w-4 h-4" />חזרה
-      </button>
+      <BackButton />
       <h1 className="text-2xl font-bold text-gray-900 mb-2">תנאי שימוש</h1>
       <p className="text-xs text-gray-400 mb-8">עודכן לאחרונה: אפריל 2026</p>
       <div className="space-y-5">

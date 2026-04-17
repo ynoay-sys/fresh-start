@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import BackButton from "../../components/BackButton";
 import { Plus, Edit2, Eye, EyeOff, Trash2, Save, X } from "lucide-react";
 
 const AUTHORITY_LABELS = { tax_authority: "מס הכנסה", vat: 'מע"מ', nii: "ביטוח לאומי", municipality: "עירייה", other: "אחר" };
@@ -327,6 +328,7 @@ export default function AdminContent() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8" dir="rtl">
+      <BackButton />
       <h1 className="text-2xl font-bold text-gray-900 mb-6">ניהול תוכן</h1>
       <div className="flex gap-1 mb-6 border-b border-gray-200">
         {TABS.map(tab => (

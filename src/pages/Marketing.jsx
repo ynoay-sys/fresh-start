@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -23,10 +23,18 @@ function Header() {
           <Link to="/register" className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
             style={{ backgroundColor: "#1E5FA8" }}>התחל חינם ←</Link>
         </div>
-        {/* Mobile hamburger */}
-        <button onClick={() => setMobileOpen(v => !v)} className="md:hidden p-2 text-gray-600">
-          {mobileOpen ? "✕" : "☰"}
-        </button>
+        {/* Mobile hamburger + back button on mobile */}
+        <div className="md:hidden flex items-center gap-2">
+          <button
+            onClick={() => window.history.back()}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: '#1E5FA8', cursor: 'pointer', fontSize: '13px', fontFamily: 'Rubik, sans-serif', padding: '4px 0', fontWeight: '500' }}
+          >
+            <span>→</span><span>חזור</span>
+          </button>
+          <button onClick={() => setMobileOpen(v => !v)} className="p-2 text-gray-600">
+            {mobileOpen ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
       {mobileOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-3" dir="rtl">

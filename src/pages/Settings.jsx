@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import BackButton from "../components/BackButton";
 import { useNavigate, Link } from "react-router-dom";
 import { ChevronDown, ChevronUp, ShieldCheck, Bell, Globe, Trash2, Lock, Database, User } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -101,6 +102,7 @@ export default function Settings() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl">
+      <BackButton />
       <h1 className="text-2xl font-bold text-gray-900 mb-6">הגדרות</h1>
 
       {/* Account */}

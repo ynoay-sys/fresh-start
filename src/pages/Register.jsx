@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import BackButton from "../components/BackButton";
 import { Eye, EyeOff } from "lucide-react";
 
 const BUSINESS_TYPES = [
@@ -130,6 +131,7 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8" dir="rtl">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg">
+        <BackButton />
         {/* Logo */}
         <div className="flex items-center gap-2 mb-6 justify-center">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#1E5FA8" }}>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronUp, ChevronLeft } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import BackButton from "../components/BackButton";
 
 const FAQ_DATA = [
   {
@@ -66,6 +67,7 @@ export default function Help() {
   const navigate = useNavigate();
   useEffect(() => { document.title = 'עזרה | Fresh Start'; }, []);
   const [search, setSearch] = useState("");
+
   const q = search.toLowerCase().trim();
 
   const filtered = FAQ_DATA.map(section => ({
@@ -77,9 +79,7 @@ export default function Help() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm font-medium mb-6" style={{ color: "#1E5FA8" }}>
-        <ChevronLeft className="w-4 h-4" />חזרה
-      </button>
+      <BackButton />
       <h1 className="text-2xl font-bold text-gray-900 mb-2">מרכז העזרה</h1>
       <p className="text-sm text-gray-500 mb-6">מצא תשובות לשאלות הנפוצות ביותר</p>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import BackButton from "../components/BackButton";
 import { base44 } from "@/api/base44Client";
 import { PDFDocument } from "pdf-lib";
 import { Check, Download, AlertTriangle } from "lucide-react";
@@ -259,6 +260,7 @@ export default function DocumentSign() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl">
+      <BackButton />
       <h1 className="text-xl font-bold text-gray-900 mb-6">חתימה על מסמך — {doc.file_name}</h1>
       <StepIndicator current={step} />
 

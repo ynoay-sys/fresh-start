@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+import BackButton from "../../components/BackButton";
+
 const CHECKLIST = {
   "טכני": [
     { key: "modules_working", label: "כל 9 המודולים עובדים ✓" },
@@ -50,9 +52,7 @@ export default function LaunchChecklist() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl" style={{ fontFamily: 'Rubik, sans-serif' }}>
-      <button onClick={() => window.history.back()} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#1E5FA8', cursor: 'pointer', fontSize: '14px', fontFamily: 'Rubik, sans-serif', padding: '8px 0', marginBottom: '16px' }}>
-        <span>→</span><span>חזרה</span>
-      </button>
+      <BackButton />
       <h1 className="text-2xl font-bold text-gray-900 mb-6">רשימת בדיקות לשחרור 🚀</h1>
 
       {/* Score */}
