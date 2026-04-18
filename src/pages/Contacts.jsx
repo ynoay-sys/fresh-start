@@ -123,6 +123,13 @@ export default function Contacts() {
 
   async function load() {
     const results = await base44.entities.Contact.list("full_name");
+    const currentUser = await base44.auth.me();
+    console.log('[DEBUG] Contact.list() returned:', results.length, 'records');
+    console.log('[DEBUG] Current user email:', currentUser?.email);
+    if (results.length > 0) {
+      console.log('[DEBUG] First contact created_by:', results[0]?.created_by);
+      console.log('[DEBUG] MATCH:', results[0]?.created_by === currentUser?.email);
+    }
     setContacts(results);
     setLoading(false);
   }

@@ -35,7 +35,13 @@ export default function ContactModal({ contact, onClose, onSaved }) {
         await base44.entities.Contact.update(contact.id, form);
         onSaved(false, form.category);
       } else {
-        await base44.entities.Contact.create(form);
+        const newContact = await base44.entities.Contact.create(form);
+        const currentUser = await base44.auth.me();
+        console.log('[DEBUG] Created contact:', newContact);
+        console.log('[DEBUG] Current user:', currentUser);
+        console.log('[DEBUG] contact.created_by:', newContact?.created_by);
+        console.log('[DEBUG] user.email:', currentUser?.email);
+        console.log('[DEBUG] MATCH:', newContact?.created_by === currentUser?.email);
         onSaved(true, form.category);
       }
     } catch (err) {
