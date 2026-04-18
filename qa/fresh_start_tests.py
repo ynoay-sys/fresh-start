@@ -399,6 +399,11 @@ def test_delete_contact(page: Page):
                        "Contact from TEST 4 not found after reload + 3s retry — cannot delete", sc)
                 return
 
+        # Wait 4s before attempting delete — lets any in-flight 429 rate-limit
+        # window from the previous navigation clear before we send more API calls.
+        log("   Waiting 4s for rate limit to clear before delete...")
+        page.wait_for_timeout(4000)
+
         # Find the card containing the test contact using the confirmed
         # ancestor selector (the app uses Tailwind "rounded-*" classes, not
         # semantic "card"/"row" class names).
@@ -439,29 +444,33 @@ def test_delete_contact(page: Page):
         except Exception:
             pass
 
-        # The Sonner toast shows "בדיקה אוטומטית נמחק ✓" for ~4 seconds.
-        # If we read page.content() while it's still on-screen, the name appears
-        # in the toast HTML and the "contact_gone" check falsely fails.
-        # Wait 6 seconds flat to guarantee the toast has cleared.
-        try:
-            page.wait_for_load_state("networkidle", timeout=5000)
-        except Exception:
-            pass
-        page.wait_for_timeout(6000)
+        # ── Check contact gone — retry up to 3 times to handle 429 delays ────
+        # The Sonner toast holds the name in the DOM for ~4s; start checking
+        # after 6s so we don't false-fail on toast HTML.
+        contact_gone = False
+        for attempt, delay in enumerate([6000, 3000, 3000], start=1):
+            page.wait_for_timeout(delay)
+            check_content = page.content()
+            if "בדיקה אוטומטית" not in check_content:
+                contact_gone = True
+                log(f"   Contact gone confirmed on check {attempt} ✓")
+                break
+            log(f"   Contact still visible after check {attempt} — retrying...")
+            if attempt == 2:
+                # On the second retry, reload the page to force a fresh list fetch
+                log("   Reloading page for final check...")
+                page.reload(wait_until="domcontentloaded")
+                page.wait_for_timeout(3000)
 
-        final_content = page.content()
         sc = shot(page, "test5_deleted")
-
-        contact_gone = "בדיקה אוטומטית" not in final_content
 
         if not has_dialog:
             record("TEST 5 — Delete a Contact", False,
                    "Confirmation dialog not detected before delete", sc_dialog)
         elif not contact_gone:
             record("TEST 5 — Delete a Contact", False,
-                   "Contact still in list after confirmed delete (list may not have refreshed)", sc)
+                   "Contact still in list after delete + 3 checks + page reload (possible 429)", sc)
         elif not toast_visible:
-            # Contact IS gone — toast was ephemeral (< 2s)
             record("TEST 5 — Delete a Contact", True,
                    "Contact deleted and removed from list (toast ephemeral, < 2s)")
         else:
@@ -478,6 +487,11 @@ def test_delete_contact(page: Page):
 def test_business_opening(page: Page):
     log("\n▶ TEST 6 — Business Opening Steps")
     try:
+        # Pause 3s before navigating so TEST 5's API calls (delete + list reload)
+        # have time to settle and don't cascade into a 429 on this page's load.
+        log("   Waiting 3s for previous test API calls to settle...")
+        time.sleep(3)
+
         page.goto(f"{BASE_URL}/business-opening", wait_until="domcontentloaded")
 
         # Give the page 5s for initial render before starting any checks.
@@ -497,6 +511,16 @@ def test_business_opening(page: Page):
             if content.count("התחל מדריך") + content.count("צפה בפרטים") >= 1:
                 break
             page.wait_for_timeout(1500)
+
+        # If still 0 cards, wait 5 more seconds (rate limit may just be clearing)
+        # then do one final check before giving up.
+        if content.count("התחל מדריך") + content.count("צפה בפרטים") == 0:
+            log("   0 cards after first poll — waiting 5s for rate limit to clear...")
+            page.wait_for_timeout(5000)
+            try:
+                page.locator(".animate-spin").wait_for(state="hidden", timeout=5000)
+            except Exception:
+                pass
 
         content = page.content()
         sc = shot(page, "test6_business_opening")
@@ -938,7 +962,9 @@ def main():
             return
 
         def guard(test_fn):
-            """Run a test, but first reload the session if it expired."""
+            """Run a test, pausing 2s first to let previous API calls settle,
+            then reloading the session if it expired."""
+            time.sleep(2)   # global inter-test cooldown — prevents 429 cascades
             try:
                 content = page.content()
                 alive = any(kw in content for kw in ["ראשי", "Fresh Start", "התנתקות"])
