@@ -24,16 +24,24 @@ export default function ContactModal({ contact, onClose, onSaved }) {
 
   function set(field, val) { setForm(f => ({ ...f, [field]: val })); }
 
+  const [error, setError] = useState("");
+
   async function handleSave() {
     if (!form.full_name?.trim() || !form.category) return;
     setSaving(true);
-    if (contact?.id) {
-      await base44.entities.Contact.update(contact.id, form);
-    } else {
-      await base44.entities.Contact.create(form);
+    setError("");
+    try {
+      if (contact?.id) {
+        await base44.entities.Contact.update(contact.id, form);
+        onSaved(false, form.category);
+      } else {
+        await base44.entities.Contact.create(form);
+        onSaved(true, form.category);
+      }
+    } catch (err) {
+      setError("שגיאה בשמירה — נסה שוב");
+      setSaving(false);
     }
-    setSaving(false);
-    onSaved();
   }
 
   return (
@@ -120,7 +128,9 @@ export default function ContactModal({ contact, onClose, onSaved }) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100 flex gap-3 justify-start">
+        <div className="px-6 py-4 border-t border-gray-100 flex flex-col gap-2">
+          {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+          <div className="flex gap-3">
           <button
             onClick={handleSave}
             disabled={saving || !form.full_name?.trim() || !form.category}
@@ -132,6 +142,7 @@ export default function ContactModal({ contact, onClose, onSaved }) {
           <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
             ביטול
           </button>
+          </div>
         </div>
       </div>
     </div>

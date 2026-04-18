@@ -227,13 +227,18 @@ export default function BusinessOpening() {
           const keys = ["bank_account", "vat_file", "tax_file", "nii"];
           existing = await Promise.all(keys.map(k => base44.entities.BusinessOpeningStep.create({ step_key: k, status: "not_started" })));
         }
+        // Verify all 4 steps are present before rendering
+        if (existing.length < 4 && attempt < 5) {
+          setTimeout(() => load(attempt + 1), 1500);
+          return;
+        }
         setSteps(existing);
         const profiles = await base44.entities.UserProfile.filter({ created_by: u.email });
         setProfile(profiles[0] || null);
         setLoading(false);
       } catch (err) {
-        if (attempt < 3) {
-          setTimeout(() => load(attempt + 1), 1000 * (attempt + 1));
+        if (attempt < 5) {
+          setTimeout(() => load(attempt + 1), 1500);
         } else {
           setLoading(false);
         }
