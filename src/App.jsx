@@ -42,32 +42,20 @@ const EmailSignaturePage = lazy(() => import('./pages/EmailSignaturePage'));
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 
-function ComingSoon({ title }) {
-  return (
-    <div className="flex items-center justify-center min-h-[60vh] flex-col gap-3" dir="rtl">
-      <div className="text-4xl">🚧</div>
-      <h2 className="text-xl font-semibold text-gray-700">{title}</h2>
-      <p className="text-sm text-gray-400">עמוד זה יהיה זמין בקרוב</p>
-    </div>
-  );
+// These paths are always public — no auth check whatsoever
+const PUBLIC_PATHS = ['/', '/marketing', '/register', '/login', '/pricing', '/help', '/terms', '/privacy'];
+
+function isPublicPath(pathname) {
+  if (PUBLIC_PATHS.includes(pathname)) return true;
+  if (pathname.startsWith('/p/')) return true;
+  return false;
 }
 
-// Public routes — always render regardless of auth state
-function PublicRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<Marketing />} />
-      <Route path="/marketing" element={<Marketing />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/pricing" element={<Pricing />} />
-      <Route path="/help" element={<Help />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/p/:subdomain" element={<PublicLandingPage />} />
-      <Route path="*" element={<Marketing />} />
-    </Routes>
-  );
-}
+const Suspensed = ({ children }) => (
+  <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><div>טוען...</div></div>}>
+    {children}
+  </Suspense>
+);
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -83,13 +71,14 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
     if (authError.type === 'auth_required') {
-      return <PublicRoutes />;
+      navigateToLogin();
+      return null;
     }
   }
 
   return (
     <Routes>
-      {/* Public routes accessible when logged in too */}
+      {/* Public routes - also accessible when logged in */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/marketing" element={<Marketing />} />
       <Route path="/register" element={<Navigate to="/dashboard" replace />} />
@@ -98,7 +87,7 @@ const AuthenticatedApp = () => {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/p/:subdomain" element={<PublicLandingPage />} />
 
-      {/* Authenticated app routes */}
+      {/* Authenticated app routes inside Layout */}
       <Route element={<Layout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/business-opening" element={<BusinessOpening />} />
@@ -106,7 +95,7 @@ const AuthenticatedApp = () => {
         <Route path="/documents/upload" element={<DocumentUpload />} />
         <Route path="/documents/templates" element={<DocumentTemplatesPage />} />
         <Route path="/documents/sign/create" element={<SignatureCreate />} />
-        <Route path="/documents/email-signature" element={<Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><EmailSignaturePage /></Suspense>} />
+        <Route path="/documents/email-signature" element={<Suspensed><EmailSignaturePage /></Suspensed>} />
         <Route path="/documents/sign/:documentId" element={<DocumentSign />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/orders" element={<Orders />} />
@@ -115,7 +104,7 @@ const AuthenticatedApp = () => {
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/vision" element={<Vision />} />
-        <Route path="/landing-page" element={<Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><LandingPageBuilder /></Suspense>} />
+        <Route path="/landing-page" element={<Suspensed><LandingPageBuilder /></Suspensed>} />
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/progress" element={<Progress />} />
@@ -125,7 +114,7 @@ const AuthenticatedApp = () => {
 
       {/* Admin routes */}
       <Route path="/admin/automation-test" element={<AdminRoute><AutomationTest /></AdminRoute>} />
-      <Route path="/admin/analytics" element={<AdminRoute><Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><AnalyticsDashboard /></Suspense></AdminRoute>} />
+      <Route path="/admin/analytics" element={<AdminRoute><Suspensed><AnalyticsDashboard /></Suspensed></AdminRoute>} />
       <Route path="/admin/launch-checklist" element={<AdminRoute><LaunchChecklist /></AdminRoute>} />
       <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
       <Route path="/admin/content" element={<AdminRoute><AdminContent /></AdminRoute>} />
@@ -135,17 +124,42 @@ const AuthenticatedApp = () => {
   );
 };
 
+// Top-level router that intercepts public paths BEFORE AuthProvider runs auth checks
+function AppRouter() {
+  const pathname = window.location.pathname;
+
+  if (isPublicPath(pathname)) {
+    return (
+      <Routes>
+        <Route path="/" element={<Marketing />} />
+        <Route path="/marketing" element={<Marketing />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/p/:subdomain" element={<PublicLandingPage />} />
+        <Route path="*" element={<Marketing />} />
+      </Routes>
+    );
+  }
+
+  return (
+    <AuthProvider>
+      <AuthenticatedApp />
+    </AuthProvider>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
-    <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <AuthenticatedApp />
+          <AppRouter />
         </Router>
         <Toaster />
       </QueryClientProvider>
-    </AuthProvider>
     </ErrorBoundary>
   );
 }
