@@ -85,11 +85,10 @@ export default function Clients() {
 
   async function load() {
     const user = await base44.auth.me();
-    const [clientRes, meetingRes] = await Promise.all([
-      base44.entities.Client.filter({ created_by: user.email }, "full_name"),
-      base44.entities.ScheduleEvent.filter({ created_by: user.email, source_type: "client" }),
-    ]);
+    const clientRes = await base44.entities.Client.filter({ created_by: user.email }, "full_name");
     setClients(clientRes);
+    await new Promise(r => setTimeout(r, 250));
+    const meetingRes = await base44.entities.ScheduleEvent.filter({ created_by: user.email, source_type: "client" });
     setMeetings(meetingRes);
     setLoading(false);
   }

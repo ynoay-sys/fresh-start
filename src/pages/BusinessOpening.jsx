@@ -223,17 +223,18 @@ export default function BusinessOpening() {
       try {
         const u = await base44.auth.me();
         setUser(u);
+        await new Promise(r => setTimeout(r, 200));
         let existing = await base44.entities.BusinessOpeningStep.list();
         if (existing.length === 0) {
           const keys = ["bank_account", "vat_file", "tax_file", "nii"];
           try {
-            existing = await Promise.all(
-              keys.map(k => base44.entities.BusinessOpeningStep.create({ step_key: k, status: "not_started" }))
-            );
+            for (const k of keys) {
+              await base44.entities.BusinessOpeningStep.create({ step_key: k, status: "not_started" });
+              await new Promise(r => setTimeout(r, 150));
+            }
           } catch (createErr) {
             console.error("Failed to create steps:", createErr);
           }
-          // Wait then re-query to confirm creation
           await new Promise(r => setTimeout(r, 1000));
           existing = await base44.entities.BusinessOpeningStep.list();
         }
@@ -243,6 +244,7 @@ export default function BusinessOpening() {
           return;
         }
         setSteps(existing);
+        await new Promise(r => setTimeout(r, 250));
         const profiles = await base44.entities.UserProfile.list();
         setProfile(profiles[0] || null);
         setLoading(false);
