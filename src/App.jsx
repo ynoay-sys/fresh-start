@@ -52,6 +52,23 @@ function ComingSoon({ title }) {
   );
 }
 
+// Public routes — always render regardless of auth state
+function PublicRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Marketing />} />
+      <Route path="/marketing" element={<Marketing />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/help" element={<Help />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/p/:subdomain" element={<PublicLandingPage />} />
+      <Route path="*" element={<Marketing />} />
+    </Routes>
+  );
+}
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
@@ -66,33 +83,23 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
     if (authError.type === 'auth_required') {
-      // Show marketing page at / for unauthenticated users, otherwise redirect to login
-      const path = window.location.pathname;
-      if (path === '/' || path === '/marketing') {
-        return (
-          <Routes>
-            <Route path="*" element={<Marketing />} />
-          </Routes>
-        );
-      }
-      if (path === '/register') {
-        return (
-          <Routes>
-            <Route path="*" element={<Register />} />
-          </Routes>
-        );
-      }
-      navigateToLogin();
-      return null;
+      return <PublicRoutes />;
     }
   }
 
   return (
     <Routes>
-      <Route path="/register" element={<Register />} />
+      {/* Public routes accessible when logged in too */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/marketing" element={<Marketing />} />
+      <Route path="/register" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/help" element={<Help />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/p/:subdomain" element={<PublicLandingPage />} />
+
+      {/* Authenticated app routes */}
       <Route element={<Layout />}>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/business-opening" element={<BusinessOpening />} />
         <Route path="/documents" element={<Documents />} />
@@ -115,15 +122,14 @@ const AuthenticatedApp = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/schema" element={<SchemaDocumentation />} />
       </Route>
-      <Route path="/p/:subdomain" element={<PublicLandingPage />} />
+
+      {/* Admin routes */}
       <Route path="/admin/automation-test" element={<AdminRoute><AutomationTest /></AdminRoute>} />
       <Route path="/admin/analytics" element={<AdminRoute><Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><AnalyticsDashboard /></Suspense></AdminRoute>} />
       <Route path="/admin/launch-checklist" element={<AdminRoute><LaunchChecklist /></AdminRoute>} />
       <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
       <Route path="/admin/content" element={<AdminRoute><AdminContent /></AdminRoute>} />
-      <Route path="/help" element={<Help />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/privacy" element={<Privacy />} />
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
