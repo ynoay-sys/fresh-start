@@ -51,43 +51,26 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
-      // Batch A — core counts (3 requests)
-      const [docs, contacts, clients] = await Promise.all([
+
+      // Batch 1 — most critical (3 requests max)
+      const [docs, clients, allSteps] = await Promise.all([
         base44.entities.Document.filter({ created_by: user.email, status: "active" }),
-        base44.entities.Contact.filter({ created_by: user.email }),
         base44.entities.Client.filter({ created_by: user.email }),
+        base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
       ]);
       setDocCount(docs.length);
-      setContactCount(contacts.length);
       setClientCount(clients.length);
-
-      // Batch B — steps + events (3 requests)
-      const [allSteps, eventsRes, notifsRes] = await Promise.all([
-        base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
-        base44.entities.ScheduleEvent.filter({ created_by: user.email }),
-        base44.entities.Notification.filter({ created_by: user.email }),
-      ]);
       const completedSteps = allSteps.filter(s => s.status === "completed");
       setStepsCompleted(completedSteps.length);
       setSteps(allSteps);
 
-      const now = new Date();
-      const upcoming = eventsRes
-        .filter(e => isAfter(new Date(e.start_time), now))
-        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
-        .slice(0, 5);
-      setUpcomingEvents(upcoming);
-
-      const unread = notifsRes.filter(n => !n.is_read)
-        .sort((a,b) => new Date(b.scheduled_for || b.created_date) - new Date(a.scheduled_for || a.created_date))
-        .slice(0, 3);
-      setRecentNotifs(unread);
-
-      // Batch C — milestones + profile (2 requests)
-      const [milestonesRes, profileArr] = await Promise.all([
+      // Batch 2
+      const [contacts, milestonesRes, profileArr] = await Promise.all([
+        base44.entities.Contact.filter({ created_by: user.email }),
         base44.entities.Milestone.filter({ created_by: user.email }),
         base44.entities.UserProfile.filter({ created_by: user.email }),
       ]);
+      setContactCount(contacts.length);
 
       const active = milestonesRes.filter(m => m.type === "goal" && m.status === "active").slice(0, 3);
       setActiveGoals(active);
@@ -106,7 +89,35 @@ export default function Dashboard() {
         business: completedSteps.length > 0,
       });
 
-      // Batch D — templates + completions (2 requests)
+      // Profile banner
+      if (profileRec) {
+        const fields = ['first_name','last_name','phone_il','business_name','vat_number','address'];
+        const filled = fields.filter(f => !!profileRec[f]).length;
+        const pct = Math.round((filled / fields.length) * 100);
+        const dismissed = localStorage.getItem('profileBannerDismissed');
+        const daysSinceReg = user.created_date ? (Date.now() - new Date(user.created_date).getTime()) / 86400000 : 0;
+        if (pct < 50 && daysSinceReg > 1 && !dismissed) setShowProfileBanner(true);
+      }
+
+      // Batch 3
+      const [eventsRes, notifsRes] = await Promise.all([
+        base44.entities.ScheduleEvent.filter({ created_by: user.email }),
+        base44.entities.Notification.filter({ created_by: user.email }),
+      ]);
+
+      const now = new Date();
+      const upcoming = eventsRes
+        .filter(e => isAfter(new Date(e.start_time), now))
+        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+        .slice(0, 5);
+      setUpcomingEvents(upcoming);
+
+      const unread = notifsRes.filter(n => !n.is_read)
+        .sort((a,b) => new Date(b.scheduled_for || b.created_date) - new Date(a.scheduled_for || a.created_date))
+        .slice(0, 3);
+      setRecentNotifs(unread);
+
+      // Batch 4
       const [allTemplates, completions] = await Promise.all([
         base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
         base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
@@ -114,31 +125,29 @@ export default function Dashboard() {
       const completedKeys = completions.map(c => c.template_key);
       setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
 
-      // Batch E — orders + achievements (2 requests)
-      const [ordersRes, achievementsRes] = await Promise.all([
+      // Batch 5
+      const [ordersRes, achievementsRes, usageRecords] = await Promise.all([
         base44.entities.Order.filter({ created_by: user.email }, "-created_date"),
         base44.entities.Achievement.filter({ created_by: user.email }),
+        base44.entities.UserFeatureUsage.filter({ created_by: user.email }),
       ]);
       setAchievements(achievementsRes);
       const activeOrdersList = ordersRes.filter(o => o.status === "in_transit" || o.status === "delayed").slice(0, 3);
       setActiveOrders(activeOrdersList);
-
-      // Batch F — usage + landing + email sig (3 requests)
-      const [usageRecords, landingPages, emailSigs] = await Promise.all([
-        base44.entities.UserFeatureUsage.filter({ created_by: user.email }),
-        base44.entities.LandingPage.filter({ created_by: user.email }),
-        base44.entities.EmailSignature.filter({ created_by: user.email }),
-      ]);
-      setLandingPage(landingPages[0] || null);
-      setEmailSigCount(emailSigs.length);
-
       const aiRec = usageRecords.find(r => r.feature_key === "ai_query");
       const tmplRec = usageRecords.find(r => r.feature_key === "template_download");
       setAiUsage(aiRec?.usage_count || 0);
       setTemplateUsage(tmplRec?.usage_count || 0);
 
-      // payments — single request
-      const payments = await base44.entities.Payment.filter({ created_by: user.email });
+      // Batch 6
+      const [landingPages, emailSigs, payments] = await Promise.all([
+        base44.entities.LandingPage.filter({ created_by: user.email }),
+        base44.entities.EmailSignature.filter({ created_by: user.email }),
+        base44.entities.Payment.filter({ created_by: user.email }),
+      ]);
+      setLandingPage(landingPages[0] || null);
+      setEmailSigCount(emailSigs.length);
+
       const nowDate = new Date();
       const thisMonth = payments.filter(p => {
         const d = new Date(p.created_date);
@@ -154,16 +163,6 @@ export default function Dashboard() {
           visionsRes.length > 0 &&
           completedSteps.length >= 4;
         if (allOnboardingDone) setShowCelebration(true);
-      }
-
-      // Profile completion banner
-      if (profileRec) {
-        const fields = ['first_name','last_name','phone_il','business_name','vat_number','address'];
-        const filled = fields.filter(f => !!profileRec[f]).length;
-        const pct = Math.round((filled / fields.length) * 100);
-        const dismissed = localStorage.getItem('profileBannerDismissed');
-        const daysSinceReg = user.created_date ? (Date.now() - new Date(user.created_date).getTime()) / 86400000 : 0;
-        if (pct < 50 && daysSinceReg > 1 && !dismissed) setShowProfileBanner(true);
       }
     }
     const t = setTimeout(() => load(), 3000);
