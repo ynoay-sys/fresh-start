@@ -1,0 +1,9 @@
+# Sensitive — never commit
+auth_state.json
+
+# Generated output
+report.json
+sprint24_ui_report.txt
+screenshots/
+*.log
+*.pdf
