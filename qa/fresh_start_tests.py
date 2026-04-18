@@ -320,6 +320,20 @@ def test_add_contact(page: Page):
                    f"Save did not complete — {err_hint}", sc)
             return
 
+        # ── DEBUG: inspect user identity immediately after save ───────────────
+        user_info = page.evaluate("""() => {
+            const u = window.__currentUser || window.currentUser || null;
+            return JSON.stringify(u);
+        }""")
+        log(f"   DEBUG — current user in page: {user_info}")
+
+        # ── DEBUG: snapshot contact-list DOM right after save ─────────────────
+        list_html = page.evaluate("""() => {
+            const el = document.querySelector('[data-testid=\"contact-list\"]');
+            return el ? el.innerHTML.substring(0, 300) : '(no [data-testid=contact-list] found)';
+        }""")
+        log(f"   DEBUG — contact list HTML after save: {list_html}")
+
         # Modal closed → save succeeded.
         # Navigate away to /dashboard and back to /contacts to verify real DB
         # persistence (not just optimistic React state that vanishes on reload).
@@ -352,8 +366,16 @@ def test_delete_contact(page: Page):
     try:
         # ── Wait for TEST 4's save to fully propagate ──────────────────────
         # Give the server and React state time to settle before we navigate.
-        log("   Waiting 3s for TEST 4 save to propagate...")
-        time.sleep(3)
+        log("   Waiting 5s for TEST 4 save to propagate...")
+        time.sleep(5)
+
+        # ── DEBUG: dump localStorage before navigating ────────────────────────
+        storage = page.evaluate("""() => {
+            return Object.keys(localStorage)
+                .map(k => k + ': ' + (localStorage.getItem(k) || '').substring(0, 80))
+                .join('\\n');
+        }""")
+        log(f"   DEBUG — localStorage before /contacts navigation:\n{storage}")
 
         # Navigate to /contacts explicitly and wait for the contact element.
         page.goto(f"{BASE_URL}/contacts", wait_until="domcontentloaded")
