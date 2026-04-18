@@ -214,6 +214,7 @@ export default function BusinessOpening() {
   const [celebrated, setCelebrated] = useState(false);
   const [activeWizard, setActiveWizard] = useState(null);
   const [portalStatus, setPortalStatus] = useState({});
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => { document.title = 'פתיחת עסק | Fresh Start'; }, []);
 
@@ -222,25 +223,37 @@ export default function BusinessOpening() {
       try {
         const u = await base44.auth.me();
         setUser(u);
-        let existing = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
+        let existing = await base44.entities.BusinessOpeningStep.list();
         if (existing.length === 0) {
           const keys = ["bank_account", "vat_file", "tax_file", "nii"];
-          existing = await Promise.all(keys.map(k => base44.entities.BusinessOpeningStep.create({ step_key: k, status: "not_started" })));
+          try {
+            existing = await Promise.all(
+              keys.map(k => base44.entities.BusinessOpeningStep.create({ step_key: k, status: "not_started" }))
+            );
+          } catch (createErr) {
+            console.error("Failed to create steps:", createErr);
+          }
+          // Wait then re-query to confirm creation
+          await new Promise(r => setTimeout(r, 1000));
+          existing = await base44.entities.BusinessOpeningStep.list();
         }
-        // Verify all 4 steps are present before rendering
+        // Retry if still not enough steps
         if (existing.length < 4 && attempt < 5) {
           setTimeout(() => load(attempt + 1), 1500);
           return;
         }
         setSteps(existing);
-        const profiles = await base44.entities.UserProfile.filter({ created_by: u.email });
+        const profiles = await base44.entities.UserProfile.list();
         setProfile(profiles[0] || null);
         setLoading(false);
       } catch (err) {
+        console.error("BusinessOpening load error:", err);
         if (attempt < 5) {
           setTimeout(() => load(attempt + 1), 1500);
         } else {
           setLoading(false);
+          setSteps([]);
+          setLoadError(true);
         }
       }
     }
@@ -288,6 +301,19 @@ export default function BusinessOpening() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4" dir="rtl">
+        <p className="text-gray-600 text-base">שגיאה בטעינת שלבי פתיחת העסק. לחץ לרענון.</p>
+        <button onClick={() => window.location.reload()}
+          className="px-5 py-2.5 rounded-xl text-white font-medium"
+          style={{ backgroundColor: "#1E5FA8" }}>
+          רענן דף
+        </button>
       </div>
     );
   }

@@ -122,8 +122,7 @@ export default function Contacts() {
   const [toast, setToast] = useState("");
 
   async function load() {
-    const user = await base44.auth.me();
-    const results = await base44.entities.Contact.filter({ created_by: user.email }, "full_name");
+    const results = await base44.entities.Contact.list("full_name");
     setContacts(results);
     setLoading(false);
   }
