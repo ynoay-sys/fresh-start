@@ -238,6 +238,9 @@ def test_sign_document(page: Page):
 
 def test_add_contact(page: Page):
     log("\n▶ TEST 4 — Add a Contact")
+    # Capture all browser console.log output so Base44's in-app [DEBUG] lines
+    # are forwarded to our test stdout.
+    page.on("console", lambda msg: log(f"   [BROWSER {msg.type.upper()}] {msg.text}") if msg.type in ("log", "warn", "error") else None)
     try:
         page.goto(f"{BASE_URL}/contacts", wait_until="domcontentloaded")
         page.wait_for_timeout(2000)
