@@ -427,14 +427,8 @@ export default function BusinessOpening() {
           startConfirmed={getStep(activeWizard)?.status === "partial"}
           onComplete={() => {
             setActiveWizard(null);
-            base44.auth.me().then(u =>
-              base44.entities.BusinessOpeningStep.filter({ created_by: u.email })
-                .then(setSteps)
-            );
-            base44.auth.me().then(u =>
-              base44.entities.UserProfile.filter({ created_by: u.email })
-                .then(r => setProfile(r[0] || null))
-            );
+            base44.entities.BusinessOpeningStep.list().then(setSteps);
+            base44.entities.UserProfile.list().then(r => setProfile(r[0] || null));
           }}
           onClose={() => setActiveWizard(null)}
         />

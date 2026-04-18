@@ -142,6 +142,8 @@ export default function Contacts() {
     if (isNew) trackEvent('contact_added', { category: category || 'unknown' });
     setModalContact(undefined);
     setLoading(true);
+    // Small delay to let Base44 propagate the new record before querying
+    if (isNew) await new Promise(r => setTimeout(r, 1000));
     await load();
   }
 
