@@ -1,12 +1,48 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { isAdmin } from "@/lib/userRole";
+import { isAdmin, clearRoleCache } from "@/lib/userRole";
+import { base44 } from "@/api/base44Client";
+
+const BOOTSTRAP_ADMIN_EMAIL = "ynoay9@gmail.com";
+
+async function ensureBootstrapAdmin() {
+  try {
+    const user = await base44.auth.me();
+    if (user.email !== BOOTSTRAP_ADMIN_EMAIL) return false;
+
+    // Check if a super_admin UserProfile already exists
+    const profiles = await base44.entities.UserProfile.filter({ created_by: user.email });
+    const profile = profiles[0];
+
+    if (!profile) {
+      // Create the profile with super_admin role
+      await base44.entities.UserProfile.create({ role: "super_admin" });
+      clearRoleCache();
+      return true;
+    } else if (!["admin", "super_admin"].includes(profile.role)) {
+      // Upgrade existing profile to super_admin
+      await base44.entities.UserProfile.update(profile.id, { role: "super_admin" });
+      clearRoleCache();
+      return true;
+    }
+    return ["admin", "super_admin"].includes(profile.role);
+  } catch {
+    return false;
+  }
+}
 
 export default function AdminRoute({ children }) {
   const [status, setStatus] = useState("loading"); // loading | allowed | denied
 
   useEffect(() => {
-    isAdmin().then(ok => setStatus(ok ? "allowed" : "denied"));
+    async function check() {
+      const ok = await isAdmin();
+      if (ok) { setStatus("allowed"); return; }
+      // Try bootstrap admin fallback
+      const bootstrapped = await ensureBootstrapAdmin();
+      setStatus(bootstrapped ? "allowed" : "denied");
+    }
+    check();
   }, []);
 
   if (status === "loading") {

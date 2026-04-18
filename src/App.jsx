@@ -65,12 +65,32 @@ const AuthenticatedApp = () => {
 
   if (authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
-    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
+    if (authError.type === 'auth_required') {
+      // Show marketing page at / for unauthenticated users, otherwise redirect to login
+      const path = window.location.pathname;
+      if (path === '/' || path === '/marketing') {
+        return (
+          <Routes>
+            <Route path="*" element={<Marketing />} />
+          </Routes>
+        );
+      }
+      if (path === '/register') {
+        return (
+          <Routes>
+            <Route path="*" element={<Register />} />
+          </Routes>
+        );
+      }
+      navigateToLogin();
+      return null;
+    }
   }
 
   return (
     <Routes>
       <Route path="/register" element={<Register />} />
+      <Route path="/marketing" element={<Marketing />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -95,7 +115,6 @@ const AuthenticatedApp = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/schema" element={<SchemaDocumentation />} />
       </Route>
-      <Route path="/marketing" element={<Marketing />} />
       <Route path="/p/:subdomain" element={<PublicLandingPage />} />
       <Route path="/admin/automation-test" element={<AdminRoute><AutomationTest /></AdminRoute>} />
       <Route path="/admin/analytics" element={<AdminRoute><Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}><div>טוען...</div></div>}><AnalyticsDashboard /></Suspense></AdminRoute>} />
