@@ -832,6 +832,166 @@ def test_back_buttons(page: Page):
         record("TEST 13 — Back buttons", False, str(e), sc)
 
 
+# ─── TEST 14 — Business Type Setup ──────────────────────────────────────────────
+
+# The 6 business-type card labels used in Register.jsx / SchemaDocumentation
+BUSINESS_TYPE_LABELS = ["פרילנסר", "קמעונאות", "סטודיו", "מזון", "ייעוץ", "אחר"]
+# VAT-type card labels used in BusinessStepWizard (עוסק פטור / מורשה)
+VAT_TYPE_LABELS      = ["עוסק פטור", "עוסק מורשה"]
+
+def test_business_type_setup(page: Page):
+    """
+    1. /dashboard — check for business-type badge OR "הגדר סוג עסק" link.
+    2. /setup/existing — verify page loads (not redirected to /dashboard or 404).
+    3. Count business-type cards (expect 6: פרילנסר, קמעונאות, סטודיו, מזון, ייעוץ, אחר)
+       or VAT-type cards (עוסק פטור / עוסק מורשה) if the route serves a VAT-selection
+       step instead.
+    4. Check back button present.
+    5. Click the first visible card and verify a next step loads.
+    PASS if the setup flow is navigable end-to-end.
+    """
+    log("\n▶ TEST 14 — Business Type Setup")
+    failures = []
+    try:
+        # ── Step 1: Dashboard business-type indicator ─────────────────────────
+        page.goto(f"{BASE_URL}/dashboard", wait_until="domcontentloaded")
+        page.wait_for_timeout(2000)
+        dash_content = page.content()
+        sc_dash = shot(page, "test14_dashboard")
+
+        has_biz_badge = (
+            any(lbl in dash_content for lbl in BUSINESS_TYPE_LABELS)
+            or "הגדר סוג עסק" in dash_content
+            or "סוג עסק" in dash_content
+            or "business_type" in dash_content
+        )
+        log(f"   Dashboard business-type indicator present: {has_biz_badge}")
+
+        # ── Step 2: Navigate to /setup/existing ───────────────────────────────
+        page.goto(f"{BASE_URL}/setup/existing", wait_until="domcontentloaded")
+        page.wait_for_timeout(2500)
+        setup_url  = page.url.replace(BASE_URL, "") or "/"
+        setup_html = page.content()
+        sc_setup   = shot(page, "test14_setup_existing")
+
+        # Detect redirect / 404
+        redirected = setup_url in ("/dashboard", "/", "/login") or "dashboard" in setup_url
+        is_404     = (
+            "404" in setup_html
+            or "לא נמצא" in setup_html
+            or "הדף לא קיים" in setup_html
+            or setup_url == "/this-page-does-not-exist"
+        )
+
+        if redirected:
+            failures.append(
+                f"/setup/existing redirected to {setup_url} — route not yet registered in App.jsx"
+            )
+            sc = shot(page, "test14_redirected")
+            record("TEST 14 — Business Type Setup", False, " | ".join(failures), sc)
+            return
+
+        if is_404:
+            failures.append("/setup/existing returned a 404 — page not yet built")
+            sc = shot(page, "test14_404")
+            record("TEST 14 — Business Type Setup", False, " | ".join(failures), sc)
+            return
+
+        # ── Step 3: Count business-type or VAT-type cards ─────────────────────
+        # Business-type cards (6 expected): פרילנסר, קמעונאות, סטודיו, מזון, ייעוץ, אחר
+        biz_cards_found = [lbl for lbl in BUSINESS_TYPE_LABELS if lbl in setup_html]
+        # VAT-type cards (2): עוסק פטור, עוסק מורשה
+        vat_cards_found = [lbl for lbl in VAT_TYPE_LABELS if lbl in setup_html]
+
+        total_cards = len(biz_cards_found) + len(vat_cards_found)
+        log(f"   Business-type cards found ({len(biz_cards_found)}): {biz_cards_found}")
+        log(f"   VAT-type cards found ({len(vat_cards_found)}): {vat_cards_found}")
+
+        if total_cards == 0:
+            failures.append(
+                f"No business-type or VAT-type cards found on /setup/existing "
+                f"(expected labels: {BUSINESS_TYPE_LABELS + VAT_TYPE_LABELS})"
+            )
+        elif len(biz_cards_found) > 0 and len(biz_cards_found) < 6:
+            failures.append(
+                f"Only {len(biz_cards_found)}/6 business-type cards visible: {biz_cards_found}"
+            )
+
+        # ── Step 4: Back button ────────────────────────────────────────────────
+        has_back = (
+            page.locator(
+                "button:has-text('חזרה'), a:has-text('חזרה'), "
+                "button:has-text('חזור'), a:has-text('חזור'), "
+                "[data-testid='back-button']"
+            ).count() > 0
+            or "חזרה" in page.locator("body").inner_text()
+            or "חזור" in page.locator("body").inner_text()
+        )
+        if not has_back:
+            failures.append("Back button missing on /setup/existing")
+
+        # ── Step 5: Click first card and check next step loads ─────────────────
+        clicked_label = None
+        # Prefer "עוסק פטור" if on a VAT step; otherwise first business-type card
+        candidates = vat_cards_found or biz_cards_found
+        for label in candidates:
+            try:
+                card_btn = page.locator(
+                    f"button:has-text('{label}'), "
+                    f"div:has-text('{label}') >> nth=0, "
+                    f"[role='button']:has-text('{label}')"
+                ).first
+                if card_btn.count() > 0:
+                    card_btn.click(force=True)
+                    page.wait_for_timeout(2000)
+                    clicked_label = label
+                    break
+            except Exception:
+                pass
+
+        if clicked_label:
+            after_click = page.content()
+            after_url   = page.url.replace(BASE_URL, "")
+            shot(page, "test14_after_card_click")
+            # Flow advanced: either URL changed, or new content appeared
+            flow_advanced = (
+                after_url != "/setup/existing"
+                or page.locator(
+                    "button:has-text('המשך'), button:has-text('הבא'), "
+                    "button:has-text('אישור'), button:has-text('שמור')"
+                ).count() > 0
+                or any(kw in after_click for kw in ["המשך", "הבא", "שלב", "step"])
+            )
+            if not flow_advanced:
+                failures.append(
+                    f"Clicked '{clicked_label}' but setup flow did not advance "
+                    f"(URL still {after_url}, no next-step button found)"
+                )
+            else:
+                log(f"   Setup flow advanced after clicking '{clicked_label}' ✓")
+        else:
+            if total_cards > 0:
+                failures.append("Cards found in HTML but none were clickable")
+
+        sc = shot(page, "test14_business_type_setup")
+
+        if failures:
+            record("TEST 14 — Business Type Setup", False, " | ".join(failures), sc)
+        else:
+            biz_summary = (
+                f"6/6 business-type cards" if len(biz_cards_found) == 6
+                else f"{len(vat_cards_found)} VAT-type cards"
+            )
+            record("TEST 14 — Business Type Setup", True,
+                   f"Dashboard indicator present: {has_biz_badge} | "
+                   f"/setup/existing loaded | {biz_summary} | "
+                   f"back button present | flow advanced after clicking '{clicked_label}'")
+
+    except Exception as e:
+        sc = shot(page, "test14_error")
+        record("TEST 14 — Business Type Setup", False, str(e), sc)
+
+
 # ─── TEST A — Admin Analytics (original test 10, kept for reference) ──────────
 
 def test_admin_analytics(page: Page):
@@ -910,7 +1070,7 @@ def generate_report():
                 log("   Suggested fix: Verify admin role is assigned to test user; check /admin/analytics route")
 
     log("\n" + "─" * 60)
-    log(f"  TOTAL: {len(results)} tests | ✅ PASSED: {passed} | ❌ FAILED: {failed} | ⏭️  SKIPPED: {skipped}")
+    log(f"  TOTAL: {len(results)} tests (7 core + 4 Sprint 24) | ✅ PASSED: {passed} | ❌ FAILED: {failed} | ⏭️  SKIPPED: {skipped}")
     log("─" * 60)
 
     # Save JSON report
@@ -1019,6 +1179,9 @@ def main():
 
         # ── Sprint 24 back-button audit (authenticated page) ───────────────
         guard(test_back_buttons)
+
+        # ── TEST 14 — Business Type Setup ──────────────────────────────────
+        guard(test_business_type_setup)
 
         browser.close()
 

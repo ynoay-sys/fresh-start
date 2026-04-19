@@ -37,6 +37,7 @@ This file is **gitignored** — generate it by running a headed OAuth flow once.
 | 11 | Login page Hebrew labels | fresh_start_tests.py |
 | 12 | Register page | fresh_start_tests.py |
 | 13 | Back buttons audit | fresh_start_tests.py |
+| 14 | Business Type Setup | fresh_start_tests.py |
 | A | Marketing page | sprint24_tests.py |
 | B | Register page | sprint24_tests.py |
 | C | Login page | sprint24_tests.py |
