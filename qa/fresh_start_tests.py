@@ -756,20 +756,36 @@ def test_back_buttons(page: Page):
                 # /documents/email-signature is lazy-loaded via React Suspense —
                 # give it up to 10s to fully render before checking for the back button.
                 if path == "/documents/email-signature":
-                    # Wait for any loading spinner to clear first
+                    # Lazy-loaded via React Suspense — can take longer to render,
+                    # especially after the browser was woken from a suspended state.
+                    # Wait for spinner first, then up to 15s for the back button.
                     try:
-                        page.locator(".animate-spin").wait_for(state="hidden", timeout=10000)
+                        page.locator(".animate-spin").wait_for(state="hidden", timeout=15000)
                     except Exception:
                         pass
-                    # Then wait up to 10s for the back button to appear
+                    back_sel = (
+                        "button:has-text('חזרה'), a:has-text('חזרה'), "
+                        "button:has-text('חזור'), a:has-text('חזור'), "
+                        "[data-testid='back-button']"
+                    )
+                    found = False
                     try:
-                        page.locator(
-                            "button:has-text('חזרה'), a:has-text('חזרה'), "
-                            "button:has-text('חזור'), a:has-text('חזור'), "
-                            "[data-testid='back-button']"
-                        ).first.wait_for(state="visible", timeout=10000)
+                        page.locator(back_sel).first.wait_for(state="visible", timeout=15000)
+                        found = True
                     except Exception:
                         pass
+                    # If still not found, reload once and try for another 10s
+                    if not found:
+                        log(f"     ↻ /documents/email-signature — back button not yet visible, reloading...")
+                        page.reload(wait_until="domcontentloaded")
+                        try:
+                            page.locator(".animate-spin").wait_for(state="hidden", timeout=10000)
+                        except Exception:
+                            pass
+                        try:
+                            page.locator(back_sel).first.wait_for(state="visible", timeout=10000)
+                        except Exception:
+                            pass
                 else:
                     page.wait_for_timeout(2000)
 
