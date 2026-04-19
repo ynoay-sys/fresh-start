@@ -238,9 +238,6 @@ def test_sign_document(page: Page):
 
 def test_add_contact(page: Page):
     log("\n▶ TEST 4 — Add a Contact")
-    # Capture all browser console.log output so Base44's in-app [DEBUG] lines
-    # are forwarded to our test stdout.
-    page.on("console", lambda msg: log(f"   [BROWSER {msg.type.upper()}] {msg.text}") if msg.type in ("log", "warn", "error") else None)
     try:
         page.goto(f"{BASE_URL}/contacts", wait_until="domcontentloaded")
         page.wait_for_timeout(2000)
@@ -323,20 +320,6 @@ def test_add_contact(page: Page):
                    f"Save did not complete — {err_hint}", sc)
             return
 
-        # ── DEBUG: inspect user identity immediately after save ───────────────
-        user_info = page.evaluate("""() => {
-            const u = window.__currentUser || window.currentUser || null;
-            return JSON.stringify(u);
-        }""")
-        log(f"   DEBUG — current user in page: {user_info}")
-
-        # ── DEBUG: snapshot contact-list DOM right after save ─────────────────
-        list_html = page.evaluate("""() => {
-            const el = document.querySelector('[data-testid=\"contact-list\"]');
-            return el ? el.innerHTML.substring(0, 300) : '(no [data-testid=contact-list] found)';
-        }""")
-        log(f"   DEBUG — contact list HTML after save: {list_html}")
-
         # Modal closed → save succeeded.
         # Navigate away to /dashboard and back to /contacts to verify real DB
         # persistence (not just optimistic React state that vanishes on reload).
@@ -377,14 +360,6 @@ def test_delete_contact(page: Page):
         # Additional 5s before the navigation itself
         log("   Waiting 5s pre-navigation...")
         time.sleep(5)
-
-        # ── DEBUG: dump localStorage before navigating ────────────────────────
-        storage = page.evaluate("""() => {
-            return Object.keys(localStorage)
-                .map(k => k + ': ' + (localStorage.getItem(k) || '').substring(0, 80))
-                .join('\\n');
-        }""")
-        log(f"   DEBUG — localStorage before /contacts navigation:\n{storage}")
 
         # ── Navigate and retry up to 3 times if list is still 429-blocked ─────
         contact_found = False
@@ -987,17 +962,25 @@ def main():
 
         def guard(test_fn):
             """Run a test, pausing 4s first to let previous API calls settle,
-            then reloading the session if it expired."""
+            then reloading the session if it expired or the network was suspended."""
             time.sleep(4)   # global inter-test cooldown — prevents 429 cascades
             try:
                 content = page.content()
                 alive = any(kw in content for kw in ["ראשי", "Fresh Start", "התנתקות"])
                 if not alive:
                     log("   ⚡ Session heartbeat lost — reloading...")
-                    page.reload(wait_until="domcontentloaded")
+                    page.goto(f"{BASE_URL}/dashboard", wait_until="domcontentloaded")
                     page.wait_for_timeout(3000)
             except Exception:
-                pass
+                # ERR_NETWORK_IO_SUSPENDED or other network errors mean Chrome
+                # suspended the context after a long idle period (e.g. TEST 5's
+                # retry loops). Force a fresh navigation to wake the network stack.
+                log("   ⚡ Network suspended — waking browser with fresh navigation...")
+                try:
+                    page.goto(f"{BASE_URL}/dashboard", wait_until="domcontentloaded")
+                    page.wait_for_timeout(3000)
+                except Exception:
+                    pass
             test_fn(page)
 
         # ── TEST 1 — Login ─────────────────────────────────────────────────
