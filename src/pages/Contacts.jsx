@@ -122,14 +122,8 @@ export default function Contacts() {
   const [toast, setToast] = useState("");
 
   async function load() {
-    const results = await base44.entities.Contact.list("full_name");
     const currentUser = await base44.auth.me();
-    console.log('[DEBUG] Contact.list() returned:', results.length, 'records');
-    console.log('[DEBUG] Current user email:', currentUser?.email);
-    if (results.length > 0) {
-      console.log('[DEBUG] First contact created_by:', results[0]?.created_by);
-      console.log('[DEBUG] MATCH:', results[0]?.created_by === currentUser?.email);
-    }
+    const results = await base44.entities.Contact.filter({ created_by: currentUser.email }, "full_name");
     setContacts(results);
     setLoading(false);
   }
@@ -145,13 +139,18 @@ export default function Contacts() {
     setTimeout(() => setToast(""), 3000);
   }
 
-  async function handleSaved(isNew, category) {
+  async function handleSaved(isNew, category, prefetchedList) {
     if (isNew) trackEvent('contact_added', { category: category || 'unknown' });
     setModalContact(undefined);
-    setLoading(true);
-    // Small delay to let Base44 propagate the new record before querying
-    if (isNew) await new Promise(r => setTimeout(r, 1000));
-    await load();
+    if (prefetchedList) {
+      // Modal already verified the list — use it directly, no extra fetch needed
+      const sorted = [...prefetchedList].sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
+      setContacts(sorted);
+      setLoading(false);
+    } else {
+      setLoading(true);
+      await load();
+    }
   }
 
   const categoryCounts = contacts.reduce((acc, c) => {

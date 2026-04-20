@@ -36,13 +36,20 @@ export default function ContactModal({ contact, onClose, onSaved }) {
         onSaved(false, form.category);
       } else {
         const newContact = await base44.entities.Contact.create(form);
-        const currentUser = await base44.auth.me();
-        console.log('[DEBUG] Created contact:', newContact);
-        console.log('[DEBUG] Current user:', currentUser);
-        console.log('[DEBUG] contact.created_by:', newContact?.created_by);
-        console.log('[DEBUG] user.email:', currentUser?.email);
-        console.log('[DEBUG] MATCH:', newContact?.created_by === currentUser?.email);
-        onSaved(true, form.category);
+        console.log('[DEBUG] Created contact:', newContact?.id);
+
+        // Verify it was actually saved
+        await new Promise(r => setTimeout(r, 1500));
+        const verify = await base44.entities.Contact.list();
+        const found = verify.find(c => c.id === newContact?.id);
+
+        if (!found) {
+          console.error('[DEBUG] First create failed, retrying...');
+          await base44.entities.Contact.create(form);
+          await new Promise(r => setTimeout(r, 1500));
+        }
+
+        onSaved(true, form.category, verify);
       }
     } catch (err) {
       setError("שגיאה בשמירה — נסה שוב");
