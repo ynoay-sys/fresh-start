@@ -245,7 +245,7 @@ export default function Contacts() {
           style={activeCategory === "all" ? { backgroundColor: "#1E5FA8" } : {}}
         >
           <span>הכל</span>
-          <span className="text-xs opacity-70">{contacts.length}</span>
+          <span className="text-xs opacity-70">{filtered.length}</span>
         </button>
         {FILTER_CATEGORIES.map(cat => (
           <button
@@ -258,7 +258,11 @@ export default function Contacts() {
               <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{CATEGORY_ICONS[cat]}</span>
               <span>{CATEGORY_LABELS[cat]}</span>
             </span>
-            <span className="text-xs opacity-70 mr-1">{categoryCounts[cat] || 0}</span>
+            <span className="text-xs opacity-70 mr-1">{
+              search
+                ? contacts.filter(c => c.category === cat && [c.full_name, c.profession, c.email].some(f => f?.toLowerCase().includes(search.toLowerCase()))).length
+                : (categoryCounts[cat] || 0)
+            }</span>
           </button>
         ))}
       </aside>
