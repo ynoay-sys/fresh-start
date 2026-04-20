@@ -111,6 +111,7 @@ const AuthenticatedApp = () => {
         <Route path="/progress" element={<Progress />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/schema" element={<SchemaDocumentation />} />
+        {/* Business setup wizard */}
         <Route path="/setup/existing" element={<SetupExisting />} />
       </Route>
 
