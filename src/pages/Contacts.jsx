@@ -159,7 +159,17 @@ export default function Contacts() {
   };
 
   async function load() {
-    const currentUser = await base44.auth.me();
+    let currentUser = await base44.auth.me();
+    // Guard: auth token may not be hydrated yet (e.g. injected sessions in automated tests).
+    // Retry once after a short delay before giving up to avoid filter({ created_by: undefined }).
+    if (!currentUser?.email) {
+      await new Promise(r => setTimeout(r, 1000));
+      currentUser = await base44.auth.me();
+    }
+    if (!currentUser?.email) {
+      setLoading(false);
+      return;
+    }
     const results = await base44.entities.Contact.filter({ created_by: currentUser.email }, "full_name");
     setContacts(results);
     setLoading(false);

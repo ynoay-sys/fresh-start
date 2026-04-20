@@ -4,12 +4,12 @@ import { base44 } from "@/api/base44Client";
 import BackButton from "../components/BackButton";
 
 const BUSINESS_TYPES = [
-  { value: "osek_patur", label: "עוסק פטור", description: "מחזור עסקי עד תקרת הפטור השנתית" },
-  { value: "osek_murshe", label: "עוסק מורשה", description: "מחזור עסקי מעל תקרת הפטור" },
-  { value: "osek_zair", label: "עוסק זעיר", description: "עסק קטן עם מחזור מוגבל" },
-  { value: "esek_beinoni", label: "עסק בינוני", description: "עסק בינוני עם עובדים" },
-  { value: "amuta", label: "עמותה", description: "ארגון ללא מטרות רווח" },
-  { value: "sakhir_atzmai", label: "שכיר-עצמאי", description: "משלב עבודה שכירה ועצמאות" },
+  { value: "osek_patur", label: "עוסק פטור", description: "מחזור עסקי עד תקרת הפטור השנתית", icon: "🧾" },
+  { value: "osek_murshe", label: "עוסק מורשה", description: "מחזור עסקי מעל תקרת הפטור", icon: "📊" },
+  { value: "osek_zair", label: "עוסק זעיר", description: "עסק קטן עם מחזור מוגבל", icon: "🏪" },
+  { value: "esek_beinoni", label: "עסק בינוני", description: "עסק בינוני עם עובדים", icon: "🏢", comingSoon: true },
+  { value: "amuta", label: "עמותה", description: "ארגון ללא מטרות רווח", icon: "🤝" },
+  { value: "sakhir_atzmai", label: "שכיר-עצמאי", description: "משלב עבודה שכירה ועצמאות", icon: "👔" },
 ];
 
 const STEPS = ["סוג עסק", "פרטי רישום", "סיכום"];
@@ -75,17 +75,24 @@ export default function SetupExisting() {
       {step === 0 && (
         <div>
           <h2 className="text-base font-semibold text-gray-800 mb-4">בחר את סוג העסק שלך</h2>
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {BUSINESS_TYPES.map(bt => (
               <button
                 key={bt.value}
                 onClick={() => setSelectedType(bt.value)}
-                className="text-right p-4 rounded-xl border-2 transition-all"
+                className="text-right p-4 rounded-xl border-2 transition-all relative"
                 style={{
                   borderColor: selectedType === bt.value ? "#1E5FA8" : "#E5E7EB",
                   backgroundColor: selectedType === bt.value ? "#EAF2FB" : "white",
                 }}
               >
+                {bt.comingSoon && (
+                  <span className="absolute top-2 left-2 text-xs font-medium px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: "#FEF3C7", color: "#92400E" }}>
+                    פיצ'רים בקרוב
+                  </span>
+                )}
+                <span className="text-2xl mb-1 block">{bt.icon}</span>
                 <p className="font-semibold text-gray-900">{bt.label}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{bt.description}</p>
               </button>
