@@ -36,16 +36,39 @@ function SkeletonCard() {
   );
 }
 
-function ContactCard({ contact, onEdit, onDelete, onClick }) {
+function ContactCard({ contact, onEdit, onDelete, onClick, selectionMode, selected, onToggleSelect }) {
   const initials = contact.full_name?.split(" ").map(w => w[0]).slice(0, 2).join("") || "?";
   const color = CATEGORY_COLORS[contact.category] || "#6B7280";
+
+  const cardStyle = {
+    width: '100%', maxWidth: '100%', boxSizing: 'border-box',
+    padding: '12px 16px', overflowX: 'hidden', marginBottom: '8px',
+    position: 'relative',
+    ...(selectionMode && selected
+      ? { border: '2px solid #1E5FA8', backgroundColor: '#EAF2FB' }
+      : {}),
+  };
 
   return (
     <div
       className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col cursor-pointer"
-      style={{width:'100%', maxWidth:'100%', boxSizing:'border-box', padding:'12px 16px', overflowX:'hidden', marginBottom:'8px'}}
-      onClick={onClick}
+      style={cardStyle}
+      onClick={selectionMode ? () => onToggleSelect(contact.id) : onClick}
     >
+      {/* Checkbox in selection mode */}
+      {selectionMode && (
+        <div style={{ position: 'absolute', top: 10, left: 10 }}>
+          <div style={{
+            width: 22, height: 22, borderRadius: '50%',
+            backgroundColor: selected ? '#1E5FA8' : 'transparent',
+            border: selected ? '2px solid #1E5FA8' : '2px solid #9CA3AF',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {selected && <span style={{ color: 'white', fontSize: 13, fontWeight: 'bold', lineHeight: 1 }}>✓</span>}
+          </div>
+        </div>
+      )}
+
       {/* Avatar */}
       <div className="flex justify-center mb-3">
         <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold"
@@ -73,23 +96,25 @@ function ContactCard({ contact, onEdit, onDelete, onClick }) {
         {contact.email && <p style={{overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'100%', display:'block'}}>✉️ {contact.email}</p>}
       </div>
 
-      {/* Actions */}
-      <div style={{ display: 'flex', flexDirection: 'row', gap: 8, width: '100%', overflow: 'visible', flexWrap: 'wrap', marginTop: 'auto' }} onClick={e => e.stopPropagation()}>
-        <button
-          onClick={() => onEdit(contact)}
-          style={{ flexShrink: 0 }}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50"
-        >
-          <Edit className="w-3.5 h-3.5" /> ערוך
-        </button>
-        <button
-          onClick={() => onDelete(contact)}
-          style={{ flexShrink: 0 }}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50"
-        >
-          <Trash2 className="w-3.5 h-3.5" /> מחק
-        </button>
-      </div>
+      {/* Actions — hidden in selection mode */}
+      {!selectionMode && (
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 8, width: '100%', overflow: 'visible', flexWrap: 'wrap', marginTop: 'auto' }} onClick={e => e.stopPropagation()}>
+          <button
+            onClick={() => onEdit(contact)}
+            style={{ flexShrink: 0 }}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <Edit className="w-3.5 h-3.5" /> ערוך
+          </button>
+          <button
+            onClick={() => onDelete(contact)}
+            style={{ flexShrink: 0 }}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> מחק
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -120,6 +145,18 @@ export default function Contacts() {
   const [drawerContact, setDrawerContact] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [toast, setToast] = useState("");
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+
+  const toggleSelect = (contactId) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(contactId)) next.delete(contactId);
+      else next.add(contactId);
+      return next;
+    });
+  };
 
   async function load() {
     const currentUser = await base44.auth.me();
@@ -135,7 +172,26 @@ export default function Contacts() {
     setContacts(c => c.filter(x => x.id !== contact.id));
     setDeleteTarget(null);
     setDrawerContact(null);
-    setToast(`${contact.full_name} נמחק ✓`);
+    showToast(`איש הקשר "${contact.full_name}" נמחק בהצלחה`);
+  }
+
+  async function handleBulkDelete() {
+    const count = selectedIds.size;
+    for (const id of selectedIds) {
+      await base44.entities.Contact.delete(id);
+      await new Promise(r => setTimeout(r, 200));
+    }
+    showToast(`${count} אנשי קשר נמחקו בהצלחה`);
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+    setShowBulkConfirm(false);
+    const currentUser = await base44.auth.me();
+    const fresh = await base44.entities.Contact.filter({ created_by: currentUser.email }, "full_name");
+    setContacts(fresh);
+  }
+
+  function showToast(msg) {
+    setToast(msg);
     setTimeout(() => setToast(""), 3000);
   }
 
@@ -202,13 +258,32 @@ export default function Contacts() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">אנשי קשר</h1>
-          <button
-            onClick={() => setModalContact(null)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
-            style={{ backgroundColor: "#1E5FA8" }}
-          >
-            <Plus className="w-4 h-4" /> הוסף איש קשר
-          </button>
+          <div className="flex items-center gap-2">
+            {selectionMode ? (
+              <button
+                onClick={() => { setSelectionMode(false); setSelectedIds(new Set()); }}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                ביטול
+              </button>
+            ) : (
+              <button
+                onClick={() => { setSelectionMode(true); setSelectedIds(new Set()); }}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                בחר
+              </button>
+            )}
+            {!selectionMode && (
+              <button
+                onClick={() => setModalContact(null)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
+                style={{ backgroundColor: "#1E5FA8" }}
+              >
+                <Plus className="w-4 h-4" /> הוסף איש קשר
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Search */}
@@ -253,6 +328,9 @@ export default function Contacts() {
                 onEdit={contact => setModalContact(contact)}
                 onDelete={setDeleteTarget}
                 onClick={() => setDrawerContact(c)}
+                selectionMode={selectionMode}
+                selected={selectedIds.has(c.id)}
+                onToggleSelect={toggleSelect}
               />
             ))}
           </div>
@@ -301,9 +379,57 @@ export default function Contacts() {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
+      {/* Toast — top-center with × dismiss */}
       {toast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium shadow-lg z-50">
+        <div style={{
+          position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
+          backgroundColor: '#1A7A4A', color: 'white',
+          padding: '10px 20px', borderRadius: 999, fontSize: 14, fontWeight: 500,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap',
+        }}>
           {toast}
+          <button onClick={() => setToast("")} style={{ color: 'white', background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
+        </div>
+      )}
+
+      {/* Floating action bar */}
+      {selectionMode && selectedIds.size > 0 && (
+        <div style={{
+          position: 'fixed', bottom: 70, left: 0, right: 0, zIndex: 100,
+          backgroundColor: 'white', boxShadow: '0 -2px 12px rgba(0,0,0,0.12)',
+          padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }} dir="rtl">
+          <span style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{selectedIds.size} אנשי קשר נבחרו</span>
+          <button
+            onClick={() => {
+              if (selectedIds.size === contacts.length) setSelectedIds(new Set());
+              else setSelectedIds(new Set(contacts.map(c => c.id)));
+            }}
+            style={{ fontSize: 13, color: '#1E5FA8', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
+          >
+            {selectedIds.size === contacts.length ? "בטל בחירת הכל" : "בחר הכל"}
+          </button>
+          <button
+            onClick={() => setShowBulkConfirm(true)}
+            style={{ backgroundColor: '#DC2626', color: 'white', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+          >
+            מחק נבחרים 🗑️
+          </button>
+        </div>
+      )}
+
+      {/* Bulk delete confirm dialog */}
+      {showBulkConfirm && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
+            <h3 className="font-bold text-gray-900 text-lg mb-1">האם למחוק {selectedIds.size} אנשי קשר?</h3>
+            <p className="text-sm text-gray-500 mb-6">פעולה זו אינה ניתנת לביטול</p>
+            <div className="flex gap-3">
+              <button onClick={handleBulkDelete} className="flex-1 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700">מחק הכל</button>
+              <button onClick={() => setShowBulkConfirm(false)} className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">ביטול</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

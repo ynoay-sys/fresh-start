@@ -41,6 +41,7 @@ import Help from './pages/Help';
 import EmailSignaturePage from './pages/EmailSignaturePage';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import SetupExisting from './pages/SetupExisting';
 
 // These paths are always public — no auth check whatsoever
 const PUBLIC_PATHS = ['/', '/marketing', '/register', '/login', '/pricing', '/help', '/terms', '/privacy'];
@@ -110,6 +111,7 @@ const AuthenticatedApp = () => {
         <Route path="/progress" element={<Progress />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/schema" element={<SchemaDocumentation />} />
+        <Route path="/setup/existing" element={<SetupExisting />} />
       </Route>
 
       {/* Admin routes */}
