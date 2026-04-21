@@ -4,12 +4,12 @@ import { base44 } from "@/api/base44Client";
 import BackButton from "../components/BackButton";
 
 const BUSINESS_TYPES = [
-  { value: "osek_patur", label: "עוסק פטור", description: "מחזור עסקי עד תקרת הפטור השנתית", icon: "🧾" },
-  { value: "osek_murshe", label: "עוסק מורשה", description: "מחזור עסקי מעל תקרת הפטור", icon: "📊" },
-  { value: "osek_zair", label: "עוסק זעיר", description: "עסק קטן עם מחזור מוגבל", icon: "🏪" },
-  { value: "esek_beinoni", label: "עסק בינוני", description: "עסק בינוני עם עובדים", icon: "🏢", comingSoon: true },
-  { value: "amuta", label: "עמותה", description: "ארגון ללא מטרות רווח", icon: "🤝" },
-  { value: "sakhir_atzmai", label: "שכיר-עצמאי", description: "משלב עבודה שכירה ועצמאות", icon: "👔" },
+  { value: "osek_patur", label: "עוסק פטור 🧾", description: "מחזור שנתי עד ₪120,000. פטור מגביית מע\"מ." },
+  { value: "osek_murshe", label: "עוסק מורשה 📊", description: "מחזור מעל ₪120,000. גובה מע\"מ 18%." },
+  { value: "osek_zair", label: "עסק זעיר 🏪", description: "עסק קטן עד 5 עובדים." },
+  { value: "esek_beinoni", label: "עסק בינוני 🏢", description: "5-100 עובדים. לרוב חברה בע\"מ." },
+  { value: "amuta", label: "עמותה 🤝", description: "מוסד ללא כוונת רווח." },
+  { value: "sakhir_atzmai", label: "שכיר + עצמאי 👔", description: "עובד שכיר שגם עצמאי." },
 ];
 
 const STEPS = ["סוג עסק", "פרטי רישום", "סיכום"];
@@ -86,13 +86,9 @@ export default function SetupExisting() {
                   backgroundColor: selectedType === bt.value ? "#EAF2FB" : "white",
                 }}
               >
-                {bt.comingSoon && (
-                  <span className="absolute top-2 left-2 text-xs font-medium px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: "#FEF3C7", color: "#92400E" }}>
-                    פיצ'רים בקרוב
-                  </span>
+                {bt.value === "esek_beinoni" && (
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">פיצ'רים בקרוב</span>
                 )}
-                <span className="text-2xl mb-1 block">{bt.icon}</span>
                 <p className="font-semibold text-gray-900">{bt.label}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{bt.description}</p>
               </button>
