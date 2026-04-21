@@ -42,6 +42,7 @@ import EmailSignaturePage from './pages/EmailSignaturePage';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import SetupExisting from './pages/SetupExisting';
+import ProfessionalMarketplace from './pages/ProfessionalMarketplace';
 
 // These paths are always public — no auth check whatsoever
 const PUBLIC_PATHS = ['/', '/marketing', '/register', '/login', '/pricing', '/help', '/terms', '/privacy'];
@@ -113,6 +114,7 @@ const AuthenticatedApp = () => {
         <Route path="/schema" element={<SchemaDocumentation />} />
         {/* Business setup wizard */}
         <Route path="/setup/existing" element={<SetupExisting />} />
+        <Route path="/contacts/marketplace" element={<ProfessionalMarketplace />} />
       </Route>
 
       {/* Admin routes */}

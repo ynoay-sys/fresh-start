@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Search, Plus, Trash2, Edit } from "lucide-react";
+import { Search, Plus, Trash2, Edit, Users } from "lucide-react";
 import TabBar from "../components/TabBar";
+import { useNavigate } from "react-router-dom";
 import ContactModal from "../components/ContactModal";
 import ContactDrawer from "../components/ContactDrawer";
 import { trackEvent } from "../lib/trackEvent";
@@ -137,6 +138,7 @@ function DeleteDialog({ contact, onConfirm, onCancel }) {
 }
 
 export default function Contacts() {
+  const navigate = useNavigate();
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -289,13 +291,21 @@ export default function Contacts() {
               </button>
             )}
             {!selectionMode && (
-              <button
-                onClick={() => setModalContact(null)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
-                style={{ backgroundColor: "#1E5FA8" }}
-              >
-                <Plus className="w-4 h-4" /> הוסף איש קשר
-              </button>
+              <>
+                <button
+                  onClick={() => navigate("/contacts/marketplace")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <Users className="w-4 h-4" /> הכר לי אנשי מקצוע
+                </button>
+                <button
+                  onClick={() => setModalContact(null)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
+                  style={{ backgroundColor: "#1E5FA8" }}
+                >
+                  <Plus className="w-4 h-4" /> הוסף איש קשר
+                </button>
+              </>
             )}
           </div>
         </div>

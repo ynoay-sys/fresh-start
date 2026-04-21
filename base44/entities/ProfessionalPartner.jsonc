@@ -1,0 +1,67 @@
+{
+  "name": "ProfessionalPartner",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Full name"
+    },
+    "profession": {
+      "type": "string",
+      "description": "e.g. \u05e8\u05d5\u05d0\u05d4 \u05d7\u05e9\u05d1\u05d5\u05df"
+    },
+    "category": {
+      "type": "string",
+      "description": "Main category key"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Subcategory key"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Israeli phone format"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address"
+    },
+    "city": {
+      "type": "string",
+      "description": "City name"
+    },
+    "address": {
+      "type": "string",
+      "description": "Full address"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short bio"
+    },
+    "website": {
+      "type": "string",
+      "description": "Website URL"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Rating 1-5"
+    },
+    "reviewCount": {
+      "type": "integer",
+      "description": "Number of reviews"
+    },
+    "isVerifiedPartner": {
+      "type": "boolean",
+      "default": true
+    },
+    "logoInitials": {
+      "type": "string",
+      "description": "2-letter avatar initials"
+    }
+  },
+  "required": [
+    "name",
+    "profession",
+    "category"
+  ]
+}

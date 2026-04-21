@@ -198,12 +198,22 @@ export default function Dashboard() {
         <StatCard emoji="📁" label="מסמכים" value={docCount} onClick={() => navigate("/documents")} />
         <StatCard emoji="🤝" label="לקוחות" value={clientCount} onClick={() => navigate("/clients")} />
         <StatCard emoji="👥" label="אנשי קשר" value={contactCount} onClick={() => navigate("/contacts")} />
+
         <StatCard emoji="✅" label="שלבי פתיחה" value={stepsCompleted != null ? `${stepsCompleted}/4` : "—"} onClick={() => navigate("/business-opening")} />
         <StatCard emoji="📈" label="התקדמות" value="←" onClick={() => navigate("/progress")} />
       </div>
 
       {/* Onboarding Checklist */}
       <OnboardingChecklist checks={onboardingChecks} />
+
+      {/* Contacts marketplace link */}
+      <div className="flex justify-end mb-2 -mt-6">
+        <button onClick={() => navigate("/contacts/marketplace")}
+          className="text-xs font-medium"
+          style={{ color: "#6B7280", background: "none", border: "none", cursor: "pointer" }}>
+          מצא אנשי מקצוע ←
+        </button>
+      </div>
 
       {/* Business Opening Widget */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
