@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { generateSignatureHtml } from "../lib/generateSignatureHtml";
 import InstallGuideModal from "../components/InstallGuideModal";
 import PaywallModal from "../components/PaywallModal";
+import { sendEmailSignatureEmail } from "../services/EmailService";
 
 const BIZ_TYPE_HE = {
   freelancer: "פרילנסר", retail: "קמעונאות", studio: "סטודיו",
@@ -277,6 +278,33 @@ export default function EmailSignaturePage() {
 
           {/* Section D: Export */}
           <div className="flex flex-col gap-2">
+            {/* Send to email */}
+            <button
+              onClick={async () => {
+                if (!form.email) {
+                  setToastMessage("אנא הזן כתובת אימייל בפרטי החתימה");
+                  setShowToast(true);
+                  setTimeout(() => setShowToast(false), 3000);
+                  return;
+                }
+                try {
+                  await sendEmailSignatureEmail({
+                    userEmail: form.email,
+                    signatureHtml: previewHtml,
+                    userName: form.fullName,
+                  });
+                  setToastMessage("החתימה נשלחה לאימייל שלך ✓");
+                } catch (_) {
+                  setToastMessage("שליחה נכשלה. הורד את החתימה ידנית.");
+                }
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3500);
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium"
+              style={{ borderColor: "#1A7A4A", color: "#1A7A4A" }}
+            >
+              ✉️ שלח לאימייל שלי
+            </button>
             <button
               onClick={() => {
                 const el = document.getElementById('signature-preview');

@@ -43,9 +43,11 @@ import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import SetupExisting from './pages/SetupExisting';
 import ProfessionalMarketplace from './pages/ProfessionalMarketplace';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentFailed from './pages/PaymentFailed';
 
 // These paths are always public — no auth check whatsoever
-const PUBLIC_PATHS = ['/', '/marketing', '/register', '/login', '/pricing', '/help', '/terms', '/privacy'];
+const PUBLIC_PATHS = ['/', '/marketing', '/register', '/login', '/pricing', '/help', '/terms', '/privacy', '/payment/success', '/payment/failed'];
 
 function isPublicPath(pathname) {
   if (PUBLIC_PATHS.includes(pathname)) return true;
@@ -88,6 +90,9 @@ const AuthenticatedApp = () => {
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/p/:subdomain" element={<PublicLandingPage />} />
+      <Route path="/payment/success" element={<PaymentSuccess />} />
+      <Route path="/payment/failed" element={<PaymentFailed />} />
+
 
       {/* Authenticated app routes inside Layout */}
       <Route element={<Layout />}>
@@ -144,6 +149,8 @@ function AppRouter() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/p/:subdomain" element={<PublicLandingPage />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/payment/failed" element={<PaymentFailed />} />
         <Route path="*" element={<Marketing />} />
       </Routes>
     );

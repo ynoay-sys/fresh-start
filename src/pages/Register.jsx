@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import BackButton from "../components/BackButton";
 import { Eye, EyeOff } from "lucide-react";
+import { sendWelcomeEmail } from "../services/EmailService";
 
 const BUSINESS_TYPES = [
   { value: "freelancer", label: "פרילנסר" },
@@ -125,6 +126,13 @@ export default function Register() {
 
   function handleContinue() {
     setShowVerification(false);
+    // Fire-and-forget welcome email for new registrations
+    if (form.email) {
+      sendWelcomeEmail({
+        userEmail: form.email,
+        userName: [form.firstName, form.lastName].filter(Boolean).join(" "),
+      });
+    }
     base44.auth.redirectToLogin(window.location.origin + "/dashboard");
   }
 
