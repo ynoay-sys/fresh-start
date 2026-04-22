@@ -90,14 +90,14 @@ function LegalStatusBadge({ confidence }) {
 
 function DocumentCard({ doc, onDelete, onSign, onConfidenceUpdate }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col p-5" style={{ width: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
+    <div className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all flex flex-col p-5" style={{ width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', overflowX: 'hidden' }}>
       {/* Icon */}
       <div className="flex justify-center mb-3">
         <FileTypeIcon ext={doc.file_type} />
       </div>
 
       {/* Name */}
-      <p className="font-semibold text-gray-800 text-sm text-center truncate mb-2" title={doc.file_name}>
+      <p className="font-semibold text-gray-800 text-sm text-center mb-2" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }} title={doc.file_name}>
         {doc.file_name}
       </p>
 
@@ -243,7 +243,7 @@ export default function Documents() {
 
       {/* Document Grid */}
       {activeTab !== "templates" && !loading && filtered.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, width: '100%', boxSizing: 'border-box' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 12, width: '100%', boxSizing: 'border-box' }}>
           {filtered.map(doc => (
             <DocumentCard key={doc.id} doc={doc} onDelete={setDeleteTarget} onSign={handleSign} onConfidenceUpdate={handleConfidenceUpdate} />
           ))}

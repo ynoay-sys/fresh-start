@@ -99,18 +99,18 @@ function ContactCard({ contact, onEdit, onDelete, onClick, selectionMode, select
 
       {/* Actions — hidden in selection mode */}
       {!selectionMode && (
-        <div style={{ display: 'flex', flexDirection: 'row', gap: 8, width: '100%', overflow: 'visible', flexWrap: 'wrap', marginTop: 'auto' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', gap: '8px', width: '100%', flexWrap: 'wrap', paddingTop: '8px', marginTop: 'auto' }} onClick={e => e.stopPropagation()}>
           <button
             onClick={() => onEdit(contact)}
             style={{ flexShrink: 0 }}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50"
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50"
           >
             <Edit className="w-3.5 h-3.5" /> ערוך
           </button>
           <button
             onClick={() => onDelete(contact)}
             style={{ flexShrink: 0 }}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50"
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-100 text-xs font-medium text-red-500 hover:bg-red-50"
           >
             <Trash2 className="w-3.5 h-3.5" /> מחק
           </button>
@@ -256,8 +256,8 @@ export default function Contacts() {
             className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium mb-0.5 transition-colors ${activeCategory === cat ? "text-white" : "text-gray-700 hover:bg-gray-50"}`}
             style={activeCategory === cat ? { backgroundColor: "#1E5FA8" } : {}}
           >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{CATEGORY_ICONS[cat]}</span>
+            <span style={{ display: 'inline-flex', flexDirection: 'row', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: '14px', lineHeight: 1, flexShrink: 0 }}>{CATEGORY_ICONS[cat]}</span>
               <span>{CATEGORY_LABELS[cat]}</span>
             </span>
             <span className="text-xs opacity-70 mr-1">{
@@ -362,7 +362,7 @@ export default function Contacts() {
 
         {/* Empty State */}
         {!loading && filtered.length === 0 && (
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '48px 24px', boxSizing: 'border-box' }}>
+          <div style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '48px 24px', boxSizing: 'border-box' }}>
             <span className="text-6xl mb-4">👤</span>
             <p className="text-lg font-semibold text-gray-700 mb-1" style={{ textAlign: 'center' }}>עדיין אין אנשי קשר</p>
             <p className="text-sm text-gray-400 mb-6" style={{ textAlign: 'center' }}>

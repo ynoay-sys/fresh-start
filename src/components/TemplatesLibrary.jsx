@@ -198,19 +198,17 @@ export default function TemplatesLibrary() {
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
           <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: "#1E5FA8" }} />
         </div>
-        <div dir="rtl" style={{display:'flex', flexDirection:'row', flexWrap:'wrap', alignItems:'center', gap:'16px', width:'100%', padding:'8px 0', justifyContent:'flex-start'}}>
-          <div style={{display:'flex', flexDirection:'row', alignItems:'center', gap:'6px'}}>
-            <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:'#AA1111', border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}/>
-            <span style={{fontSize:'13px', color:'#444'}}>דחופים שלא הושלמו: {highUncompleted}</span>
-          </div>
-          <div style={{display:'flex', flexDirection:'row', alignItems:'center', gap:'6px'}}>
-            <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:'#C25A00', border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}/>
-            <span style={{fontSize:'13px', color:'#444'}}>בינוניים שלא הושלמו: {mediumUncompleted}</span>
-          </div>
-          <div style={{display:'flex', flexDirection:'row', alignItems:'center', gap:'6px'}}>
-            <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:'#1A7A4A', border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}/>
-            <span style={{fontSize:'13px', color:'#444'}}>הושלמו: {completedCount}</span>
-          </div>
+        <div style={{direction:'rtl', display:'flex', flexDirection:'row', flexWrap:'wrap', alignItems:'center', gap:'16px', width:'100%', padding:'8px 0', justifyContent:'flex-start'}}>
+          {[
+            {label: 'דחופים שלא הושלמו', count: highUncompleted, color: '#AA1111'},
+            {label: 'בינוניים שלא הושלמו', count: mediumUncompleted, color: '#C25A00'},
+            {label: 'הושלמו', count: completedCount, color: '#1A7A4A'},
+          ].map(({label, count, color}) => (
+            <div key={label} style={{display:'flex', flexDirection:'row', alignItems:'center', gap:'6px', whiteSpace:'nowrap'}}>
+              <span style={{fontSize:'13px', color:'#444'}}>{label}: {count}</span>
+              <span style={{width:'12px', height:'12px', borderRadius:'50%', backgroundColor:color, border:'1px solid rgba(0,0,0,0.2)', display:'inline-block', flexShrink:0}}/>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -224,8 +222,8 @@ export default function TemplatesLibrary() {
       )}
 
       {/* Filters */}
-      <p style={{ fontSize: 13, fontWeight: 600, color: '#555', textAlign: 'right', marginBottom: 6 }}>סוג טופס</p>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+      <div className="mb-2">
+        <p style={{fontSize:'13px', fontWeight:'600', color:'#555', textAlign:'right', marginBottom:'6px'}}>סוג טופס</p>
         <div className="flex gap-1 flex-wrap">
           {AUTHORITY_FILTERS.map(f => (
             <button key={f.key} onClick={() => setAuthorityFilter(f.key)}
@@ -235,9 +233,8 @@ export default function TemplatesLibrary() {
             </button>
           ))}
         </div>
-        <div>
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#555', textAlign: 'right', marginBottom: 6, marginTop: 12 }}>דחיפות</p>
-          <div className="flex gap-1 flex-wrap">
+        <p style={{fontSize:'13px', fontWeight:'600', color:'#555', textAlign:'right', marginTop:'12px', marginBottom:'6px'}}>דחיפות</p>
+        <div className="flex gap-1 flex-wrap">
           {URGENCY_FILTERS.map(f => (
             <button key={f.key} onClick={() => setUrgencyFilter(f.key)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${urgencyFilter === f.key ? "text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
@@ -245,7 +242,6 @@ export default function TemplatesLibrary() {
               {f.label}
             </button>
           ))}
-          </div>
         </div>
       </div>
       <p className="text-xs text-gray-400 text-right mb-3">
