@@ -53,54 +53,92 @@ function Header() {
 
 function HeroSVG() {
   return (
-    <svg width="420" height="320" viewBox="0 0 420 320" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-md mx-auto">
-      {/* Desk */}
-      <rect x="60" y="220" width="300" height="18" rx="4" fill="#E2E8F0"/>
-      <rect x="90" y="238" width="12" height="50" rx="3" fill="#CBD5E1"/>
-      <rect x="318" y="238" width="12" height="50" rx="3" fill="#CBD5E1"/>
-      {/* Monitor */}
-      <rect x="140" y="120" width="140" height="100" rx="8" fill="#1E3A5F"/>
-      <rect x="148" y="128" width="124" height="84" rx="4" fill="#EAF2FB"/>
-      {/* Screen content - document lines */}
-      <rect x="158" y="140" width="60" height="5" rx="2" fill="#1E5FA8"/>
-      <rect x="158" y="150" width="90" height="3" rx="1.5" fill="#94A3B8"/>
-      <rect x="158" y="157" width="80" height="3" rx="1.5" fill="#94A3B8"/>
-      <rect x="158" y="164" width="70" height="3" rx="1.5" fill="#94A3B8"/>
-      <rect x="158" y="174" width="40" height="8" rx="3" fill="#1E5FA8"/>
-      {/* Monitor stand */}
-      <rect x="202" y="220" width="16" height="16" rx="2" fill="#94A3B8"/>
-      <rect x="185" y="233" width="50" height="6" rx="2" fill="#94A3B8"/>
-      {/* Documents on desk */}
-      <rect x="75" y="195" width="55" height="26" rx="3" fill="white" stroke="#E2E8F0" strokeWidth="1.5"/>
-      <rect x="80" y="201" width="30" height="3" rx="1" fill="#94A3B8"/>
-      <rect x="80" y="207" width="40" height="2" rx="1" fill="#CBD5E1"/>
-      <rect x="80" y="212" width="35" height="2" rx="1" fill="#CBD5E1"/>
-      {/* Hebrew text on doc */}
-      <rect x="78" y="199" width="8" height="3" rx="1" fill="#1E5FA8"/>
-      {/* Second document */}
-      <rect x="290" y="192" width="55" height="30" rx="3" fill="white" stroke="#E2E8F0" strokeWidth="1.5"/>
-      <rect x="295" y="198" width="30" height="3" rx="1" fill="#94A3B8"/>
-      <rect x="295" y="204" width="40" height="2" rx="1" fill="#CBD5E1"/>
-      <rect x="295" y="209" width="35" height="2" rx="1" fill="#CBD5E1"/>
-      <rect x="295" y="214" width="25" height="2" rx="1" fill="#CBD5E1"/>
-      {/* Checkmark badge */}
-      <circle cx="340" cy="188" r="12" fill="#1A7A4A"/>
-      <path d="M334 188l4 4 8-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      {/* Person */}
-      <circle cx="210" cy="75" r="28" fill="#FED7AA"/>
-      <path d="M160 165 Q160 135 210 130 Q260 135 260 165" fill="#1E5FA8"/>
-      {/* Arms */}
-      <path d="M165 155 Q140 175 145 210" stroke="#FED7AA" strokeWidth="14" strokeLinecap="round"/>
-      <path d="M255 155 Q280 175 275 210" stroke="#FED7AA" strokeWidth="14" strokeLinecap="round"/>
-      {/* Face details */}
-      <circle cx="200" cy="70" r="3" fill="#92400E"/>
-      <circle cx="220" cy="70" r="3" fill="#92400E"/>
-      <path d="M202 82 Q210 88 218 82" stroke="#92400E" strokeWidth="2" strokeLinecap="round" fill="none"/>
-      {/* Star decoration */}
-      <circle cx="370" cy="80" r="8" fill="#FEF3C7"/>
-      <text x="366" y="85" fill="#F59E0B" fontSize="10">★</text>
-      <circle cx="50" cy="130" r="6" fill="#EAF2FB"/>
-      <text x="46" y="134" fill="#1E5FA8" fontSize="8">✓</text>
+    <svg width="100%" viewBox="0 0 680 480" role="img" xmlns="http://www.w3.org/2000/svg" className="w-full">
+      <title>הר עם מדרגות ואדם מגיע לפסגה</title>
+
+      {/* Background */}
+      <rect width="680" height="480" fill="#EAF2FB"/>
+
+      {/* Clouds */}
+      <g fill="white" opacity="0.7">
+        <ellipse cx="130" cy="110" rx="28" ry="13"/>
+        <ellipse cx="152" cy="105" rx="22" ry="11"/>
+        <ellipse cx="108" cy="108" rx="16" ry="9"/>
+        <ellipse cx="530" cy="95" rx="25" ry="12"/>
+        <ellipse cx="552" cy="90" rx="20" ry="10"/>
+        <ellipse cx="510" cy="93" rx="15" ry="8"/>
+      </g>
+
+      {/* Mountain left face (lighter) */}
+      <polygon points="340,55 115,375 340,375" fill="#2E6FB8"/>
+
+      {/* Mountain right face (darker) */}
+      <polygon points="340,55 565,375 340,375" fill="#164E97"/>
+
+      {/* Mountain center overlay for depth */}
+      <polygon points="340,55 230,375 450,375" fill="#1E5FA8" opacity="0.6"/>
+
+      {/* SPIRAL PATH around mountain */}
+      <path d="M 490,355 Q 340,390 190,355" fill="none" stroke="#4A9FE8" strokeWidth="2.5" strokeDasharray="8,5"/>
+      <path d="M 190,355 Q 140,300 165,250" fill="none" stroke="#4A9FE8" strokeWidth="2.5" strokeDasharray="8,5"/>
+      <path d="M 165,250 Q 280,220 420,250" fill="none" stroke="#4A9FE8" strokeWidth="2.5" strokeDasharray="8,5"/>
+      <path d="M 420,250 Q 460,200 430,160" fill="none" stroke="#4A9FE8" strokeWidth="2.5" strokeDasharray="8,5"/>
+      <path d="M 430,160 Q 340,130 255,155" fill="none" stroke="#4A9FE8" strokeWidth="2.5" strokeDasharray="8,5"/>
+      <path d="M 255,155 Q 230,120 280,90" fill="none" stroke="#4A9FE8" strokeWidth="2.5" strokeDasharray="8,5"/>
+      <path d="M 280,90 Q 320,70 338,62" fill="none" stroke="#4A9FE8" strokeWidth="2.5" strokeDasharray="8,5"/>
+
+      {/* STAIRS on right slope - dark navy */}
+      <g fill="#0D3B6E" stroke="#081F3A" strokeWidth="0.5">
+        <rect x="535" y="358" width="42" height="7" rx="1"/>
+        <rect x="518" y="343" width="40" height="7" rx="1"/>
+        <rect x="500" y="328" width="38" height="7" rx="1"/>
+        <rect x="482" y="313" width="36" height="7" rx="1"/>
+        <rect x="464" y="298" width="34" height="7" rx="1"/>
+        <rect x="447" y="283" width="32" height="7" rx="1"/>
+        <rect x="430" y="268" width="30" height="7" rx="1"/>
+        <rect x="413" y="253" width="28" height="7" rx="1"/>
+        <rect x="396" y="238" width="26" height="7" rx="1"/>
+        <rect x="379" y="223" width="24" height="7" rx="1"/>
+        <rect x="363" y="208" width="22" height="7" rx="1"/>
+        <rect x="347" y="193" width="20" height="7" rx="1"/>
+        <rect x="352" y="178" width="18" height="7" rx="1"/>
+        <rect x="348" y="163" width="16" height="7" rx="1"/>
+        <rect x="345" y="148" width="14" height="7" rx="1"/>
+        <rect x="342" y="133" width="12" height="7" rx="1"/>
+        <rect x="340" y="118" width="10" height="7" rx="1"/>
+        <rect x="339" y="103" width="8"  height="7" rx="1"/>
+        <rect x="339" y="88"  width="6"  height="7" rx="1"/>
+        <rect x="339" y="73"  width="4"  height="7" rx="1"/>
+      </g>
+
+      {/* PERSON on final stairs near summit */}
+      <g>
+        <line x1="340" y1="100" x2="336" y2="110" stroke="#A8D4FF" strokeWidth="2.5" strokeLinecap="round"/>
+        <line x1="344" y1="100" x2="347" y2="110" stroke="#A8D4FF" strokeWidth="2.5" strokeLinecap="round"/>
+        <rect x="335" y="88" width="10" height="12" rx="3" fill="#A8D4FF"/>
+        <line x1="335" y1="92" x2="329" y2="84" stroke="#A8D4FF" strokeWidth="2.5" strokeLinecap="round"/>
+        <line x1="345" y1="91" x2="341" y2="80" stroke="#A8D4FF" strokeWidth="2.5" strokeLinecap="round"/>
+        <circle cx="340" cy="83" r="6" fill="#C8E8FF"/>
+      </g>
+
+      {/* Summit flag/marker */}
+      <rect x="339" y="48" width="2" height="14" fill="#FFD700"/>
+      <polygon points="341,48 355,53 341,58" fill="#FFD700"/>
+
+      {/* Ground line */}
+      <rect x="90" y="373" width="500" height="5" rx="2" fill="#1E5FA8" opacity="0.3"/>
+
+      {/* Trees at base */}
+      <g fill="#164E97" opacity="0.6">
+        <rect x="148" y="358" width="4" height="16" rx="1"/>
+        <ellipse cx="150" cy="356" rx="9" ry="7"/>
+        <rect x="175" y="361" width="3" height="13" rx="1"/>
+        <ellipse cx="176" cy="359" rx="7" ry="6"/>
+        <rect x="510" y="360" width="4" height="14" rx="1"/>
+        <ellipse cx="512" cy="358" rx="9" ry="7"/>
+        <rect x="535" y="363" width="3" height="11" rx="1"/>
+        <ellipse cx="536" cy="361" rx="7" ry="5"/>
+      </g>
     </svg>
   );
 }
