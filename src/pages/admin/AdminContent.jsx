@@ -317,6 +317,92 @@ function PricingTab() {
   );
 }
 
+function PaymentSettingsTab() {
+  const [terminalName, setTerminalName] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    base44.entities.SystemConfig.list().then(configs => {
+      const byKey = {};
+      for (const c of configs) byKey[c.key] = { id: c.id, value: c.value };
+      setTerminalName(byKey["tranzila_terminal_name"]?.value || "");
+      setBaseUrl(byKey["app_base_url"]?.value || "");
+      setLoading(false);
+    });
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    const configs = await base44.entities.SystemConfig.list();
+    const byKey = {};
+    for (const c of configs) byKey[c.key] = c.id;
+
+    async function upsert(key, value) {
+      if (byKey[key]) {
+        await base44.entities.SystemConfig.update(byKey[key], { value });
+      } else {
+        await base44.entities.SystemConfig.create({ key, value });
+      }
+    }
+
+    await upsert("tranzila_terminal_name", terminalName.trim());
+    await new Promise(r => setTimeout(r, 300));
+    await upsert("app_base_url", baseUrl.trim());
+
+    setSaving(false);
+    setToast("הגדרות נשמרו בהצלחה ✓");
+    setTimeout(() => setToast(""), 3000);
+  }
+
+  if (loading) return <div className="flex items-center justify-center py-16"><div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" /></div>;
+
+  return (
+    <div className="max-w-md">
+      <p className="text-sm text-gray-500 mb-5">ערכים אלה משמשים לניתוב תשלומי Tranzila. הם מחליפים את ברירות המחדל בקוד.</p>
+      {toast && (
+        <div className="mb-4 px-4 py-3 rounded-xl text-sm font-medium bg-green-50 text-green-700">{toast}</div>
+      )}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-5">
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">שם טרמינל Tranzila</label>
+          <input
+            type="text"
+            value={terminalName}
+            onChange={e => setTerminalName(e.target.value)}
+            placeholder="fresh_start_terminal"
+            dir="ltr"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+          />
+          <p className="text-xs text-gray-400 mt-1">שם הטרמינל שקיבלת מ-Tranzila בהגדרות החשבון שלך</p>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">כתובת האפליקציה (base URL)</label>
+          <input
+            type="url"
+            value={baseUrl}
+            onChange={e => setBaseUrl(e.target.value)}
+            placeholder="https://app.fresh-start.co.il"
+            dir="ltr"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+          />
+          <p className="text-xs text-gray-400 mt-1">כתובת ה-URL המפורסמת של האפליקציה (ללא / בסוף)</p>
+        </div>
+        <button
+          onClick={handleSave}
+          disabled={saving || (!terminalName.trim() && !baseUrl.trim())}
+          className="w-full py-2.5 rounded-lg text-white text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+          style={{ backgroundColor: "#1E5FA8" }}
+        >
+          {saving ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />שומר...</> : "שמור הגדרות"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function EmailTestTab() {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
@@ -373,6 +459,7 @@ const TABS = [
   { key: "holidays", label: "חגים ישראליים" },
   { key: "pricing", label: "תמחור" },
   { key: "email_test", label: "בדיקת מיילים" },
+  { key: "payment_settings", label: "הגדרות תשלום" },
 ];
 
 export default function AdminContent() {
@@ -395,6 +482,7 @@ export default function AdminContent() {
       {activeTab === "holidays" && <HolidaysTab />}
       {activeTab === "pricing" && <PricingTab />}
       {activeTab === "email_test" && <EmailTestTab />}
+      {activeTab === "payment_settings" && <PaymentSettingsTab />}
     </div>
   );
 }

@@ -31,7 +31,7 @@ export default function PaywallModal({ featureKey, usedCount = 0, onClose, onPay
       userId: user.id,
     });
 
-    const url = initiatePayment({
+    const url = await initiatePayment({
       amount: config.price_ils,
       description: config.label_he,
       userEmail: user.email,

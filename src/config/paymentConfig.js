@@ -1,5 +1,7 @@
 // Payment Gateway Configuration — Tranzila hosted page
-export const TRANZILA_TERMINAL_NAME = "fresh_start_terminal"; // Replace with real terminal name post-deployment
+// These are DEFAULTS. Production values are stored in the SystemConfig entity
+// and loaded at runtime by PaymentService.js (entity values take precedence).
+export const TRANZILA_TERMINAL_NAME = "fresh_start_terminal";
 export const TRANZILA_HOSTED_URL = "https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi";
 export const APP_BASE_URL = typeof window !== "undefined" ? window.location.origin : "https://app.fresh-start.co.il";
 

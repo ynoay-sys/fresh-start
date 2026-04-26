@@ -1,22 +1,47 @@
-import { TRANZILA_TERMINAL_NAME, TRANZILA_HOSTED_URL, APP_BASE_URL } from "../config/paymentConfig";
+import {
+  TRANZILA_TERMINAL_NAME as DEFAULT_TERMINAL,
+  TRANZILA_HOSTED_URL,
+  APP_BASE_URL as DEFAULT_BASE_URL,
+} from "../config/paymentConfig";
 import { base44 } from "@/api/base44Client";
 import { trackEvent } from "../lib/trackEvent";
 
+// Cache resolved config for the session to avoid repeated entity reads
+let _configCache = null;
+
+async function getPaymentConfig() {
+  if (_configCache) return _configCache;
+  try {
+    const configs = await base44.entities.SystemConfig.list();
+    const byKey = {};
+    for (const c of configs) byKey[c.key] = c.value;
+    _configCache = {
+      terminalName: byKey["tranzila_terminal_name"] || DEFAULT_TERMINAL,
+      baseUrl: byKey["app_base_url"] || DEFAULT_BASE_URL,
+    };
+  } catch {
+    _configCache = { terminalName: DEFAULT_TERMINAL, baseUrl: DEFAULT_BASE_URL };
+  }
+  return _configCache;
+}
+
 /**
  * Builds the Tranzila hosted-page redirect URL.
+ * Reads terminal name and base URL from SystemConfig entity (falls back to defaults).
  * Returns the URL string — does NOT redirect.
  */
-export function initiatePayment({ amount, description, userEmail, orderId }) {
+export async function initiatePayment({ amount, description, userEmail, orderId }) {
+  const { terminalName, baseUrl } = await getPaymentConfig();
   const params = new URLSearchParams({
-    supplier: TRANZILA_TERMINAL_NAME,
+    supplier: terminalName,
     sum: String(Math.round(amount)),
     currency: "1",
     contact: userEmail || "",
     remarks: description || "",
     tranmode: "A",
-    success_url: `${APP_BASE_URL}/payment/success?orderId=${encodeURIComponent(orderId)}`,
-    fail_url: `${APP_BASE_URL}/payment/failed?orderId=${encodeURIComponent(orderId)}`,
-    notify_url: `${APP_BASE_URL}/api/payment/notify`,
+    success_url: `${baseUrl}/payment/success?orderId=${encodeURIComponent(orderId)}`,
+    fail_url: `${baseUrl}/payment/failed?orderId=${encodeURIComponent(orderId)}`,
+    notify_url: `${baseUrl}/api/payment/notify`,
   });
   return `${TRANZILA_HOSTED_URL}?${params.toString()}`;
 }
