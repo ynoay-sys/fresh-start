@@ -2,6 +2,7 @@
 Fresh Start – QA Test Suite
 TEST 14: Business Type Setup
 TEST 15: Contact Bulk Select
+TEST 17: Mobile Bug Fixes Verification
 """
 
 import time
@@ -180,7 +181,100 @@ def test_15_contact_bulk_select():
     return passed
 
 
+def test_17_mobile_bug_fixes():
+    """
+    TEST 17 — Mobile Bug Fixes Verification
+    Set viewport to 375x812. Check horizontal scroll on /documents,
+    /billing, /contacts and verify template filter titles on /documents/templates.
+    PASS if all scrollWidths <= 390 and both filter titles visible.
+    """
+    driver = get_driver()
+    results = []
+
+    try:
+        # ── Set mobile viewport (375x812) ─────────────────────────────────
+        driver.set_window_size(375, 812)
+
+        # ── Check 1: Document cards not cut off ───────────────────────────
+        driver.get(f"{BASE_URL}/documents")
+        time.sleep(2)
+        scroll_width_docs = driver.execute_script("return document.body.scrollWidth")
+        docs_ok = scroll_width_docs <= 390
+        results.append(("documents_scroll_width", scroll_width_docs))
+        results.append(("documents_no_horizontal_scroll", docs_ok))
+        driver.save_screenshot("mobile_documents.png")
+        results.append(("screenshot_mobile_documents", True))
+
+        # ── Check 2: Billing no horizontal scroll ─────────────────────────
+        driver.get(f"{BASE_URL}/billing")
+        time.sleep(2)
+        scroll_width_billing = driver.execute_script("return document.body.scrollWidth")
+        billing_ok = scroll_width_billing <= 390
+        results.append(("billing_scroll_width", scroll_width_billing))
+        results.append(("billing_no_horizontal_scroll", billing_ok))
+        driver.save_screenshot("mobile_billing.png")
+        results.append(("screenshot_mobile_billing", True))
+
+        # ── Check 3: Templates filter titles visible ───────────────────────
+        driver.get(f"{BASE_URL}/documents/templates")
+        time.sleep(2)
+        page_source = driver.page_source
+        sug_tofes_visible = "סוג טופס" in page_source
+        dahifut_visible = "דחיפות" in page_source
+        results.append(("filter_title_sug_tofes_visible", sug_tofes_visible))
+        results.append(("filter_title_dahifut_visible", dahifut_visible))
+        driver.save_screenshot("mobile_templates.png")
+        results.append(("screenshot_mobile_templates", True))
+
+        # ── Check 4: Contacts no cutoff ───────────────────────────────────
+        driver.get(f"{BASE_URL}/contacts")
+        time.sleep(2)
+        scroll_width_contacts = driver.execute_script("return document.body.scrollWidth")
+        contacts_ok = scroll_width_contacts <= 390
+        results.append(("contacts_scroll_width", scroll_width_contacts))
+        results.append(("contacts_no_horizontal_scroll", contacts_ok))
+        driver.save_screenshot("mobile_contacts.png")
+        results.append(("screenshot_mobile_contacts", True))
+
+        # ── Reset to desktop viewport ──────────────────────────────────────
+        driver.set_window_size(1280, 900)
+
+        # ── Final verdict ──────────────────────────────────────────────────
+        critical = [
+            "documents_no_horizontal_scroll",
+            "billing_no_horizontal_scroll",
+            "contacts_no_horizontal_scroll",
+            "filter_title_sug_tofes_visible",
+            "filter_title_dahifut_visible",
+        ]
+        passed = all(v for k, v in results if k in critical)
+
+    except Exception as e:
+        results.append(("unexpected_error", str(e)))
+        passed = False
+
+    finally:
+        driver.quit()
+
+    # ── Report ─────────────────────────────────────────────────────────────
+    print("\n" + "=" * 60)
+    print("TEST 17 — Mobile Bug Fixes Verification")
+    print("=" * 60)
+    for name, value in results:
+        if isinstance(value, bool):
+            status = "✅ PASS" if value else "❌ FAIL"
+        else:
+            status = "ℹ️  INFO"
+        print(f"  {status}  {name}: {value}")
+    print("-" * 60)
+    print(f"  OVERALL: {'✅ PASS' if passed else '❌ FAIL'}")
+    print("=" * 60 + "\n")
+
+    return passed
+
+
 if __name__ == "__main__":
     r14 = test_14_business_type_setup()
     r15 = test_15_contact_bulk_select()
-    exit(0 if (r14 and r15) else 1)
+    r17 = test_17_mobile_bug_fixes()
+    exit(0 if (r14 and r15 and r17) else 1)
