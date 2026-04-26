@@ -245,15 +245,15 @@ export default function Marketing() {
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-8">
             <div className="space-y-4">
               {[
-                "✓ בסיס חינמי לתמיד",
-                "✓ טפסים ממשלתיים מ-₪9",
-                "✓ עוזר AI — 20 שאלות חינם",
-                "✓ ניהול עד 50 מסמכים",
-                "✓ ניהול לקוחות ואנשי קשר ללא הגבלה",
+                "שירות ללא עלות",
+                "פתיחת וביטול עוסק",
+                "מעקב אחר הזמנות מספקים",
+                "ניהול לקוחות ואנשי קשר ללא הגבלה",
+                'מילוי דו"חות אוטומטי',
               ].map(item => (
                 <div key={item} className="flex items-center gap-3 text-base text-gray-700">
-                  <span style={{ color: "#1A7A4A" }}>{item.startsWith("✓") ? "✓" : ""}</span>
-                  <span>{item.replace("✓ ", "")}</span>
+                  <span style={{ color: "#1A7A4A" }}>✓</span>
+                  <span>{item}</span>
                 </div>
               ))}
             </div>
