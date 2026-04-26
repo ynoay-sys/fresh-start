@@ -198,7 +198,7 @@ export default function Marketing() {
       <section id="features" className="py-20 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">הכל שצריך לנהל עסק עצמאי</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">כל מה שצריך כדי לנהל עסק עצמאי</h2>
             <p className="text-gray-500">כלים חכמים שחוסכים לך זמן וכסף</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -220,12 +220,13 @@ export default function Marketing() {
           </div>
 
           {/* Additional features row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+          <h3 className="text-xl font-bold text-gray-800 mt-12 mb-4 text-center">כלים נוספים</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { emoji: "👥", label: "ניהול לקוחות" },
               { emoji: "📅", label: "לוח זמנים" },
               { emoji: "📊", label: "מעקב מטרות" },
-              { emoji: "🔔", label: "התראות חגים" },
+              { emoji: "🔔", label: "תזכורות חכמות" },
             ].map(f => (
               <div key={f.label} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                 <span className="text-2xl">{f.emoji}</span>
@@ -239,8 +240,8 @@ export default function Marketing() {
       {/* Pricing preview */}
       <section id="pricing" className="py-20 px-4 bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">מחיר פשוט — שלם רק על מה שאתה משתמש</h2>
-          <p className="text-gray-500 mb-10">בסיס חינמי לתמיד. שדרג רק כשצריך.</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">מודל פשוט - לשלם רק על מה שאתם משתמשים</h2>
+          <p className="text-gray-500 mb-10">בסיס חינמי. שדרגו רק כשצריך</p>
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-8">
             <div className="space-y-4">
               {[
