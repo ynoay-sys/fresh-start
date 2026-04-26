@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import BackButton from "../components/BackButton";
 import { PRICING_CONFIG } from "../lib/pricingConfig";
+import { sendWaitlistConfirmationEmail } from "../services/EmailService";
 
 function FeaturePricingCard({ config, usageRecord, isLoggedIn }) {
   const used = usageRecord?.usage_count || 0;
@@ -72,6 +73,7 @@ export default function Pricing() {
   const [waitlistDone, setWaitlistDone] = useState(
     !!localStorage.getItem("waitlist_joined")
   );
+  const [waitlistToast, setWaitlistToast] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -86,11 +88,19 @@ export default function Pricing() {
     load();
   }, []);
 
-  function handleWaitlist(e) {
+  async function handleWaitlist(e) {
     e.preventDefault();
     if (!waitlistEmail.trim()) return;
-    localStorage.setItem("waitlist_joined", waitlistEmail);
+    const email = waitlistEmail.trim();
+    localStorage.setItem("waitlist_joined", email);
     setWaitlistDone(true);
+    try {
+      await sendWaitlistConfirmationEmail({ userEmail: email, userName: "משתמש יקר" });
+      setWaitlistToast("אימייל אישור נשלח ✓");
+      setTimeout(() => setWaitlistToast(""), 3000);
+    } catch {
+      // fail silently
+    }
   }
 
   const features = Object.values(PRICING_CONFIG);
@@ -135,9 +145,9 @@ export default function Pricing() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 opacity-50">
           {[
-            { name: "Starter", price: 49, desc: "עצמאי פעיל" },
-            { name: "Pro", price: 129, desc: "עסק מבוסס" },
-            { name: "Business", price: 249, desc: "צוות קטן" },
+            { name: "מתחיל", price: 49, desc: "עצמאי פעיל" },
+            { name: "מקצועי", price: 129, desc: "עסק מבוסס" },
+            { name: "עסקי", price: 249, desc: "צוות קטן" },
           ].map(plan => (
             <div key={plan.name} className="bg-gray-100 rounded-xl p-5 text-center cursor-not-allowed">
               <p className="font-bold text-gray-700 text-lg mb-1">{plan.name}</p>
@@ -151,7 +161,12 @@ export default function Pricing() {
         <div className="max-w-md mx-auto text-center">
           <p className="text-sm font-semibold text-gray-600 mb-3">הצטרף לרשימת ההמתנה</p>
           {waitlistDone ? (
-            <p className="text-green-600 font-medium">נרשמת! נעדכן אותך ✓</p>
+            <div>
+              <p className="text-green-600 font-medium">נרשמת! נעדכן אותך ✓</p>
+              {waitlistToast && (
+                <p className="text-sm text-blue-600 mt-1">{waitlistToast}</p>
+              )}
+            </div>
           ) : (
             <form onSubmit={handleWaitlist} className="flex gap-2">
               <input

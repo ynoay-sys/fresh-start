@@ -103,6 +103,30 @@ export async function sendWelcomeEmail({ userEmail, userName }) {
   }
 }
 
+export async function sendWaitlistConfirmationEmail({ userEmail, userName }) {
+  const subject = "נרשמת לרשימת ההמתנה — Fresh Start 🎉";
+  const body = `
+    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: #1E5FA8; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">Fresh Start</h1>
+      </div>
+      <div style="background: white; padding: 24px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 16px; color: #111827;">שלום ${userName || "משתמש יקר"},</p>
+        <p style="color: #374151;">תודה שנרשמת לרשימת ההמתנה למסלולי המנוי של Fresh Start.</p>
+        <p style="color: #374151;">נעדכן אותך ברגע שהמסלולים יהיו זמינים.</p>
+        <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;" />
+        <p style="color: #9CA3AF; font-size: 12px; text-align: center;">צוות Fresh Start</p>
+      </div>
+    </div>
+  `;
+  try {
+    await sendEmail({ to: userEmail, subject, body });
+    trackEvent("email_sent", { type: "waitlist" });
+  } catch (e) {
+    console.error("sendWaitlistConfirmationEmail failed:", e);
+  }
+}
+
 export async function sendTestEmail({ toEmail }) {
   const subject = "בדיקת שליחת מייל — Fresh Start";
   const body = `
