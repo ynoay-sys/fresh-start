@@ -3,25 +3,25 @@ import { base44 } from "@/api/base44Client";
 import BackButton from "../components/BackButton";
 import { PRICING_CONFIG } from "../lib/pricingConfig";
 
-function FeaturePricingCard({ config, usageRecord }) {
+function FeaturePricingCard({ config, usageRecord, isLoggedIn }) {
   const used = usageRecord?.usage_count || 0;
   const quota = config.free_quota;
-  const withinFree = quota > 0 && used < quota;
   const exceeded = quota > 0 && used >= quota;
+  const displayPercent = Math.min(100, quota > 0 ? Math.round((used / quota) * 100) : 0);
+
+  const badge = exceeded
+    ? <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-orange-100 text-orange-700">בתשלום</span>
+    : quota > 0 && isLoggedIn
+    ? <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700">חינם ✓</span>
+    : quota === 0
+    ? <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">בתשלום</span>
+    : null;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-3 hover:shadow-md transition-all">
       <div className="flex items-center justify-between">
         <span className="text-3xl">{config.icon}</span>
-        {withinFree && (
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700">חינם ✓</span>
-        )}
-        {exceeded && (
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-orange-100 text-orange-700">בתשלום</span>
-        )}
-        {quota === 0 && (
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">בתשלום</span>
-        )}
+        {badge}
       </div>
 
       <div>
@@ -36,22 +36,26 @@ function FeaturePricingCard({ config, usageRecord }) {
         )}
       </div>
 
-      {quota > 0 && (
-        <div>
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-            <span>השתמשת ב-{used} מתוך {quota}</span>
-            <span>{Math.round((used / quota) * 100)}%</span>
+      {quota > 0 && isLoggedIn && (
+        exceeded ? (
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700 self-start">מכסה מוצתה</span>
+        ) : (
+          <div>
+            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+              <span>השתמשת ב-{used} מתוך {quota}</span>
+              <span>{displayPercent}%</span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${displayPercent}%`,
+                  backgroundColor: used >= quota * 0.75 ? "#F59E0B" : "#1A7A4A",
+                }}
+              />
+            </div>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{
-                width: `${Math.min(100, (used / quota) * 100)}%`,
-                backgroundColor: used >= quota ? "#C25A00" : used >= quota * 0.75 ? "#F59E0B" : "#1A7A4A",
-              }}
-            />
-          </div>
-        </div>
+        )
       )}
       {quota === 0 && (
         <p className="text-xs text-gray-400">ללא מכסה חינמית</p>
@@ -63,6 +67,7 @@ function FeaturePricingCard({ config, usageRecord }) {
 export default function Pricing() {
   useEffect(() => { document.title = 'תמחור | Fresh Start'; }, []);
   const [usageMap, setUsageMap] = useState({});
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistDone, setWaitlistDone] = useState(
     !!localStorage.getItem("waitlist_joined")
@@ -70,7 +75,9 @@ export default function Pricing() {
 
   useEffect(() => {
     async function load() {
-      const user = await base44.auth.me();
+      const user = await base44.auth.me().catch(() => null);
+      if (!user?.email) return;
+      setIsLoggedIn(true);
       const usageRecords = await base44.entities.UserFeatureUsage.filter({ created_by: user.email });
       const map = {};
       for (const r of usageRecords) map[r.feature_key] = r;
@@ -91,6 +98,15 @@ export default function Pricing() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8" dir="rtl">
       <BackButton />
+
+      {/* Not logged in banner */}
+      {!isLoggedIn && (
+        <div className="mb-6 flex items-center justify-between gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-800">
+          <span>התחבר לחשבונך כדי לראות את הניצול האישי שלך</span>
+          <a href="/login" className="font-semibold underline whitespace-nowrap">כניסה ←</a>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center mb-10">
         <span className="inline-block px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full mb-4">
@@ -107,6 +123,7 @@ export default function Pricing() {
             key={config.feature_key}
             config={config}
             usageRecord={usageMap[config.feature_key] || null}
+            isLoggedIn={isLoggedIn}
           />
         ))}
       </div>
