@@ -178,7 +178,7 @@ export default function Marketing() {
                 <Link to="/register"
                   className="px-6 py-3 rounded-xl text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all"
                   style={{ backgroundColor: "#1E5FA8" }}>
-                  התחל חינם — ללא כרטיס אשראי
+                  לחץ כאן לתקופת ניסיון
                 </Link>
                 <a href="#features"
                   className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-medium text-base hover:bg-gray-50 transition-colors">
