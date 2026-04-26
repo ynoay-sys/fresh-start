@@ -260,7 +260,7 @@ export default function Marketing() {
           </div>
           <Link to="/pricing"
             className="inline-flex items-center px-6 py-3 rounded-xl border border-gray-300 font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            ראה את כל המחירים ←
+            לחצ/י לשדרוג החבילה הקיימת ←
           </Link>
         </div>
       </section>
@@ -268,12 +268,12 @@ export default function Marketing() {
       {/* CTA Banner */}
       <section className="py-16 px-4" style={{ backgroundColor: "#1E5FA8" }}>
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-3">מוכן להתחיל?</h2>
+          <h2 className="text-3xl font-bold text-white mb-3">מוכנ/ה להתחיל בחיים?</h2>
           <p className="text-blue-100 mb-8">הצטרף לאלפי עצמאים שכבר מנהלים את עסקם עם Fresh Start</p>
           <Link to="/register"
             className="inline-flex items-center px-8 py-4 rounded-xl bg-white font-bold text-base hover:bg-blue-50 transition-colors"
             style={{ color: "#1E5FA8" }}>
-            התחל חינם עכשיו ←
+            להתחיל בחינם עכשיו ←
           </Link>
         </div>
       </section>
