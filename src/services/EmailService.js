@@ -30,23 +30,36 @@ export async function sendPaymentReceiptEmail({ orderId, userEmail, amount, desc
   }
 }
 
-export async function sendEmailSignatureEmail({ userEmail, userName, signatureHtml }) {
+export async function sendEmailSignatureEmail({ userEmail, userName, fullName, role, businessName, phone, email, primaryColor }) {
   try {
-    await sendEmail({
-      toEmail: userEmail,
-      subject: "חתימת האימייל שלך מ-Fresh Start",
-      message:
-        "<div dir='rtl' style='font-family:Arial;'>" +
-        "<p>שלום " + (userName || "משתמש יקר") + ",</p>" +
-        "<p>להלן חתימת האימייל שלך:</p>" +
-        "<br/>" +
-        "<div style='border:1px solid #e0e0e0; padding:16px; border-radius:8px; background:#f9f9f9;'>" +
-        (signatureHtml || "") +
-        "</div>" +
-        "<br/>" +
-        "<p style='font-size:12px; color:#888;'>להוספת החתימה ב-Gmail: הגדרות ← חתימה ← הדבק</p>" +
-        "</div>",
-    });
+    const color = primaryColor || "#1E5FA8";
+
+    const signatureHtml =
+      '<div dir="rtl" style="font-family:Arial,sans-serif;max-width:500px;">' +
+      '<table style="border-collapse:collapse;direction:rtl;" cellpadding="0" cellspacing="0">' +
+      '<tr><td style="padding:0;vertical-align:top;">' +
+      '<p style="margin:0 0 4px;font-size:16px;font-weight:bold;color:#1A1A2E;">' + (fullName || "") + '</p>' +
+      '<p style="margin:0 0 8px;font-size:13px;color:#555555;">' + (role || "") + (businessName ? ' | ' + businessName : '') + '</p>' +
+      '<p style="margin:0;font-size:12px;color:#777;">' + (phone ? phone + ' | ' : '') + (email || "") + '</p>' +
+      '<hr style="border:none;border-top:2px solid ' + color + ';margin:8px 0;width:200px;"/>' +
+      '</td></tr></table></div>';
+
+    const messageHtml =
+      '<div dir="rtl" style="font-family:Arial;text-align:right;padding:16px;">' +
+      '<p>שלום ' + (userName || "משתמש יקר") + ',</p>' +
+      '<p>להלן חתימת האימייל שלך:</p><br/>' +
+      '<div style="border:1px solid #e0e0e0;padding:16px;border-radius:8px;background:#f9f9f9;">' +
+      signatureHtml +
+      '</div><br/>' +
+      '<p style="font-size:12px;color:#888;">להוספת החתימה ב-Gmail: הגדרות ← חתימה ← הדבק</p>' +
+      '</div>';
+
+    await window.emailjs.send(
+      SERVICE_ID,
+      TEMPLATE_ID,
+      { to_email: userEmail, subject: "חתימת האימייל שלך מ-Fresh Start", message: messageHtml },
+      PUBLIC_KEY
+    );
     trackEvent("email_sent", { type: "signature" });
   } catch (e) {
     console.error("sendEmailSignatureEmail failed:", e);

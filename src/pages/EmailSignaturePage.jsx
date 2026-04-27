@@ -288,12 +288,15 @@ export default function EmailSignaturePage() {
                   return;
                 }
                 try {
-                  const signatureEl = document.getElementById('signature-preview');
-                  const signatureHtml = signatureEl ? signatureEl.innerHTML : previewHtml;
                   await sendEmailSignatureEmail({
                     userEmail: form.email,
-                    signatureHtml,
                     userName: form.fullName,
+                    fullName: form.fullName,
+                    role: form.role,
+                    businessName: form.businessName,
+                    phone: form.phone,
+                    email: form.email,
+                    primaryColor: form.primaryColor,
                   });
                   setToastMessage("החתימה נשלחה לאימייל שלך ✓");
                 } catch (_) {
