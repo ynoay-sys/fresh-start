@@ -288,23 +288,23 @@ export default function EmailSignaturePage() {
                   return;
                 }
                 try {
-                  console.log('[EMAIL DEBUG] Signature form data:', {
-                    userEmail: user?.email,
-                    userName: user?.full_name,
-                    fullName: form?.fullName,
-                    role: form?.role,
-                    businessName: form?.businessName,
-                    phone: form?.phone,
-                    email: form?.email,
-                  });
+                  const emailParams = {
+                    user_name: user.full_name || "משתמש יקר",
+                    full_name: form.fullName || "—",
+                    role: form.role || "—",
+                    business_name: form.businessName || "—",
+                    phone: form.phone || "—",
+                    email: form.email || user.email || "—",
+                  };
+                  console.log('[EMAIL DEBUG] Sending with params:', emailParams);
                   await sendEmailSignatureEmail({
                     userEmail: user.email,
-                    userName: user.full_name || "משתמש",
-                    fullName: form.fullName || " ",
-                    role: form.role || " ",
-                    businessName: form.businessName || " ",
-                    phone: form.phone || " ",
-                    email: form.email || user.email,
+                    userName: emailParams.user_name,
+                    fullName: emailParams.full_name,
+                    role: emailParams.role,
+                    businessName: emailParams.business_name,
+                    phone: emailParams.phone,
+                    email: emailParams.email,
                   });
                   setToastMessage("החתימה נשלחה לאימייל שלך ✓");
                 } catch (_) {

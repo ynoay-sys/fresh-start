@@ -31,22 +31,19 @@ export async function sendPaymentReceiptEmail({ orderId, userEmail, amount, desc
 }
 
 export async function sendEmailSignatureEmail({ userEmail, userName, fullName, role, businessName, phone, email }) {
+  const params = {
+    to_email: userEmail,
+    subject: "חתימת האימייל שלך מ-Fresh Start",
+    user_name: userName || "משתמש יקר",
+    full_name: fullName || "—",
+    role: role || "—",
+    business_name: businessName || "—",
+    phone: phone || "—",
+    email: email || userEmail || "—",
+  };
+  console.log('[EMAIL SERVICE] emailjs.send params:', params);
   try {
-    await window.emailjs.send(
-      SERVICE_ID,
-      TEMPLATE_ID,
-      {
-        to_email: userEmail,
-        subject: "חתימת האימייל שלך מ-Fresh Start",
-        user_name: userName || "משתמש יקר",
-        full_name: fullName || "",
-        role: role || "",
-        business_name: businessName || "",
-        phone: phone || "",
-        email: email || userEmail,
-      },
-      PUBLIC_KEY
-    );
+    await window.emailjs.send(SERVICE_ID, TEMPLATE_ID, params, PUBLIC_KEY);
     trackEvent("email_sent", { type: "signature" });
   } catch (e) {
     console.error("sendEmailSignatureEmail failed:", e);
