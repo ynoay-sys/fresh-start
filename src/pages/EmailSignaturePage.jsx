@@ -289,14 +289,13 @@ export default function EmailSignaturePage() {
                 }
                 try {
                   await sendEmailSignatureEmail({
-                    userEmail: form.email,
-                    userName: form.fullName,
-                    fullName: form.fullName,
-                    role: form.role,
-                    businessName: form.businessName,
-                    phone: form.phone,
-                    email: form.email,
-                    primaryColor: form.primaryColor,
+                    userEmail: user.email,
+                    userName: user.full_name || "משתמש",
+                    fullName: form.fullName || user.full_name,
+                    role: form.role || "",
+                    businessName: form.businessName || "",
+                    phone: form.phone || "",
+                    email: form.email || user.email,
                   });
                   setToastMessage("החתימה נשלחה לאימייל שלך ✓");
                 } catch (_) {
