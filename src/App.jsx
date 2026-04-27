@@ -54,7 +54,7 @@ const Suspensed = ({ children }) => (
 
 // Gate: renders children only when authenticated
 function RequireAuth({ children }) {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -70,6 +70,11 @@ function RequireAuth({ children }) {
       navigateToLogin();
       return null;
     }
+  }
+
+  if (!isAuthenticated) {
+    navigateToLogin();
+    return null;
   }
 
   return children;
