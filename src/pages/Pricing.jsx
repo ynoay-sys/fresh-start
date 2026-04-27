@@ -95,7 +95,7 @@ export default function Pricing() {
     localStorage.setItem("waitlist_joined", email);
     setWaitlistDone(true);
     try {
-      await sendWaitlistConfirmationEmail({ userEmail: email, userName: "משתמש יקר" });
+      await sendWaitlistConfirmationEmail({ userEmail: email });
       setWaitlistToast("אימייל אישור נשלח ✓");
       setTimeout(() => setWaitlistToast(""), 3000);
     } catch {

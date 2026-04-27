@@ -1,126 +1,87 @@
-import { base44 } from "@/api/base44Client";
-import { format } from "date-fns";
 import { trackEvent } from "../lib/trackEvent";
 
-// All email sends go through Base44 backend integration (Core.SendEmail)
-// which handles the actual delivery. Fire-and-forget — never block UI.
+const SERVICE_ID = "service_czd4kds";
+const TEMPLATE_ID = "template_op4y6na";
+const PUBLIC_KEY = "2A8X5gj3k4_MNMMvv";
 
-async function sendEmail({ to, subject, body }) {
-  await base44.integrations.Core.SendEmail({
-    to,
-    subject,
-    body,
-    from_name: "Fresh Start",
-  });
+function sendEmail({ toEmail, subject, message }) {
+  return window.emailjs.send(
+    SERVICE_ID,
+    TEMPLATE_ID,
+    { to_email: toEmail, subject, message },
+    PUBLIC_KEY
+  );
 }
 
 export async function sendPaymentReceiptEmail({ orderId, userEmail, amount, description, userName }) {
-  const today = format(new Date(), "dd/MM/yyyy");
-  const subject = "קבלה על תשלום — Fresh Start";
-  const body = `
-    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: #1E5FA8; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 24px;">Fresh Start</h1>
-        <p style="color: #B8D4F0; margin: 4px 0 0 0; font-size: 14px;">קבלה על תשלום</p>
-      </div>
-      <div style="background: white; padding: 24px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
-        <p style="font-size: 16px; color: #111827;">שלום ${userName || ""},</p>
-        <p style="color: #374151;">תשלום על <strong>${description}</strong> בסך <strong>₪${amount}</strong> התקבל בהצלחה.</p>
-        <div style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px; margin: 20px 0;">
-          <p style="margin: 4px 0; color: #374151; font-size: 14px;">מספר עסקה: <strong>${orderId}</strong></p>
-          <p style="margin: 4px 0; color: #374151; font-size: 14px;">תאריך: <strong>${today}</strong></p>
-          <p style="margin: 4px 0; color: #374151; font-size: 14px;">סכום: <strong>₪${amount}</strong></p>
-        </div>
-        <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;" />
-        <p style="color: #9CA3AF; font-size: 12px; text-align: center;">Fresh Start — פלטפורמת ניהול העסק הישראלי</p>
-      </div>
-    </div>
-  `;
   try {
-    await sendEmail({ to: userEmail, subject, body });
+    await sendEmail({
+      toEmail: userEmail,
+      subject: "קבלה על תשלום — Fresh Start",
+      message:
+        "שלום " + (userName || "") + ",\n\n" +
+        "תשלום על " + description + " בסך ₪" + amount + " התקבל בהצלחה.\n" +
+        "מספר עסקה: " + orderId + "\n" +
+        "תאריך: " + new Date().toLocaleDateString("he-IL"),
+    });
     trackEvent("email_sent", { type: "receipt" });
   } catch (e) {
     console.error("sendPaymentReceiptEmail failed:", e);
   }
 }
 
-export async function sendEmailSignatureEmail({ userEmail, signatureHtml, userName }) {
-  const subject = "חתימת האימייל שלך מוכנה — Fresh Start";
-  const body = `
-    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: #1E5FA8; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 24px;">Fresh Start</h1>
-      </div>
-      <div style="background: white; padding: 24px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
-        <p style="font-size: 16px; color: #111827;">שלום ${userName || ""},</p>
-        <p style="color: #374151;">חתימת האימייל שלך מצורפת למטה.</p>
-        <div style="border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px; margin: 20px 0; background: #F9FAFB;">
-          ${signatureHtml}
-        </div>
-        <div style="background: #EAF2FB; border-radius: 8px; padding: 16px; margin: 20px 0;">
-          <p style="color: #1E5FA8; font-weight: bold; margin: 0 0 8px 0;">📋 כיצד להוסיף ל-Gmail:</p>
-          <p style="color: #374151; font-size: 14px; margin: 4px 0;">הגדרות ← ראה את כל ההגדרות ← חתימה ← הדבק את החתימה</p>
-        </div>
-        <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;" />
-        <p style="color: #9CA3AF; font-size: 12px; text-align: center;">Fresh Start</p>
-      </div>
-    </div>
-  `;
+export async function sendEmailSignatureEmail({ userEmail, userName, signatureHtml }) {
   try {
-    await sendEmail({ to: userEmail, subject, body });
+    await sendEmail({
+      toEmail: userEmail,
+      subject: "חתימת האימייל שלך מ-Fresh Start",
+      message:
+        "<div dir='rtl' style='font-family:Arial;'>" +
+        "<p>שלום " + (userName || "משתמש יקר") + ",</p>" +
+        "<p>להלן חתימת האימייל שלך:</p>" +
+        "<br/>" +
+        "<div style='border:1px solid #e0e0e0; padding:16px; border-radius:8px; background:#f9f9f9;'>" +
+        (signatureHtml || "") +
+        "</div>" +
+        "<br/>" +
+        "<p style='font-size:12px; color:#888;'>להוספת החתימה ב-Gmail: הגדרות ← חתימה ← הדבק</p>" +
+        "</div>",
+    });
     trackEvent("email_sent", { type: "signature" });
   } catch (e) {
     console.error("sendEmailSignatureEmail failed:", e);
-    throw e; // Re-throw so caller can show failure toast
+    throw e;
   }
 }
 
 export async function sendWelcomeEmail({ userEmail, userName }) {
-  const subject = "ברוך הבא ל-Fresh Start! 🎉";
-  const appUrl = typeof window !== "undefined" ? window.location.origin : "https://app.fresh-start.co.il";
-  const body = `
-    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: #1E5FA8; padding: 24px; border-radius: 8px 8px 0 0; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">Fresh Start 🎉</h1>
-      </div>
-      <div style="background: white; padding: 24px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
-        <p style="font-size: 18px; color: #111827; font-weight: bold;">שלום ${userName || ""},  ברוך הבא לפרש סטארט!</p>
-        <p style="color: #374151; font-size: 15px;">הפלטפורמה לניהול העסק העצמאי שלך מוכנה.</p>
-        <p style="color: #374151;">כעת תוכל לנהל מסמכים, לקוחות, תשלומים וסדר יום — הכול במקום אחד.</p>
-        <div style="text-align: center; margin: 32px 0;">
-          <a href="${appUrl}/dashboard" style="background: #1E5FA8; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">כנס לחשבון שלי ←</a>
-        </div>
-        <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;" />
-        <p style="color: #9CA3AF; font-size: 12px; text-align: center;">Fresh Start — פלטפורמת ניהול העסק הישראלי</p>
-      </div>
-    </div>
-  `;
   try {
-    await sendEmail({ to: userEmail, subject, body });
+    await sendEmail({
+      toEmail: userEmail,
+      subject: "ברוכים הבאים ל-Fresh Start! 🎉",
+      message:
+        "שלום " + (userName || "") + ",\n\n" +
+        "ברוכים הבאים ל-Fresh Start!\n" +
+        "הפלטפורמה לניהול העסק העצמאי שלך מוכנה.\n\n" +
+        "צוות Fresh Start",
+    });
     trackEvent("email_sent", { type: "welcome" });
   } catch (e) {
     console.error("sendWelcomeEmail failed:", e);
   }
 }
 
-export async function sendWaitlistConfirmationEmail({ userEmail, userName }) {
-  const subject = "נרשמת לרשימת ההמתנה — Fresh Start 🎉";
-  const body = `
-    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: #1E5FA8; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 24px;">Fresh Start</h1>
-      </div>
-      <div style="background: white; padding: 24px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
-        <p style="font-size: 16px; color: #111827;">שלום ${userName || "משתמש יקר"},</p>
-        <p style="color: #374151;">תודה שנרשמת לרשימת ההמתנה למסלולי המנוי של Fresh Start.</p>
-        <p style="color: #374151;">נעדכן אותך ברגע שהמסלולים יהיו זמינים.</p>
-        <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;" />
-        <p style="color: #9CA3AF; font-size: 12px; text-align: center;">צוות Fresh Start</p>
-      </div>
-    </div>
-  `;
+export async function sendWaitlistConfirmationEmail({ userEmail }) {
   try {
-    await sendEmail({ to: userEmail, subject, body });
+    await sendEmail({
+      toEmail: userEmail,
+      subject: "נרשמת לרשימת ההמתנה — Fresh Start",
+      message:
+        "שלום,\n\n" +
+        "תודה שנרשמת לרשימת ההמתנה למסלולי המנוי.\n" +
+        "נעדכן אותך ברגע שהמסלולים יהיו זמינים.\n\n" +
+        "צוות Fresh Start",
+    });
     trackEvent("email_sent", { type: "waitlist" });
   } catch (e) {
     console.error("sendWaitlistConfirmationEmail failed:", e);
@@ -128,13 +89,15 @@ export async function sendWaitlistConfirmationEmail({ userEmail, userName }) {
 }
 
 export async function sendTestEmail({ toEmail }) {
-  const subject = "בדיקת שליחת מייל — Fresh Start";
-  const body = `
-    <div dir="rtl" style="font-family: Arial, sans-serif; padding: 20px;">
-      <p>זהו מייל בדיקה מ-Fresh Start. אם קיבלת אותו, שליחת המיילים פועלת תקין. ✅</p>
-      <p style="color: #9CA3AF; font-size: 12px;">Fresh Start</p>
-    </div>
-  `;
-  await sendEmail({ to: toEmail, subject, body });
-  trackEvent("email_sent", { type: "test" });
+  try {
+    await sendEmail({
+      toEmail,
+      subject: "בדיקת שליחת מייל — Fresh Start",
+      message: "זהו מייל בדיקה מ-Fresh Start. הכל עובד תקין.",
+    });
+    trackEvent("email_sent", { type: "test" });
+  } catch (e) {
+    console.error("sendTestEmail failed:", e);
+    throw e;
+  }
 }

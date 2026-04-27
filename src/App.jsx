@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/toaster"
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -164,6 +164,12 @@ function AppRouter() {
 }
 
 function App() {
+  useEffect(() => {
+    if (window.emailjs) {
+      window.emailjs.init("2A8X5gj3k4_MNMMvv");
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClientInstance}>

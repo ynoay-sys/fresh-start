@@ -288,9 +288,11 @@ export default function EmailSignaturePage() {
                   return;
                 }
                 try {
+                  const signatureEl = document.getElementById('signature-preview');
+                  const signatureHtml = signatureEl ? signatureEl.innerHTML : previewHtml;
                   await sendEmailSignatureEmail({
                     userEmail: form.email,
-                    signatureHtml: previewHtml,
+                    signatureHtml,
                     userName: form.fullName,
                   });
                   setToastMessage("החתימה נשלחה לאימייל שלך ✓");
