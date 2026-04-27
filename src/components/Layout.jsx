@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import {
@@ -11,6 +11,8 @@ import AchievementToast from "./AchievementToast";
 import { checkAndUnlockAchievements } from "../lib/achievements";
 import { generateNotifications } from "../lib/generateNotifications";
 import { isAdmin } from "../lib/userRole";
+import BreakReminderModal from "./BreakReminderModal";
+import EncouragementBubble from "./EncouragementBubble";
 
 const MOBILE_NAV = [
   { icon: Building2, label: "פתיחת עסק", path: "/business-opening" },
@@ -95,11 +97,36 @@ export default function Layout() {
     location.pathname.startsWith("/documents")
   );
   const [userIsAdmin, setUserIsAdmin] = useState(false);
+  const [showBreakModal, setShowBreakModal] = useState(false);
+  const activeMinutesRef = useRef(0);
+  const lastActivityRef = useRef(Date.now());
 
   useEffect(() => {
     generateNotifications().catch(() => {});
     checkAndUnlockAchievements().catch(() => {});
     isAdmin().then(setUserIsAdmin);
+  }, []);
+
+  // Break reminder — 4 hours of active use
+  useEffect(() => {
+    const onActivity = () => { lastActivityRef.current = Date.now(); };
+    const events = ["mousemove", "keydown", "click", "scroll"];
+    events.forEach(e => window.addEventListener(e, onActivity, { passive: true }));
+
+    const tick = setInterval(() => {
+      if (Date.now() - lastActivityRef.current < 60000) {
+        activeMinutesRef.current += 1;
+        if (activeMinutesRef.current >= 240) {
+          setShowBreakModal(true);
+          activeMinutesRef.current = 0;
+        }
+      }
+    }, 60000);
+
+    return () => {
+      clearInterval(tick);
+      events.forEach(e => window.removeEventListener(e, onActivity));
+    };
   }, []);
 
   // Session timeout
@@ -252,12 +279,15 @@ export default function Layout() {
           >
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#1E5FA8" }}>
-              <span className="text-white font-bold text-xs">FS</span>
-            </div>
-            <span className="font-bold text-gray-900 text-base hidden sm:block">Fresh Start</span>
-          </Link>
+          <div style={{ position: "relative" }}>
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#1E5FA8" }}>
+                <span className="text-white font-bold text-xs">FS</span>
+              </div>
+              <span className="font-bold text-gray-900 text-base hidden sm:block">Fresh Start</span>
+            </Link>
+            <EncouragementBubble breakModalVisible={showBreakModal} />
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -486,6 +516,7 @@ export default function Layout() {
       </div>
 
       <AchievementToast />
+      {showBreakModal && <BreakReminderModal onClose={() => setShowBreakModal(false)} />}
 
       {/* Mobile Bottom Tab Bar */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[1000] md:hidden" style={{ height: 56 }}>

@@ -8,6 +8,7 @@ import LaunchCelebration from "../components/LaunchCelebration";
 import { ACHIEVEMENT_DEFS } from "../lib/achievements";
 import WelcomeModal from "../components/WelcomeModal";
 import { trackEvent } from "../lib/trackEvent";
+import BusinessTypeCards from "../components/BusinessTypeCards";
 
 
 function StatCard({ emoji, label, value, sub, onClick }) {
@@ -192,6 +193,9 @@ export default function Dashboard() {
 
       <h1 className="text-2xl font-bold text-gray-900 mb-2">{(() => { const h = new Date().getHours(); const g = h >= 6 && h < 12 ? 'בוקר טוב' : h >= 12 && h < 17 ? 'צהריים טובים' : h >= 17 && h < 21 ? 'ערב טוב' : 'לילה טוב'; return `${g} 👋`; })()}</h1>
       <p className="text-sm text-gray-500 mb-8">ברוך הבא ל-Fresh Start — הפלטפורמה לעצמאים בישראל</p>
+
+      {/* Business Type Flip Cards */}
+      <BusinessTypeCards />
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
