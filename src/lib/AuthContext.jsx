@@ -87,6 +87,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const ensureUserProfile = async (currentUser) => {
+    if (!currentUser?.email) return;
+    try {
+      const existing = await base44.entities.UserProfile.filter({ created_by: currentUser.email });
+      if (existing.length === 0) {
+        const nameParts = (currentUser.full_name || '').split(' ');
+        await base44.entities.UserProfile.create({
+          first_name: nameParts[0] || '',
+          last_name: nameParts.slice(1).join(' ') || '',
+          role: 'user',
+        });
+        console.log('[AUTH] Created UserProfile for:', currentUser.email);
+      }
+    } catch (e) {
+      console.warn('[AUTH] ensureUserProfile failed:', e);
+    }
+  };
+
   const checkUserAuth = async () => {
     try {
       // Now check if the user is authenticated
@@ -95,6 +113,7 @@ export const AuthProvider = ({ children }) => {
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
+      ensureUserProfile(currentUser);
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
