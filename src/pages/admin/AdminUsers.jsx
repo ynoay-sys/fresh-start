@@ -91,15 +91,19 @@ export default function AdminUsers() {
     });
   }, []);
 
+  async function adminUpdate(profileId, data) {
+    await base44.functions.invoke('adminUpdateUserProfile', { profileId, data });
+  }
+
   async function handleRoleChange(profile, newRole) {
-    await base44.entities.UserProfile.update(profile.id, { role: newRole });
+    await adminUpdate(profile.id, { role: newRole });
     setProfiles(prev => prev.map(p => p.id === profile.id ? { ...p, role: newRole } : p));
     setMenuOpenId(null);
   }
 
   async function handleToggleStatus(profile) {
     const newActive = profile.is_active === false ? true : false;
-    await base44.entities.UserProfile.update(profile.id, { is_active: newActive });
+    await adminUpdate(profile.id, { is_active: newActive });
     setProfiles(prev => prev.map(p => p.id === profile.id ? { ...p, is_active: newActive } : p));
     setMenuOpenId(null);
   }

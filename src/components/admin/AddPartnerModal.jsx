@@ -47,7 +47,7 @@ export default function AddPartnerModal({ onClose, onSaved }) {
     if (form.email) {
       const profiles = await base44.entities.UserProfile.filter({ created_by: form.email });
       if (profiles.length > 0) {
-        await base44.entities.UserProfile.update(profiles[0].id, { role: "partner" });
+        await base44.functions.invoke('adminUpdateUserProfile', { profileId: profiles[0].id, data: { role: "partner" } });
         setResult({ type: "existing_updated" });
       } else {
         const token = btoa(`partner:${form.email}:${Date.now()}`);
