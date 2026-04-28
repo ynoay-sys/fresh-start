@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import BackButton from "../components/BackButton";
@@ -80,6 +80,9 @@ function VerificationModal({ email, onContinue }) {
 }
 
 export default function Register() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const isPartnerInvite = urlParams.get("role") === "partner";
+
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", password: "", confirmPassword: "",
     phone: "", businessType: "", terms: false,
@@ -126,30 +129,41 @@ export default function Register() {
 
   function handleContinue() {
     setShowVerification(false);
-    // Fire-and-forget welcome email for new registrations
     if (form.email) {
       sendWelcomeEmail({
         userEmail: form.email,
         userName: [form.firstName, form.lastName].filter(Boolean).join(" "),
       });
     }
-    base44.auth.redirectToLogin(window.location.origin + "/dashboard");
+    const redirectUrl = isPartnerInvite
+      ? window.location.origin + "/partner/profile"
+      : window.location.origin + "/dashboard";
+    base44.auth.redirectToLogin(redirectUrl);
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8" dir="rtl">
-      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ backgroundColor: isPartnerInvite ? "#F0FDF4" : "#F9FAFB" }} dir="rtl">
+      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg" style={isPartnerInvite ? { border: "2px solid #1A7A4A" } : {}}>
         <BackButton />
         {/* Logo */}
         <div className="flex items-center gap-2 mb-6 justify-center">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#1E5FA8" }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: isPartnerInvite ? "#1A7A4A" : "#1E5FA8" }}>
             <span className="text-white font-bold text-sm">FS</span>
           </div>
           <span className="font-bold text-gray-900 text-lg">Fresh Start</span>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-1">יצירת חשבון חינמי</h1>
-        <p className="text-sm text-gray-500 text-center mb-6">הצטרף לאלפי עצמאים שמנהלים את עסקם עם Fresh Start</p>
+        {isPartnerInvite ? (
+          <>
+            <h1 className="text-2xl font-bold text-center mb-1" style={{ color: "#1A7A4A" }}>הצטרפות כשותף מקצועי</h1>
+            <p className="text-sm text-center mb-6" style={{ color: "#4B7A5A" }}>צור חשבון כדי לנהל את הפרופיל המקצועי שלך</p>
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold text-gray-900 text-center mb-1">יצירת חשבון חינמי</h1>
+            <p className="text-sm text-gray-500 text-center mb-6">הצטרף לאלפי עצמאים שמנהלים את עסקם עם Fresh Start</p>
+          </>
+        )}
 
         {/* Google */}
         <button onClick={handleGoogleRegister}
@@ -256,8 +270,8 @@ export default function Register() {
 
           <button type="submit" disabled={loading}
             className="w-full py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50"
-            style={{ backgroundColor: "#1E5FA8" }}>
-            {loading ? "יוצר חשבון..." : "צור חשבון ←"}
+            style={{ backgroundColor: isPartnerInvite ? "#1A7A4A" : "#1E5FA8" }}>
+            {loading ? "יוצר חשבון..." : isPartnerInvite ? "הצטרף כשותף ←" : "צור חשבון ←"}
           </button>
         </form>
 

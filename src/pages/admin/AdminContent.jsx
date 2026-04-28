@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import BackButton from "../../components/BackButton";
 import { Plus, Edit2, Eye, EyeOff, Trash2, Save, X } from "lucide-react";
 import { sendTestEmail } from "../../services/EmailService";
+import AddPartnerModal from "../../components/admin/AddPartnerModal.jsx";
 
 const AUTHORITY_LABELS = { tax_authority: "מס הכנסה", vat: 'מע"מ', nii: "ביטוח לאומי", municipality: "עירייה", other: "אחר" };
 const URGENCY_LABELS = { high: "דחוף", medium: "בינוני", low: "נמוך" };
@@ -454,12 +455,71 @@ function EmailTestTab() {
   );
 }
 
+function PartnersContentTab() {
+  const [showAdd, setShowAdd] = useState(false);
+  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    base44.entities.ProfessionalPartner.list().then(data => { setPartners(data); setLoading(false); });
+  }, []);
+
+  if (loading) return <div className="flex items-center justify-center py-12"><div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" /></div>;
+
+  return (
+    <div dir="rtl">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">{partners.length} שותפים רשומים</p>
+        <button onClick={() => setShowAdd(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
+          style={{ backgroundColor: "#1A7A4A" }}>
+          + הוסף שותף
+        </button>
+      </div>
+      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+        <table className="w-full text-sm" dir="rtl">
+          <thead className="bg-gray-50 border-b border-gray-100">
+            <tr>
+              {["שם", "מקצוע", "עיר", "אימייל", "מאומת", "תוכנית"].map(h => (
+                <th key={h} className="px-4 py-3 text-right text-xs font-semibold text-gray-500">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {partners.map(p => (
+              <tr key={p.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 font-medium text-gray-900">{p.name}</td>
+                <td className="px-4 py-3 text-gray-600">{p.profession}</td>
+                <td className="px-4 py-3 text-gray-600">{p.city || "—"}</td>
+                <td className="px-4 py-3 text-gray-500 text-xs" dir="ltr">{p.email || "—"}</td>
+                <td className="px-4 py-3">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${p.is_verified ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                    {p.is_verified ? "מאומת ✓" : "לא מאומת"}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                    {{ free: "חינמי", pro: "פרו", premium: "פרמיום" }[p.plan] || "חינמי"}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {partners.length === 0 && <div className="text-center py-10 text-gray-400">אין שותפים עדיין</div>}
+      </div>
+      {showAdd && <AddPartnerModal onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); base44.entities.ProfessionalPartner.list().then(setPartners); }} />}
+    </div>
+  );
+}
+
 const TABS = [
   { key: "templates", label: "טפסים ממשלתיים" },
   { key: "holidays", label: "חגים ישראליים" },
   { key: "pricing", label: "תמחור" },
   { key: "email_test", label: "בדיקת מיילים" },
   { key: "payment_settings", label: "הגדרות תשלום" },
+  { key: "partners", label: "אנשי מקצוע שותפים" },
 ];
 
 export default function AdminContent() {
@@ -483,6 +543,7 @@ export default function AdminContent() {
       {activeTab === "pricing" && <PricingTab />}
       {activeTab === "email_test" && <EmailTestTab />}
       {activeTab === "payment_settings" && <PaymentSettingsTab />}
+      {activeTab === "partners" && <PartnersContentTab />}
     </div>
   );
 }
