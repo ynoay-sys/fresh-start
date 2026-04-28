@@ -224,7 +224,7 @@ export default function BusinessOpening() {
         const u = await base44.auth.me();
         setUser(u);
         await new Promise(r => setTimeout(r, 200));
-        let existing = await base44.entities.BusinessOpeningStep.list();
+        let existing = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
         if (existing.length === 0) {
           const keys = ["bank_account", "vat_file", "tax_file", "nii"];
           try {
@@ -236,7 +236,7 @@ export default function BusinessOpening() {
             console.error("Failed to create steps:", createErr);
           }
           await new Promise(r => setTimeout(r, 1000));
-          existing = await base44.entities.BusinessOpeningStep.list();
+          existing = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
         }
         // Retry if still not enough steps
         if (existing.length < 4 && attempt < 5) {
@@ -245,7 +245,7 @@ export default function BusinessOpening() {
         }
         setSteps(existing);
         await new Promise(r => setTimeout(r, 250));
-        const profiles = await base44.entities.UserProfile.list();
+        const profiles = await base44.entities.UserProfile.filter({ created_by: u.email });
         setProfile(profiles[0] || null);
         setLoading(false);
       } catch (err) {
@@ -427,10 +427,11 @@ export default function BusinessOpening() {
           profile={profile}
           user={user}
           startConfirmed={getStep(activeWizard)?.status === "partial"}
-          onComplete={() => {
+          onComplete={async () => {
             setActiveWizard(null);
-            base44.entities.BusinessOpeningStep.list().then(setSteps);
-            base44.entities.UserProfile.list().then(r => setProfile(r[0] || null));
+            const u = await base44.auth.me();
+            base44.entities.BusinessOpeningStep.filter({ created_by: u.email }).then(setSteps);
+            base44.entities.UserProfile.filter({ created_by: u.email }).then(r => setProfile(r[0] || null));
           }}
           onClose={() => setActiveWizard(null)}
         />

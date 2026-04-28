@@ -175,8 +175,10 @@ export default function Layout() {
 
   // Real-time sync for business opening badge
   useEffect(() => {
-    const unsubscribe = base44.entities.BusinessOpeningStep.subscribe(async () => {
+    const unsubscribe = base44.entities.BusinessOpeningStep.subscribe(async (event) => {
+      // Only react to events for the current user's records
       const u = await base44.auth.me();
+      if (event.data?.created_by && event.data.created_by !== u.email) return;
       const completed = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" });
       setStepsCompleted(completed.length);
     });
