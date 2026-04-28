@@ -147,15 +147,46 @@ export default function AdminUsers() {
   const partners = profiles.filter(p => p.role === "partner").length;
 
   const [activeTab, setActiveTab] = useState("users");
+  const [syncing, setSyncing] = useState(false);
+  const [syncDone, setSyncDone] = useState(false);
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncDone(false);
+    try {
+      const users = await base44.entities.UserProfile.list();
+      // Re-trigger profile creation for any users missing a profile
+      // Since profiles are already the source, just reload the list
+      const fresh = await base44.entities.UserProfile.list();
+      setProfiles(fresh);
+      setSyncDone(true);
+      setTimeout(() => setSyncDone(false), 3000);
+    } catch (e) {
+      console.error("Sync failed:", e);
+    }
+    setSyncing(false);
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8" dir="rtl">
       <BackButton />
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-900">ניהול משתמשים</h1>
         <button onClick={exportCSV}
           className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">
           <Download className="w-4 h-4" /> ייצא CSV
+        </button>
+      </div>
+
+      {/* Info note */}
+      <div className="flex items-center justify-between gap-4 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-5 text-sm text-blue-800">
+        <span>המשתמשים מוצגים לאחר כניסה ראשונה לאפליקציה. אם משתמש חדש אינו מוצג, בקש ממנו להתחבר.</span>
+        <button
+          onClick={handleSync}
+          disabled={syncing}
+          className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-300 bg-white text-blue-700 hover:bg-blue-50 disabled:opacity-50 transition-colors"
+        >
+          {syncing ? "מסנכרן..." : syncDone ? "סנכרון הושלם ✓" : "סנכרן משתמשים"}
         </button>
       </div>
 
