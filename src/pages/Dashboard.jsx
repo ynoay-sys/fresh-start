@@ -26,7 +26,8 @@ function StatCard({ emoji, label, value, sub, onClick }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem("welcomeShown"));
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeProfileId, setWelcomeProfileId] = useState(null);
   const [showProfileBanner, setShowProfileBanner] = useState(false);
   const [docCount, setDocCount] = useState(null);
   const [contactCount, setContactCount] = useState(null);
@@ -88,6 +89,21 @@ export default function Dashboard() {
       const profileArr = await base44.entities.UserProfile.filter({ created_by: user.email });
       if (profileArr[0]?.role === "partner") setIsPartner(true);
       const profileRec = profileArr[0];
+
+      // Onboarding gate — DB is source of truth, localStorage is only a fast cache
+      if (profileRec) {
+        if (!profileRec.onboarding_completed) {
+          setWelcomeProfileId(profileRec.id);
+          setShowWelcome(true);
+        }
+        // Keep localStorage in sync for any legacy reads
+        if (profileRec.onboarding_completed) {
+          localStorage.setItem("welcomeShown", "true");
+        }
+      } else if (!localStorage.getItem("welcomeShown")) {
+        // No profile yet — fall back to localStorage until profile is created
+        setShowWelcome(true);
+      }
 
       // Calculate profile completeness
       if (profileRec) {
@@ -191,7 +207,7 @@ export default function Dashboard() {
   return (
     <div className="px-4 py-8 max-w-4xl mx-auto" dir="rtl">
       {showCelebration && <LaunchCelebration onDismiss={() => setShowCelebration(false)} />}
-      {showWelcome && <WelcomeModal onComplete={() => setShowWelcome(false)} />}
+      {showWelcome && <WelcomeModal onComplete={() => setShowWelcome(false)} profileId={welcomeProfileId} />}
 
       {showProfileBanner && (
         <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-6">

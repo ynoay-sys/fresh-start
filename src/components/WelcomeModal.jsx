@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 
 const STEPS = [
   {
@@ -29,12 +30,23 @@ const STEPS = [
   },
 ];
 
-export default function WelcomeModal({ onComplete }) {
+async function markOnboardingComplete(profileId) {
+  if (profileId) {
+    await base44.entities.UserProfile.update(profileId, {
+      onboarding_completed: true,
+      onboarding_completed_at: new Date().toISOString().split("T")[0],
+    });
+  }
+  // Keep localStorage as a fast client-side cache
+  localStorage.setItem("welcomeShown", "true");
+}
+
+export default function WelcomeModal({ onComplete, profileId }) {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
 
-  function finish() {
-    localStorage.setItem("welcomeShown", "true");
+  async function finish() {
+    await markOnboardingComplete(profileId);
     onComplete();
     navigate("/business-opening");
   }

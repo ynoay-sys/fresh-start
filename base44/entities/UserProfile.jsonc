@@ -84,6 +84,16 @@
       "type": "number",
       "description": "Current onboarding step (0-based)"
     },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has completed or skipped the onboarding flow"
+    },
+    "onboarding_completed_at": {
+      "type": "string",
+      "format": "date",
+      "description": "When onboarding was completed or skipped"
+    },
     "plan": {
       "type": "string",
       "enum": [
