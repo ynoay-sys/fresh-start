@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 
 function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -19,7 +20,7 @@ function Header() {
           <Link to="/help" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">עזרה</Link>
         </nav>
         <div className="hidden md:flex items-center gap-3">
-          <Link to="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">כניסה</Link>
+          <button onClick={() => base44.auth.redirectToLogin('/dashboard')} className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">כניסה</button>
           <Link to="/register" className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
             style={{ backgroundColor: "#1E5FA8" }}>התחל חינם ←</Link>
         </div>
@@ -42,7 +43,7 @@ function Header() {
           <a href="#pricing" className="block text-sm text-gray-700 py-2">תמחור</a>
           <Link to="/help" className="block text-sm text-gray-700 py-2">עזרה</Link>
           <div className="flex gap-3 pt-2">
-            <Link to="/login" className="flex-1 text-center py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700">כניסה</Link>
+            <button onClick={() => base44.auth.redirectToLogin('/dashboard')} className="flex-1 text-center py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700">כניסה</button>
             <Link to="/register" className="flex-1 text-center py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: "#1E5FA8" }}>התחל חינם</Link>
           </div>
         </div>

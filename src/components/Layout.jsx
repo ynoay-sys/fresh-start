@@ -97,6 +97,7 @@ export default function Layout() {
   const [docsExpanded, setDocsExpanded] = useState(
     location.pathname.startsWith("/documents")
   );
+  const [roleLoading, setRoleLoading] = useState(true);
   const [userIsAdmin, setUserIsAdmin] = useState(false);
   const [userIsPartner, setUserIsPartner] = useState(false);
   const [partnerVerified, setPartnerVerified] = useState(false);
@@ -109,7 +110,7 @@ export default function Layout() {
     generateNotifications().catch(() => {});
     checkAndUnlockAchievements().catch(() => {});
     isAdmin().then(setUserIsAdmin);
-    // Check partner status
+    // Check partner status — resolve before showing UI to prevent color flash
     base44.auth.me().then(async u => {
       const profiles = await base44.entities.UserProfile.filter({ created_by: u.email });
       const p = profiles[0];
@@ -119,6 +120,7 @@ export default function Layout() {
         setPartnerVerified(!!partners[0]?.is_verified);
         setPartnerPremium(!!partners[0]?.is_premium);
       }
+      setRoleLoading(false);
     });
   }, []);
 
@@ -297,6 +299,15 @@ export default function Layout() {
     { icon: Globe, label: "דף הנחיתה", path: "/landing-page", badge: landingPagePublished ? "פעיל" : null, badgeColor: "#1A7A4A" },
     { icon: Contact2, label: "אנשי קשר", path: "/contacts", badge: contactCount },
   ];
+
+  if (roleLoading) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-white">
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin mb-3" />
+        <p className="text-sm text-gray-400">טוען...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 font-rubik flex flex-col" dir="rtl">

@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [landingPage, setLandingPage] = useState(null);
   const [activeOrders, setActiveOrders] = useState([]);
   const [isPartner, setIsPartner] = useState(false);
+  const [profileCompleteness, setProfileCompleteness] = useState(0);
   const [aiUsage, setAiUsage] = useState(0);
   const [templateUsage, setTemplateUsage] = useState(0);
   const [monthPayments, setMonthPayments] = useState(0);
@@ -87,6 +88,14 @@ export default function Dashboard() {
       const profileArr = await base44.entities.UserProfile.filter({ created_by: user.email });
       if (profileArr[0]?.role === "partner") setIsPartner(true);
       const profileRec = profileArr[0];
+
+      // Calculate profile completeness
+      if (profileRec) {
+        const fields = ['first_name', 'last_name', 'phone_il', 'business_name', 'business_type', 'city'];
+        const filled = fields.filter(f => profileRec[f] && profileRec[f].toString().trim() !== '').length;
+        setProfileCompleteness(Math.round((filled / fields.length) * 100));
+      }
+
       const visionsForChecklist = milestonesRes.filter(m => m.type === "vision");
       setOnboardingChecks({
         profile: !!(profileRec?.first_name),
@@ -214,7 +223,7 @@ export default function Dashboard() {
       </div>
 
       {/* Onboarding Checklist */}
-      <OnboardingChecklist checks={onboardingChecks} />
+      <OnboardingChecklist checks={onboardingChecks} profileCompleteness={profileCompleteness} />
 
       {/* Contacts marketplace link */}
       <div className="flex justify-end mb-2 -mt-6">
@@ -226,12 +235,19 @@ export default function Dashboard() {
       </div>
 
       {/* Business Opening Widget */}
+      {stepsCompleted !== 4 && (
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-bold text-gray-800">מסע פתיחת העסק</h2>
+          <button onClick={() => navigate("/business-opening")}
+            className="text-xs font-medium px-3 py-1.5 rounded-lg text-white"
+            style={{ backgroundColor: "#1E5FA8" }}>
+            {stepsCompleted === 0 ? "התחל ←" : "המשך ←"}
+          </button>
         </div>
         <BusinessProgressMap steps={steps} mini={true} />
       </div>
+      )}
 
       {/* Upcoming Events Widget */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">

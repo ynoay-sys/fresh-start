@@ -9,8 +9,9 @@ const ITEMS = [
   { key: "business", label: "השלם שלב אחד בפתיחת העסק", link: "/business-opening" },
 ];
 
-// checks: { profile, document, client, vision, business } — all booleans, passed from parent
-export default function OnboardingChecklist({ checks }) {
+// checks: { profile, document, client, vision, business } — profile can be a number (completeness %) or boolean
+// profileCompleteness: optional number 0-100
+export default function OnboardingChecklist({ checks, profileCompleteness }) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -43,21 +44,31 @@ export default function OnboardingChecklist({ checks }) {
           <div className="space-y-3">
             {ITEMS.map(item => {
               const done = !!checks[item.key];
+              // Special handling for profile item with partial completion
+              const isProfile = item.key === "profile";
+              const pct = isProfile ? (profileCompleteness ?? (done ? 100 : 0)) : null;
+              const profilePartial = isProfile && pct >= 50 && pct < 100;
+              const profileEmpty = isProfile && pct < 50;
+              const effectiveDone = isProfile ? pct === 100 : done;
+
               return (
                 <div
                   key={item.key}
-                  onClick={() => !done && navigate(item.link)}
-                  className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${done ? "" : "cursor-pointer hover:bg-blue-50"}`}
+                  onClick={() => !effectiveDone && navigate(item.link)}
+                  className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${effectiveDone ? "" : "cursor-pointer hover:bg-blue-50"}`}
                 >
-                  {done ? (
+                  {effectiveDone ? (
                     <span className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">✓</span>
+                  ) : profilePartial ? (
+                    <span className="w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ borderColor: "#C25A00", color: "#C25A00" }}>◐</span>
                   ) : (
                     <span className="w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0" />
                   )}
-                  <span className={`text-sm ${done ? "line-through text-gray-400" : "text-gray-800 font-medium"}`}>
-                    {item.label}
+                  <span className={`text-sm ${effectiveDone ? "line-through text-gray-400" : profilePartial ? "font-medium" : "text-gray-800 font-medium"}`}
+                    style={profilePartial ? { color: "#C25A00" } : {}}>
+                    {effectiveDone ? item.label : profilePartial ? `פרופיל הושלם חלקית (${pct}%)` : item.label}
                   </span>
-                  {!done && <span className="text-xs text-blue-600 mr-auto">←</span>}
+                  {!effectiveDone && <span className="text-xs text-blue-600 mr-auto">←</span>}
                 </div>
               );
             })}

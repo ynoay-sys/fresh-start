@@ -57,7 +57,7 @@ function ProfileViewsWidget({ partner, plan, viewNotifs, navigate }) {
             <p className="text-4xl font-bold text-gray-300">{partner?.profile_views || 0}</p>
             <p className="text-sm text-gray-300">צפיות אחרונות</p>
           </div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(4px)" }}>
             <p className="text-sm font-medium text-gray-700 mb-2">שדרג לפרו לצפות בכל הסטטיסטיקות</p>
             <button onClick={() => navigate("/partner/pricing")}
               className="px-3 py-1.5 rounded-lg text-white text-xs font-medium"

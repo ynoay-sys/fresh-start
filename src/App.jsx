@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Outlet, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -106,8 +106,18 @@ function ProtectedAdminOutlet() {
   );
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pathname]);
+  return null;
+}
+
 function AppRoutes() {
   return (
+    <>
+    <ScrollToTop />
     <Routes>
       {/* ── PUBLIC ROUTES — accessible without login ── */}
       <Route path="/" element={<Marketing />} />
@@ -162,6 +172,7 @@ function AppRoutes() {
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </>
   );
 }
 
