@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import BackButton from "../../components/BackButton";
+import { useNavigate } from "react-router-dom";
 import EmbeddedBrowser from "../../components/EmbeddedBrowser";
 import { storeSession, getSession, clearSession, clearExpiredSessions } from "../../lib/agentSession";
 
@@ -17,6 +17,7 @@ function StatusBadge({ status }) {
 }
 
 export default function AutomationTest() {
+  const navigate = useNavigate();
   const [running, setRunning] = useState(false);
   const [results, setResults] = useState(null);
   const [portalHealth, setPortalHealth] = useState({});
@@ -140,7 +141,7 @@ AUTOMATION_MODE = ${results.mode}`;
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4" dir="rtl" style={{ fontFamily: 'Rubik, sans-serif' }}>
       <div className="max-w-2xl mx-auto space-y-6">
-        <BackButton />
+        <button onClick={() => navigate('/dashboard')} style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'none', border:'none', color:'#1E5FA8', cursor:'pointer', fontSize:'14px', fontFamily:'Rubik, sans-serif', padding:'8px 0', marginBottom:'16px', fontWeight:'500' }}><span style={{ fontSize:'16px' }}>→</span><span>חזרה לדשבורד</span></button>
 
         {/* Header */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center">

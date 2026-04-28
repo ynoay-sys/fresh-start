@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import BackButton from "../../components/BackButton";
+import { useNavigate } from "react-router-dom";
 import { Search, Download, X, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import PartnersTab from "../../components/admin/PartnersTab";
@@ -74,6 +74,7 @@ function UserDetailPanel({ profile, onClose }) {
 }
 
 export default function AdminUsers() {
+  const navigate = useNavigate();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -169,7 +170,7 @@ export default function AdminUsers() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8" dir="rtl">
-      <BackButton />
+      <button onClick={() => navigate('/dashboard')} style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'none', border:'none', color:'#1E5FA8', cursor:'pointer', fontSize:'14px', fontFamily:'Rubik, sans-serif', padding:'8px 0', marginBottom:'16px', fontWeight:'500' }}><span style={{ fontSize:'16px' }}>→</span><span>חזרה לדשבורד</span></button>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-900">ניהול משתמשים</h1>
         <button onClick={exportCSV}

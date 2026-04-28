@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import BackButton from "../../components/BackButton";
+import { useNavigate } from "react-router-dom";
 import { Plus, Edit2, Eye, EyeOff, Trash2, Save, X } from "lucide-react";
 import { sendTestEmail } from "../../services/EmailService";
 import AddPartnerModal from "../../components/admin/AddPartnerModal.jsx";
@@ -523,12 +523,13 @@ const TABS = [
 ];
 
 export default function AdminContent() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("templates");
   useEffect(() => { document.title = "ניהול תוכן | Fresh Start"; }, []);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8" dir="rtl">
-      <BackButton />
+      <button onClick={() => navigate('/dashboard')} style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'none', border:'none', color:'#1E5FA8', cursor:'pointer', fontSize:'14px', fontFamily:'Rubik, sans-serif', padding:'8px 0', marginBottom:'16px', fontWeight:'500' }}><span style={{ fontSize:'16px' }}>→</span><span>חזרה לדשבורד</span></button>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">ניהול תוכן</h1>
       <div className="flex gap-1 mb-6 border-b border-gray-200">
         {TABS.map(tab => (

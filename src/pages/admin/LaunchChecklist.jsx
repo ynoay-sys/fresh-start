@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import BackButton from "../../components/BackButton";
+import { useNavigate } from "react-router-dom";
 
 const CHECKLIST = {
   "טכני": [
@@ -32,6 +32,7 @@ const CHECKLIST = {
 const ALL_KEYS = Object.values(CHECKLIST).flat().map(i => i.key);
 
 export default function LaunchChecklist() {
+  const navigate = useNavigate();
   const [checked, setChecked] = useState(() => {
     try {
       const saved = localStorage.getItem("launch_checklist");
@@ -52,7 +53,7 @@ export default function LaunchChecklist() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl" style={{ fontFamily: 'Rubik, sans-serif' }}>
-      <BackButton />
+      <button onClick={() => navigate('/dashboard')} style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'none', border:'none', color:'#1E5FA8', cursor:'pointer', fontSize:'14px', fontFamily:'Rubik, sans-serif', padding:'8px 0', marginBottom:'16px', fontWeight:'500' }}><span style={{ fontSize:'16px' }}>→</span><span>חזרה לדשבורד</span></button>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">רשימת בדיקות לשחרור 🚀</h1>
 
       {/* Score */}
