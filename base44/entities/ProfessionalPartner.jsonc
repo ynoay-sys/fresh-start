@@ -54,6 +54,40 @@
       "type": "boolean",
       "default": true
     },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin verified"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_premium": {
+      "type": "boolean",
+      "default": false
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro",
+        "premium"
+      ],
+      "default": "free"
+    },
+    "profile_views": {
+      "type": "number",
+      "default": 0
+    },
+    "contact_requests_count": {
+      "type": "number",
+      "default": 0
+    },
+    "response_time_badge": {
+      "type": "string",
+      "description": "e.g. \u05e2\u05d5\u05e0\u05d4 \u05ea\u05d5\u05da \u05e9\u05e2\u05d4"
+    },
     "logoInitials": {
       "type": "string",
       "description": "2-letter avatar initials"

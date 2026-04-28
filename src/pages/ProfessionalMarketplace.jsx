@@ -66,9 +66,36 @@ export default function ProfessionalMarketplace() {
     setTimeout(() => setToast(""), 3000);
   }
 
-  function handleContactSaved(result) {
-    if (result === "saved") showToast("איש הקשר נוסף בהצלחה ✓");
-    else if (result === "dup") showToast("איש קשר זה כבר קיים ברשימה שלך");
+  async function handleContactSaved(result, professional) {
+    if (result === "saved") {
+      showToast("איש הקשר נוסף בהצלחה ✓");
+      // Fire partner notifications if this is a real partner (has email)
+      if (professional?.email) {
+        const partnerProfiles = await base44.entities.UserProfile.filter({ role: "partner" }).catch(() => []);
+        const matchedProfile = partnerProfiles.find(p => p.created_by === professional.email);
+        if (matchedProfile) {
+          // Increment profile_views on ProfessionalPartner
+          const partnerRecs = await base44.entities.ProfessionalPartner.filter({ email: professional.email }).catch(() => []);
+          if (partnerRecs[0]) {
+            await base44.entities.ProfessionalPartner.update(partnerRecs[0].id, {
+              profile_views: (partnerRecs[0].profile_views || 0) + 1,
+              contact_requests_count: (partnerRecs[0].contact_requests_count || 0) + 1,
+            }).catch(() => {});
+          }
+          // Create notification for partner
+          await base44.entities.Notification.create({
+            user_id: matchedProfile.user_id,
+            tier: "personal",
+            type: "partner_contact_request",
+            title: "פנייה חדשה!",
+            body: "משתמש שמר את פרטיך ורוצה ליצור קשר",
+            is_read: false,
+          }).catch(() => {});
+        }
+      }
+    } else if (result === "dup") {
+      showToast("איש קשר זה כבר קיים ברשימה שלך");
+    }
   }
 
   // All cities from both sources

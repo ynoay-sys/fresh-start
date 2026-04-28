@@ -9,6 +9,7 @@ import { ACHIEVEMENT_DEFS } from "../lib/achievements";
 import WelcomeModal from "../components/WelcomeModal";
 import { trackEvent } from "../lib/trackEvent";
 import BusinessTypeCards from "../components/BusinessTypeCards";
+import PartnerDashboardWidgets from "../components/partner/PartnerDashboardWidgets";
 
 
 function StatCard({ emoji, label, value, sub, onClick }) {
@@ -40,6 +41,7 @@ export default function Dashboard() {
   const [achievements, setAchievements] = useState([]);
   const [landingPage, setLandingPage] = useState(null);
   const [activeOrders, setActiveOrders] = useState([]);
+  const [isPartner, setIsPartner] = useState(false);
   const [aiUsage, setAiUsage] = useState(0);
   const [templateUsage, setTemplateUsage] = useState(0);
   const [monthPayments, setMonthPayments] = useState(0);
@@ -83,6 +85,7 @@ export default function Dashboard() {
       await new Promise(r => setTimeout(r, 250));
 
       const profileArr = await base44.entities.UserProfile.filter({ created_by: user.email });
+      if (profileArr[0]?.role === "partner") setIsPartner(true);
       const profileRec = profileArr[0];
       const visionsForChecklist = milestonesRes.filter(m => m.type === "vision");
       setOnboardingChecks({
@@ -192,7 +195,10 @@ export default function Dashboard() {
       )}
 
       <h1 className="text-2xl font-bold text-gray-900 mb-2">{(() => { const h = new Date().getHours(); const g = h >= 6 && h < 12 ? 'בוקר טוב' : h >= 12 && h < 17 ? 'צהריים טובים' : h >= 17 && h < 21 ? 'ערב טוב' : 'לילה טוב'; return `${g} 👋`; })()}</h1>
-      <p className="text-sm text-gray-500 mb-8">ברוך הבא ל-Fresh Start — הפלטפורמה לעצמאים בישראל</p>
+      <p className="text-sm text-gray-500 mb-8">{isPartner ? "לוח הבקרה המקצועי שלי — Fresh Start" : "ברוך הבא ל-Fresh Start — הפלטפורמה לעצמאים בישראל"}</p>
+
+      {/* Partner widgets — shown above all else for partners */}
+      {isPartner && <PartnerDashboardWidgets />}
 
       {/* Business Type Flip Cards */}
       <BusinessTypeCards />

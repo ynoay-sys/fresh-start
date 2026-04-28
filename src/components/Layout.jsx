@@ -13,6 +13,7 @@ import { generateNotifications } from "../lib/generateNotifications";
 import { isAdmin } from "../lib/userRole";
 import BreakReminderModal from "./BreakReminderModal";
 import EncouragementBubble from "./EncouragementBubble";
+import PartnerDashboardWidgets from "./partner/PartnerDashboardWidgets";
 
 const MOBILE_NAV = [
   { icon: Building2, label: "פתיחת עסק", path: "/business-opening" },
@@ -97,6 +98,9 @@ export default function Layout() {
     location.pathname.startsWith("/documents")
   );
   const [userIsAdmin, setUserIsAdmin] = useState(false);
+  const [userIsPartner, setUserIsPartner] = useState(false);
+  const [partnerVerified, setPartnerVerified] = useState(false);
+  const [partnerPremium, setPartnerPremium] = useState(false);
   const [showBreakModal, setShowBreakModal] = useState(false);
   const activeMinutesRef = useRef(0);
   const lastActivityRef = useRef(Date.now());
@@ -105,6 +109,17 @@ export default function Layout() {
     generateNotifications().catch(() => {});
     checkAndUnlockAchievements().catch(() => {});
     isAdmin().then(setUserIsAdmin);
+    // Check partner status
+    base44.auth.me().then(async u => {
+      const profiles = await base44.entities.UserProfile.filter({ created_by: u.email });
+      const p = profiles[0];
+      if (p?.role === "partner") {
+        setUserIsPartner(true);
+        const partners = await base44.entities.ProfessionalPartner.filter({ email: u.email });
+        setPartnerVerified(!!partners[0]?.is_verified);
+        setPartnerPremium(!!partners[0]?.is_premium);
+      }
+    });
   }, []);
 
   // Break reminder — 4 hours of active use
@@ -281,10 +296,12 @@ export default function Layout() {
           </button>
           <div style={{ position: "relative" }}>
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#1E5FA8" }}>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: userIsPartner ? "#1A7A4A" : "#1E5FA8" }}>
                 <span className="text-white font-bold text-xs">FS</span>
               </div>
               <span className="font-bold text-gray-900 text-base hidden sm:block">Fresh Start</span>
+              {partnerPremium && <span className="hidden sm:inline text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium">שותף פרמיום ⭐</span>}
+              {!partnerPremium && partnerVerified && <span className="hidden sm:inline text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">שותף מאומת ✓</span>}
             </Link>
             <EncouragementBubble breakModalVisible={showBreakModal} />
           </div>
@@ -352,10 +369,30 @@ export default function Layout() {
         <aside className={`fixed top-14 right-0 h-[calc(100vh-3.5rem)] w-60 bg-white border-l border-gray-200 z-30 flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "translate-x-full"} md:translate-x-0`}>
           <nav className="flex-1 overflow-y-auto py-4 px-2">
 
+            {/* Partner tools section */}
+            {userIsPartner && (
+              <>
+                <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "#1A7A4A" }}>הכלים המקצועיים שלי</p>
+                {[
+                  { emoji: "⭐", label: "פרופיל מקצועי", path: "/partner/profile" },
+                  { emoji: "📊", label: "הסטטיסטיקות שלי", path: "/partner/analytics" },
+                  { emoji: "📨", label: "פניות שהתקבלו", path: "/partner/requests" },
+                  { emoji: "💳", label: "תוכניות מנוי", path: "/partner/pricing" },
+                ].map(({ emoji, label, path }) => (
+                  <Link key={path} to={path} onClick={closeSidebar}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive(path) ? "text-white" : "text-gray-700 hover:bg-green-50"}`}
+                    style={isActive(path) ? { backgroundColor: "#1A7A4A" } : {}}>
+                    <span className="text-sm">{emoji}</span><span>{label}</span>
+                  </Link>
+                ))}
+                <hr style={{ border: "none", borderTop: "1px solid #E5E7EB", margin: "8px 0" }} />
+              </>
+            )}
+
             {/* Dashboard */}
             <Link to="/dashboard" onClick={closeSidebar}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${isActive("/dashboard") ? "text-white" : "text-gray-700 hover:bg-gray-100"}`}
-              style={isActive("/dashboard") ? { backgroundColor: "#1E5FA8" } : {}}>
+              style={isActive("/dashboard") ? { backgroundColor: userIsPartner ? "#1A7A4A" : "#1E5FA8" } : {}}>
               <span className="w-4 h-4 text-center text-sm leading-none">🏠</span><span>ראשי</span>
             </Link>
 

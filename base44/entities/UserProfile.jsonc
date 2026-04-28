@@ -35,6 +35,12 @@
     "business_type": {
       "type": "string",
       "enum": [
+        "osek_patur",
+        "osek_murshe",
+        "osek_zair",
+        "esek_beinoni",
+        "amuta",
+        "sakhir_atzmai",
         "freelancer",
         "retail",
         "studio",
@@ -44,9 +50,35 @@
       ],
       "description": "\u05e1\u05d5\u05d2 \u05e2\u05e1\u05e7"
     },
+    "business_status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "existing"
+      ],
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05e2\u05e1\u05e7 \u05d7\u05d3\u05e9 \u05d0\u05d5 \u05e7\u05d9\u05d9\u05dd"
+    },
     "business_name": {
       "type": "string",
       "description": "\u05e9\u05dd \u05d4\u05e2\u05e1\u05e7"
+    },
+    "business_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e4\u05ea\u05d9\u05d7\u05ea \u05d4\u05e2\u05e1\u05e7"
+    },
+    "estimated_annual_revenue": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d6\u05d5\u05e8 \u05e9\u05e0\u05ea\u05d9 \u05de\u05e9\u05d5\u05e2\u05e8 \u05d1\u05e9\u05e7\u05dc\u05d9\u05dd"
+    },
+    "has_employees": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d9\u05e9 \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd \u05d1\u05e2\u05e1\u05e7"
+    },
+    "employee_count": {
+      "type": "number",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd"
     },
     "onboarding_step": {
       "type": "number",
@@ -151,7 +183,45 @@
       ],
       "default": "user",
       "description": "App role for access control"
+    },
+    "partner_plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro",
+        "premium"
+      ],
+      "default": "free",
+      "description": "Partner subscription plan"
+    },
+    "partner_since": {
+      "type": "string",
+      "format": "date",
+      "description": "When they became a partner"
     }
   },
-  "required": []
+  "required": [],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "created_by": "{{user.email}}"
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

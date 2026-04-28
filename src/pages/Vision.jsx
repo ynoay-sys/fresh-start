@@ -7,7 +7,28 @@ import GoalModal from "../components/GoalModal";
 import GoalCard from "../components/GoalCard";
 import { checkAndUnlockAchievements } from "../lib/achievements";
 
+const PARTNER_SUGGESTED_GOALS = [
+  {
+    id: "pg1", title: "בניית נוכחות מקצועית",
+    tasks: [
+      { title: "מלא את הפרופיל המקצועי שלך במלואו", done: false },
+      { title: "קבל 10 צפיות בפרופיל", done: false },
+      { title: "קבל 5 פניות מלקוחות", done: false },
+      { title: "שדרג לתוכנית פרו", done: false },
+    ]
+  },
+  {
+    id: "pg2", title: "הגדלת החשיפה",
+    tasks: [
+      { title: "הגע ל-50 צפיות בפרופיל", done: false },
+      { title: "קבל 20 פניות מלקוחות", done: false },
+      { title: "שדרג לתוכנית פרמיום", done: false },
+    ]
+  }
+];
+
 export default function Vision() {
+  const [isPartner, setIsPartner] = useState(false);
   const [vision, setVision] = useState(null);
   const [goals, setGoals] = useState([]);
   const [completedGoals, setCompletedGoals] = useState([]);
@@ -27,6 +48,8 @@ export default function Vision() {
     const milestones = await base44.entities.Milestone.filter({ created_by: user.email }).catch(() => null);
     if (milestones === null) { setError(true); setLoading(false); return; }
 
+    const profiles = await base44.entities.UserProfile.filter({ created_by: user.email });
+    setIsPartner(profiles[0]?.role === "partner");
     const vis = milestones.find(m => m.type === "vision");
     const activeG = milestones.filter(m => m.type === "goal" && m.status !== "completed")
       .sort((a, b) => (a.due_date || "9999") < (b.due_date || "9999") ? -1 : 1);
@@ -80,6 +103,34 @@ export default function Vision() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8" dir="rtl">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">חזון ומטרות</h1>
+
+      {/* Partner suggested goals */}
+      {isPartner && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-base font-bold text-gray-800">מטרות מוצעות לשותפים 💼</span>
+          </div>
+          <div className="space-y-3">
+            {PARTNER_SUGGESTED_GOALS.map(sg => (
+              <div key={sg.id} className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <p className="font-semibold text-green-800 mb-2">{sg.title}</p>
+                <ul className="space-y-1.5">
+                  {sg.tasks.map(t => (
+                    <li key={t.title} className="flex items-center gap-2 text-sm text-green-700">
+                      <span className={t.done ? "text-green-600" : "text-gray-400"}>{t.done ? "✓" : "○"}</span>
+                      <span className={t.done ? "line-through text-gray-400" : ""}>{t.title}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button onClick={() => { setEditGoal(null); setShowGoalModal(true); }}
+                  className="mt-3 text-xs font-medium text-green-700 underline">
+                  + הוסף כמטרה שלי
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* SECTION 1: Vision */}
       {!vision ? (

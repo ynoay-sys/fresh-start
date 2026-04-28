@@ -45,6 +45,10 @@ import SetupExisting from './pages/SetupExisting';
 import ProfessionalMarketplace from './pages/ProfessionalMarketplace';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailed from './pages/PaymentFailed';
+import PartnerProfile from './pages/partner/PartnerProfile';
+import PartnerAnalytics from './pages/partner/PartnerAnalytics';
+import PartnerRequests from './pages/partner/PartnerRequests';
+import PartnerPricing from './pages/partner/PartnerPricing';
 
 const Suspensed = ({ children }) => (
   <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><div>טוען...</div></div>}>
@@ -141,6 +145,10 @@ function AppRoutes() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/schema" element={<SchemaDocumentation />} />
         <Route path="/setup/existing" element={<SetupExisting />} />
+        <Route path="/partner/profile" element={<PartnerProfile />} />
+        <Route path="/partner/analytics" element={<PartnerAnalytics />} />
+        <Route path="/partner/requests" element={<PartnerRequests />} />
+        <Route path="/partner/pricing" element={<PartnerPricing />} />
       </Route>
 
       {/* ── ADMIN ROUTES — login + admin role required ── */}

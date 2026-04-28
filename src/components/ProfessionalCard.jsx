@@ -112,7 +112,7 @@ export default function ProfessionalCard({ professional, onContactSaved }) {
       });
       setSaved(true);
       trackEvent("professional_saved", { category: professional.category });
-      onContactSaved?.("saved");
+      onContactSaved?.("saved", professional);
     } catch {
       // silently fail
     }

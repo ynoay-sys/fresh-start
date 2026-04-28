@@ -11,6 +11,7 @@ const FILTERS = [
   { key: "personal", label: "👤 אישי" },
   { key: "national", label: "🇮🇱 לאומי" },
   { key: "system", label: "⚙️ מערכת" },
+  { key: "partner", label: "💼 מקצועי" },
 ];
 
 const EMPTY_LABELS = {
@@ -18,6 +19,7 @@ const EMPTY_LABELS = {
   personal: "אין התראות אישיות",
   national: "אין התראות לאומיות",
   system: "אין התראות מערכת",
+  partner: "אין התראות מקצועיות",
 };
 
 export default function Notifications() {
@@ -55,7 +57,11 @@ export default function Notifications() {
   }
 
   const filtered = notifications
-    .filter(n => filter === "all" || n.tier === filter)
+    .filter(n => {
+      if (filter === "all") return true;
+      if (filter === "partner") return n.type === "partner_view" || n.type === "partner_contact_request";
+      return n.tier === filter;
+    })
     .sort((a, b) => new Date(b.scheduled_for || b.created_date) - new Date(a.scheduled_for || a.created_date));
 
   return (
