@@ -182,55 +182,72 @@ export default function Layout() {
   }, []);
 
   useEffect(() => {
+    const delay = ms => new Promise(r => setTimeout(r, ms));
     async function loadSidebarData() {
       const u = await base44.auth.me();
       setUser(u);
 
-      // Step 1 — critical: notifs + user counts (3 requests)
-      const [notifs, docs, clients] = await Promise.all([
-        base44.entities.Notification.filter({ created_by: u.email }),
+      // Step 1 — most critical: notifications only
+      const notifs = await base44.entities.Notification.filter({ created_by: u.email });
+      setAllNotifs(notifs);
+      setUnreadCount(notifs.filter(n => !n.is_read).length);
+
+      await delay(400);
+
+      // Step 2 — docs + clients
+      const [docs, clients] = await Promise.all([
         base44.entities.Document.filter({ created_by: u.email, status: "active" }),
         base44.entities.Client.filter({ created_by: u.email }),
       ]);
-      setAllNotifs(notifs);
-      setUnreadCount(notifs.filter(n => !n.is_read).length);
       setDocCount(docs.length);
       setClientCount(clients.length);
 
-      // Step 2 — contacts + steps + goals (3 requests)
-      const [contacts, steps, goals] = await Promise.all([
+      await delay(400);
+
+      // Step 3 — contacts + steps
+      const [contacts, steps] = await Promise.all([
         base44.entities.Contact.filter({ created_by: u.email }),
         base44.entities.BusinessOpeningStep.filter({ created_by: u.email, status: "completed" }),
-        base44.entities.Milestone.filter({ created_by: u.email, type: "goal", status: "active" }),
       ]);
       setContactCount(contacts.length);
       setStepsCompleted(steps.length);
-      setActiveGoalCount(goals.length);
 
-      // Step 3 — orders + events (2 requests)
-      const [orders, events] = await Promise.all([
+      await delay(400);
+
+      // Step 4 — goals + orders
+      const [goals, orders] = await Promise.all([
+        base44.entities.Milestone.filter({ created_by: u.email, type: "goal", status: "active" }),
         base44.entities.Order.filter({ created_by: u.email }),
-        base44.entities.ScheduleEvent.filter({ created_by: u.email }),
       ]);
+      setActiveGoalCount(goals.length);
       const delayed = orders.filter(o => o.status === "delayed" || (o.status === "in_transit" && o.expected_date && new Date(o.expected_date) < new Date())).length;
       const inTransit = orders.filter(o => o.status === "in_transit").length;
       if (delayed > 0) { setOrderBadge(delayed); setOrderBadgeColor("#AA1111"); }
       else if (inTransit > 0) { setOrderBadge(inTransit); setOrderBadgeColor("#1E5FA8"); }
+
+      await delay(400);
+
+      // Step 5 — events + landing page
+      const [events, landingPages] = await Promise.all([
+        base44.entities.ScheduleEvent.filter({ created_by: u.email }),
+        base44.entities.LandingPage.filter({ created_by: u.email }),
+      ]);
       const todayStr = new Date().toDateString();
       setTodayEventCount(events.filter(e => new Date(e.start_time).toDateString() === todayStr).length);
+      setLandingPagePublished(landingPages[0]?.is_published || false);
 
-      // Step 4 — templates + completions + landing (3 requests)
-      const [templates, completions, landingPages] = await Promise.all([
+      await delay(400);
+
+      // Step 6 — templates (lowest priority)
+      const [templates, completions] = await Promise.all([
         base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
         base44.entities.UserTemplateCompletion.filter({ created_by: u.email }),
-        base44.entities.LandingPage.filter({ created_by: u.email }),
       ]);
       const completedKeys = completions.map(c => c.template_key);
       setUrgentTemplatesCount(templates.filter(t => !completedKeys.includes(t.key)).length);
-      setLandingPagePublished(landingPages[0]?.is_published || false);
     }
-    // Layout starts at 200ms; Dashboard is delayed to 3000ms so they don't overlap
-    const t = setTimeout(() => loadSidebarData().catch(() => {}), 200);
+    // Start after 1.5s to avoid colliding with Dashboard's initial load
+    const t = setTimeout(() => loadSidebarData().catch(() => {}), 1500);
     return () => clearTimeout(t);
   }, []);
 
