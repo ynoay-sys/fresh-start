@@ -1,26 +1,15 @@
 import { base44 } from "@/api/base44Client";
 
-let _cachedRole = null;
-let _cacheTs = 0;
-const CACHE_TTL = 60000; // 1 minute
-
+// Always fetch from DB — never cache role in memory or localStorage.
+// UserProfile.role is the single source of truth.
 export async function getUserRole() {
-  const now = Date.now();
-  if (_cachedRole && now - _cacheTs < CACHE_TTL) return _cachedRole;
   try {
     const user = await base44.auth.me();
     const profiles = await base44.entities.UserProfile.filter({ created_by: user.email });
-    _cachedRole = profiles[0]?.role || "user";
-    _cacheTs = now;
-    return _cachedRole;
+    return profiles[0]?.role || "user";
   } catch {
     return "user";
   }
-}
-
-export function clearRoleCache() {
-  _cachedRole = null;
-  _cacheTs = 0;
 }
 
 export async function isAdmin() {

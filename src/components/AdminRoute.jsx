@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { isAdmin, clearRoleCache } from "@/lib/userRole";
+import { isAdmin } from "@/lib/userRole";
 import { base44 } from "@/api/base44Client";
 
 const BOOTSTRAP_ADMIN_EMAIL = "ynoay9@gmail.com";
@@ -17,12 +17,10 @@ async function ensureBootstrapAdmin() {
     if (!profile) {
       // Create the profile with super_admin role
       await base44.entities.UserProfile.create({ role: "super_admin" });
-      clearRoleCache();
       return true;
     } else if (!["admin", "super_admin"].includes(profile.role)) {
       // Upgrade existing profile to super_admin
       await base44.entities.UserProfile.update(profile.id, { role: "super_admin" });
-      clearRoleCache();
       return true;
     }
     return ["admin", "super_admin"].includes(profile.role);

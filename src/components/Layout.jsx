@@ -10,7 +10,6 @@ import NotificationBellPanel from "./NotificationBellPanel";
 import AchievementToast from "./AchievementToast";
 import { checkAndUnlockAchievements } from "../lib/achievements";
 import { generateNotifications } from "../lib/generateNotifications";
-import { isAdmin } from "../lib/userRole";
 import BreakReminderModal from "./BreakReminderModal";
 import EncouragementBubble from "./EncouragementBubble";
 import PartnerDashboardWidgets from "./partner/PartnerDashboardWidgets";
@@ -109,12 +108,13 @@ export default function Layout() {
   useEffect(() => {
     generateNotifications().catch(() => {});
     checkAndUnlockAchievements().catch(() => {});
-    isAdmin().then(setUserIsAdmin);
-    // Check partner status — resolve before showing UI to prevent color flash
+    // Single DB fetch for role — source of truth is UserProfile.role, never cache/localStorage
     base44.auth.me().then(async u => {
       const profiles = await base44.entities.UserProfile.filter({ created_by: u.email });
       const p = profiles[0];
-      if (p?.role === "partner") {
+      const role = p?.role || "user";
+      setUserIsAdmin(["admin", "super_admin"].includes(role));
+      if (role === "partner") {
         setUserIsPartner(true);
         const partners = await base44.entities.ProfessionalPartner.filter({ email: u.email });
         setPartnerVerified(!!partners[0]?.is_verified);
