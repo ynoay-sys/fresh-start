@@ -8,6 +8,7 @@ import LaunchCelebration from "../components/LaunchCelebration";
 import { ACHIEVEMENT_DEFS } from "../lib/achievements";
 import WelcomeModal from "../components/WelcomeModal";
 import { trackEvent } from "../lib/trackEvent";
+import { getProfileCompleteness } from "../lib/profileCompleteness";
 import BusinessTypeCards from "../components/BusinessTypeCards";
 import PartnerDashboardWidgets from "../components/partner/PartnerDashboardWidgets";
 
@@ -107,9 +108,7 @@ export default function Dashboard() {
 
       // Calculate profile completeness
       if (profileRec) {
-        const fields = ['first_name', 'last_name', 'phone_il', 'business_name', 'business_type', 'city'];
-        const filled = fields.filter(f => profileRec[f] && profileRec[f].toString().trim() !== '').length;
-        setProfileCompleteness(Math.round((filled / fields.length) * 100));
+        setProfileCompleteness(getProfileCompleteness(profileRec));
       }
 
       const visionsForChecklist = milestonesRes.filter(m => m.type === "vision");
@@ -122,9 +121,7 @@ export default function Dashboard() {
       });
 
       if (profileRec) {
-        const fields = ['first_name','last_name','phone_il','business_name','vat_number','address'];
-        const filled = fields.filter(f => !!profileRec[f]).length;
-        const pct = Math.round((filled / fields.length) * 100);
+        const pct = getProfileCompleteness(profileRec);
         const dismissed = localStorage.getItem('profileBannerDismissed');
         const daysSinceReg = user.created_date ? (Date.now() - new Date(user.created_date).getTime()) / 86400000 : 0;
         if (pct < 50 && daysSinceReg > 1 && !dismissed) setShowProfileBanner(true);

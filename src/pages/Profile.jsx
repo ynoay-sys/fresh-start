@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp, Plus, Trash2, Check, ShieldCheck } from "lucide-react";
 import { checkAndUnlockAchievements } from "../lib/achievements";
+import { getProfileCompleteness } from "../lib/profileCompleteness";
 
 const SIG_TYPE_LABELS = { drawn: "צויירה", uploaded: "הועלתה", typed: "הוקלדה" };
 
@@ -28,11 +29,6 @@ function maskBankAccount(value) {
   return masked + visible;
 }
 
-function calcCompleteness(profile) {
-  if (!profile) return 0;
-  const filled = REQUIRED_FIELDS.filter(f => profile[f] && String(profile[f]).trim() !== "").length;
-  return Math.round((filled / REQUIRED_FIELDS.length) * 100);
-}
 
 function SectionHeader({ title, expanded, onToggle }) {
   return (
@@ -166,7 +162,7 @@ export default function Profile() {
     checkAndUnlockAchievements().catch(() => {});
   }
 
-  const completeness = calcCompleteness({ ...profile, ...personal, ...bank, ...business });
+  const completeness = getProfileCompleteness({ ...profile, ...personal, ...bank, ...business });
 
   if (loading) {
     return (
@@ -225,7 +221,7 @@ export default function Profile() {
           />
         </div>
         <p className="text-xs text-gray-400 mt-1.5">
-          {Math.round((completeness / 100) * REQUIRED_FIELDS.length)} מתוך {REQUIRED_FIELDS.length} שדות מולאו
+          {Math.round((completeness / 100) * 15)} מתוך 15 שדות מולאו
         </p>
       </div>
 
