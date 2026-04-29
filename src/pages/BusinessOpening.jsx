@@ -223,7 +223,27 @@ export default function BusinessOpening() {
       try {
         const u = await base44.auth.me();
         setUser(u);
-        await new Promise(r => setTimeout(r, 200));
+
+        // Check session cache first for instant display
+        const cached = sessionStorage.getItem('bizSteps_' + u.email);
+        if (cached && attempt === 0) {
+          const parsed = JSON.parse(cached);
+          if (parsed.length >= 4) {
+            setSteps(parsed);
+            setLoading(false);
+            // Refresh in background
+            base44.entities.BusinessOpeningStep.filter({ created_by: u.email }).then(fresh => {
+              if (fresh.length >= 4) {
+                setSteps(fresh);
+                sessionStorage.setItem('bizSteps_' + u.email, JSON.stringify(fresh));
+              }
+            }).catch(() => {});
+            // Also load profile in background
+            base44.entities.UserProfile.filter({ created_by: u.email }).then(r => setProfile(r[0] || null)).catch(() => {});
+            return;
+          }
+        }
+
         let existing = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
         if (existing.length === 0) {
           const keys = ["bank_account", "vat_file", "tax_file", "nii"];
@@ -235,23 +255,22 @@ export default function BusinessOpening() {
           } catch (createErr) {
             console.error("Failed to create steps:", createErr);
           }
-          await new Promise(r => setTimeout(r, 1000));
+          await new Promise(r => setTimeout(r, 800));
           existing = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
         }
-        // Retry if still not enough steps
-        if (existing.length < 4 && attempt < 5) {
-          setTimeout(() => load(attempt + 1), 1500);
+        if (existing.length < 4 && attempt < 3) {
+          setTimeout(() => load(attempt + 1), 1200);
           return;
         }
+        sessionStorage.setItem('bizSteps_' + u.email, JSON.stringify(existing));
         setSteps(existing);
-        await new Promise(r => setTimeout(r, 250));
-        const profiles = await base44.entities.UserProfile.filter({ created_by: u.email });
-        setProfile(profiles[0] || null);
         setLoading(false);
+        // Load profile in background after steps are shown
+        base44.entities.UserProfile.filter({ created_by: u.email }).then(r => setProfile(r[0] || null)).catch(() => {});
       } catch (err) {
         console.error("BusinessOpening load error:", err);
-        if (attempt < 5) {
-          setTimeout(() => load(attempt + 1), 1500);
+        if (attempt < 3) {
+          setTimeout(() => load(attempt + 1), 1200);
         } else {
           setLoading(false);
           setSteps([]);
@@ -259,8 +278,7 @@ export default function BusinessOpening() {
         }
       }
     }
-    const delay = setTimeout(() => load(), 300);
-    return () => clearTimeout(delay);
+    load();
   }, []);
 
   useEffect(() => {
@@ -276,7 +294,12 @@ export default function BusinessOpening() {
   }, [steps.length]);
 
   function handleUpdate(id, data) {
-    setSteps(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
+    setSteps(prev => {
+      const next = prev.map(s => s.id === id ? { ...s, ...data } : s);
+      // Invalidate cache so next visit fetches fresh
+      if (user?.email) sessionStorage.removeItem('bizSteps_' + user.email);
+      return next;
+    });
   }
 
   const completedCount = steps.filter(s => s.status === "completed").length;
@@ -301,8 +324,24 @@ export default function BusinessOpening() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" />
+      <div className="max-w-2xl mx-auto px-4 py-8" dir="rtl">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">פתיחת עסק</h1>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4 animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-3" />
+          <div className="h-3 bg-gray-100 rounded-full" />
+        </div>
+        {[1,2,3,4].map(i => (
+          <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 mb-4 animate-pulse">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                <div className="h-3 bg-gray-100 rounded w-1/2" />
+              </div>
+            </div>
+            <div className="h-9 bg-gray-100 rounded-lg w-32" />
+          </div>
+        ))}
       </div>
     );
   }

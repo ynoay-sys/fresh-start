@@ -299,6 +299,12 @@ export default function Contacts() {
                   <Users className="w-4 h-4" /> הכר לי אנשי מקצוע
                 </button>
                 <button
+                  onClick={() => navigate("/partner/profile")}
+                  style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  הצטרף כשותף מקצועי ←
+                </button>
+                <button
                   onClick={() => setModalContact(null)}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
                   style={{ backgroundColor: "#1E5FA8" }}

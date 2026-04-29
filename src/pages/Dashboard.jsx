@@ -59,36 +59,34 @@ export default function Dashboard() {
     async function load() {
       const user = await base44.auth.me();
 
-      // Step 1 — critical user data
-      const docs = await base44.entities.Document.filter({ created_by: user.email, status: "active" });
+      // Batch 1 — fetch everything critical in parallel for instant display
+      const [docs, clients, allSteps, contacts, milestonesRes, profileArr] = await Promise.all([
+        base44.entities.Document.filter({ created_by: user.email, status: "active" }),
+        base44.entities.Client.filter({ created_by: user.email }),
+        base44.entities.BusinessOpeningStep.filter({ created_by: user.email }),
+        base44.entities.Contact.filter({ created_by: user.email }),
+        base44.entities.Milestone.filter({ created_by: user.email }),
+        base44.entities.UserProfile.filter({ created_by: user.email }),
+      ]);
+
+      // Process docs
       setDocCount(docs.length);
-      await new Promise(r => setTimeout(r, 250));
-
-      const clients = await base44.entities.Client.filter({ created_by: user.email });
+      // Process clients
       setClientCount(clients.length);
-      await new Promise(r => setTimeout(r, 250));
-
-      const allSteps = await base44.entities.BusinessOpeningStep.filter({ created_by: user.email });
+      // Process steps
       const completedSteps = allSteps.filter(s => s.status === "completed");
       setStepsCompleted(completedSteps.length);
       setSteps(allSteps);
-      await new Promise(r => setTimeout(r, 250));
-
-      // Step 2 — contacts + milestones + profile
-      const contacts = await base44.entities.Contact.filter({ created_by: user.email });
+      // Process contacts
       setContactCount(contacts.length);
-      await new Promise(r => setTimeout(r, 250));
-
-      const milestonesRes = await base44.entities.Milestone.filter({ created_by: user.email });
+      // Process milestones
       const active = milestonesRes.filter(m => m.type === "goal" && m.status === "active").slice(0, 3);
       setActiveGoals(active);
       const allTasks = milestonesRes.filter(m => m.type === "task");
       const byGoal = {};
       for (const g of active) { byGoal[g.id] = allTasks.filter(t => t.parent_id === g.id); }
       setTasksByGoal(byGoal);
-      await new Promise(r => setTimeout(r, 250));
-
-      const profileArr = await base44.entities.UserProfile.filter({ created_by: user.email });
+      // Process profile
       if (profileArr[0]?.role === "partner") setIsPartner(true);
       const profileRec = profileArr[0];
       setProfile(profileRec || null);
@@ -128,60 +126,55 @@ export default function Dashboard() {
         const daysSinceReg = user.created_date ? (Date.now() - new Date(user.created_date).getTime()) / 86400000 : 0;
         if (pct < 50 && daysSinceReg > 1 && !dismissed) setShowProfileBanner(true);
       }
-      await new Promise(r => setTimeout(r, 250));
 
-      // Step 3 — events + notifications
-      const eventsRes = await base44.entities.ScheduleEvent.filter({ created_by: user.email });
+      // Batch 2 — fetch all remaining data in parallel
+      const [eventsRes, notifsRes, allTemplates, completions, ordersRes, achievementsRes, usageRecords, landingPages, emailSigs, payments] = await Promise.all([
+        base44.entities.ScheduleEvent.filter({ created_by: user.email }),
+        base44.entities.Notification.filter({ created_by: user.email }),
+        base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true }),
+        base44.entities.UserTemplateCompletion.filter({ created_by: user.email }),
+        base44.entities.Order.filter({ created_by: user.email }, "-created_date"),
+        base44.entities.Achievement.filter({ created_by: user.email }),
+        base44.entities.UserFeatureUsage.filter({ created_by: user.email }),
+        base44.entities.LandingPage.filter({ created_by: user.email }),
+        base44.entities.EmailSignature.filter({ created_by: user.email }),
+        base44.entities.Payment.filter({ created_by: user.email }),
+      ]);
+
+      // Process events
       const now = new Date();
       const upcoming = eventsRes
         .filter(e => isAfter(new Date(e.start_time), now))
         .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
         .slice(0, 5);
       setUpcomingEvents(upcoming);
-      await new Promise(r => setTimeout(r, 250));
 
-      const notifsRes = await base44.entities.Notification.filter({ created_by: user.email });
+      // Process notifications
       const unread = notifsRes.filter(n => !n.is_read)
         .sort((a,b) => new Date(b.scheduled_for || b.created_date) - new Date(a.scheduled_for || a.created_date))
         .slice(0, 3);
       setRecentNotifs(unread);
-      await new Promise(r => setTimeout(r, 250));
 
-      // Step 4 — templates
-      const allTemplates = await base44.entities.DocumentTemplate.filter({ urgency: "high", is_active: true });
-      await new Promise(r => setTimeout(r, 250));
-      const completions = await base44.entities.UserTemplateCompletion.filter({ created_by: user.email });
+      // Process templates
       const completedKeys = completions.map(c => c.template_key);
       setUrgentTemplates(allTemplates.filter(t => !completedKeys.includes(t.key)).slice(0, 3));
-      await new Promise(r => setTimeout(r, 250));
 
-      // Step 5 — orders + achievements + usage
-      const ordersRes = await base44.entities.Order.filter({ created_by: user.email }, "-created_date");
+      // Process orders
       const activeOrdersList = ordersRes.filter(o => o.status === "in_transit" || o.status === "delayed").slice(0, 3);
       setActiveOrders(activeOrdersList);
-      await new Promise(r => setTimeout(r, 250));
 
-      const achievementsRes = await base44.entities.Achievement.filter({ created_by: user.email });
+      // Process achievements
       setAchievements(achievementsRes);
-      await new Promise(r => setTimeout(r, 250));
 
-      const usageRecords = await base44.entities.UserFeatureUsage.filter({ created_by: user.email });
+      // Process usage
       const aiRec = usageRecords.find(r => r.feature_key === "ai_query");
       const tmplRec = usageRecords.find(r => r.feature_key === "template_download");
       setAiUsage(aiRec?.usage_count || 0);
       setTemplateUsage(tmplRec?.usage_count || 0);
-      await new Promise(r => setTimeout(r, 250));
 
-      // Step 6 — landing page + email sig + payments
-      const landingPages = await base44.entities.LandingPage.filter({ created_by: user.email });
+      // Process landing page + email sig + payments
       setLandingPage(landingPages[0] || null);
-      await new Promise(r => setTimeout(r, 250));
-
-      const emailSigs = await base44.entities.EmailSignature.filter({ created_by: user.email });
       setEmailSigCount(emailSigs.length);
-      await new Promise(r => setTimeout(r, 250));
-
-      const payments = await base44.entities.Payment.filter({ created_by: user.email });
       const nowDate = new Date();
       const thisMonth = payments.filter(p => {
         const d = new Date(p.created_date);
@@ -199,8 +192,7 @@ export default function Dashboard() {
         if (allOnboardingDone) setShowCelebration(true);
       }
     }
-    const t = setTimeout(() => load(), 3000);
-    return () => clearTimeout(t);
+    load();
   }, []);
 
   return (

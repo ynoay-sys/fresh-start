@@ -74,8 +74,8 @@ export default function PartnerPricing() {
         onClick={() => navigate('/dashboard')}
         style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'none', border:'none', color:'#1E5FA8', cursor:'pointer', fontSize:'14px', fontFamily:'Rubik, sans-serif', padding:'8px 0', marginBottom:'16px', fontWeight:'500' }}
       >
-        <span style={{ fontSize:'16px' }}>→</span>
-        <span>חזרה לדשבורד</span>
+        <span>→</span>
+        <span>חזרה למסך הראשי</span>
       </button>
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">תוכניות שותפים מקצועיים</h1>
