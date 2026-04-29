@@ -205,6 +205,8 @@ function StepCard({ def, step, onUpdate, onOpenWizard }) {
   );
 }
 
+const CACHE_KEY = 'fresh_bizSteps_v2';
+
 export default function BusinessOpening() {
   const navigate = useNavigate();
   const [steps, setSteps] = useState([]);
@@ -219,61 +221,60 @@ export default function BusinessOpening() {
   useEffect(() => { document.title = 'פתיחת עסק | Fresh Start'; }, []);
 
   useEffect(() => {
+    async function refreshInBackground(u) {
+      try {
+        const fresh = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
+        if (fresh.length > 0) {
+          setSteps(fresh);
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ steps: fresh, timestamp: Date.now() }));
+        }
+      } catch {}
+      // Load profile silently
+      base44.entities.UserProfile.filter({ created_by: u.email }).then(r => setProfile(r[0] || null)).catch(() => {});
+    }
+
     async function load(attempt = 0) {
       try {
         const u = await base44.auth.me();
         setUser(u);
 
-        // Check session cache first for instant display
-        const cached = sessionStorage.getItem('bizSteps_' + u.email);
+        // Show from cache immediately
+        const cached = sessionStorage.getItem(CACHE_KEY);
         if (cached && attempt === 0) {
-          const parsed = JSON.parse(cached);
-          if (parsed.length >= 4) {
-            setSteps(parsed);
-            setLoading(false);
-            // Refresh in background
-            base44.entities.BusinessOpeningStep.filter({ created_by: u.email }).then(fresh => {
-              if (fresh.length >= 4) {
-                setSteps(fresh);
-                sessionStorage.setItem('bizSteps_' + u.email, JSON.stringify(fresh));
-              }
-            }).catch(() => {});
-            // Also load profile in background
-            base44.entities.UserProfile.filter({ created_by: u.email }).then(r => setProfile(r[0] || null)).catch(() => {});
-            return;
-          }
+          try {
+            const { steps: cachedSteps } = JSON.parse(cached);
+            if (cachedSteps?.length > 0) {
+              setSteps(cachedSteps);
+              setLoading(false);
+              refreshInBackground(u);
+              return;
+            }
+          } catch {}
         }
 
+        // No cache — first load
         let existing = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
         if (existing.length === 0) {
           const keys = ["bank_account", "vat_file", "tax_file", "nii"];
-          try {
-            for (const k of keys) {
-              await base44.entities.BusinessOpeningStep.create({ step_key: k, status: "not_started" });
-              await new Promise(r => setTimeout(r, 150));
-            }
-          } catch (createErr) {
-            console.error("Failed to create steps:", createErr);
+          for (const k of keys) {
+            try { await base44.entities.BusinessOpeningStep.create({ step_key: k, status: "not_started" }); } catch {}
           }
-          await new Promise(r => setTimeout(r, 800));
+          await new Promise(r => setTimeout(r, 600));
           existing = await base44.entities.BusinessOpeningStep.filter({ created_by: u.email });
         }
         if (existing.length < 4 && attempt < 3) {
-          setTimeout(() => load(attempt + 1), 1200);
+          setTimeout(() => load(attempt + 1), 1000);
           return;
         }
-        sessionStorage.setItem('bizSteps_' + u.email, JSON.stringify(existing));
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ steps: existing, timestamp: Date.now() }));
         setSteps(existing);
         setLoading(false);
-        // Load profile in background after steps are shown
         base44.entities.UserProfile.filter({ created_by: u.email }).then(r => setProfile(r[0] || null)).catch(() => {});
       } catch (err) {
-        console.error("BusinessOpening load error:", err);
         if (attempt < 3) {
-          setTimeout(() => load(attempt + 1), 1200);
+          setTimeout(() => load(attempt + 1), 1000);
         } else {
           setLoading(false);
-          setSteps([]);
           setLoadError(true);
         }
       }
@@ -296,8 +297,7 @@ export default function BusinessOpening() {
   function handleUpdate(id, data) {
     setSteps(prev => {
       const next = prev.map(s => s.id === id ? { ...s, ...data } : s);
-      // Invalidate cache so next visit fetches fresh
-      if (user?.email) sessionStorage.removeItem('bizSteps_' + user.email);
+      sessionStorage.removeItem(CACHE_KEY);
       return next;
     });
   }
