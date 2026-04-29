@@ -48,7 +48,7 @@ export default function WelcomeModal({ onComplete, profileId }) {
   async function finish() {
     await markOnboardingComplete(profileId);
     onComplete();
-    navigate("/business-opening");
+    navigate("/dashboard");
   }
 
   function next() {

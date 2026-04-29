@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getProfileCompleteness } from "../lib/profileCompleteness";
 
 const ITEMS = [
   { key: "profile", label: "השלם את הפרופיל שלך", link: "/profile" },
@@ -9,17 +10,25 @@ const ITEMS = [
   { key: "business", label: "השלם שלב אחד בפתיחת העסק", link: "/business-opening" },
 ];
 
-// checks: { profile, document, client, vision, business } — profile can be a number (completeness %) or boolean
-// profileCompleteness: optional number 0-100
-export default function OnboardingChecklist({ checks, profileCompleteness }) {
+// checks: { profile, document, client, vision, business }
+// userProfile: the raw UserProfile record (for completeness calculation)
+export default function OnboardingChecklist({ checks, userProfile }) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
 
   if (!checks) return null;
 
-  const doneCount = Object.values(checks).filter(Boolean).length;
+  const profilePct = userProfile ? getProfileCompleteness(userProfile) : 0;
+
+  const doneCount = [
+    profilePct === 100,
+    !!checks.document,
+    !!checks.client,
+    !!checks.vision,
+    !!checks.business,
+  ].filter(Boolean).length;
   const allDone = doneCount >= 5;
-  const pct = Math.round((doneCount / 5) * 100);
+  const progressPct = Math.round((doneCount / 5) * 100);
 
   if (allDone) return null;
 
@@ -39,17 +48,36 @@ export default function OnboardingChecklist({ checks, profileCompleteness }) {
       {!collapsed && (
         <div className="px-5 pb-5">
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
-            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: "#1E5FA8" }} />
+            <div className="h-full rounded-full transition-all" style={{ width: `${progressPct}%`, backgroundColor: "#1E5FA8" }} />
           </div>
           <div className="space-y-3">
             {ITEMS.map(item => {
-              const done = !!checks[item.key];
-              // Special handling for profile item with partial completion
               const isProfile = item.key === "profile";
-              const pct = isProfile ? (profileCompleteness ?? (done ? 100 : 0)) : null;
-              const profilePartial = isProfile && pct >= 50 && pct < 100;
-              const profileEmpty = isProfile && pct < 50;
-              const effectiveDone = isProfile ? pct === 100 : done;
+
+              let effectiveDone, icon, iconStyle, textLabel, textStyle;
+
+              if (isProfile) {
+                effectiveDone = profilePct === 100;
+                if (profilePct === 100) {
+                  icon = "✓"; iconStyle = { backgroundColor: "#1A7A4A", color: "white" };
+                  textLabel = "הפרופיל הושלם";
+                  textStyle = { textDecoration: "line-through", color: "#9CA3AF" };
+                } else if (profilePct > 0) {
+                  icon = "◐"; iconStyle = { border: "2px solid #C25A00", color: "#C25A00" };
+                  textLabel = `הושלם חלקית — פרופיל (${profilePct}%)`;
+                  textStyle = { textDecoration: "line-through", color: "#C25A00" };
+                } else {
+                  icon = null; iconStyle = { border: "2px solid #D1D5DB" };
+                  textLabel = "השלם את הפרופיל שלך";
+                  textStyle = { color: "#1A1A2E" };
+                }
+              } else {
+                effectiveDone = !!checks[item.key];
+                icon = effectiveDone ? "✓" : null;
+                iconStyle = effectiveDone ? { backgroundColor: "#1A7A4A", color: "white" } : { border: "2px solid #D1D5DB" };
+                textLabel = item.label;
+                textStyle = effectiveDone ? { textDecoration: "line-through", color: "#9CA3AF" } : { color: "#1A1A2E" };
+              }
 
               return (
                 <div
@@ -57,17 +85,10 @@ export default function OnboardingChecklist({ checks, profileCompleteness }) {
                   onClick={() => !effectiveDone && navigate(item.link)}
                   className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${effectiveDone ? "" : "cursor-pointer hover:bg-blue-50"}`}
                 >
-                  {effectiveDone ? (
-                    <span className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">✓</span>
-                  ) : profilePartial ? (
-                    <span className="w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ borderColor: "#C25A00", color: "#C25A00" }}>◐</span>
-                  ) : (
-                    <span className="w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0" />
-                  )}
-                  <span className={`text-sm ${effectiveDone ? "line-through text-gray-400" : profilePartial ? "font-medium" : "text-gray-800 font-medium"}`}
-                    style={profilePartial ? { color: "#C25A00" } : {}}>
-                    {effectiveDone ? item.label : profilePartial ? `פרופיל הושלם חלקית (${pct}%)` : item.label}
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={iconStyle}>
+                    {icon}
                   </span>
+                  <span className="text-sm font-medium" style={textStyle}>{textLabel}</span>
                   {!effectiveDone && <span className="text-xs text-blue-600 mr-auto">←</span>}
                 </div>
               );

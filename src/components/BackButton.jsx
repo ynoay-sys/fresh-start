@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 
-export default function BackButton({ label = "חזרה" }) {
+export default function BackButton({ label = "חזרה למסך הראשי", to = "/dashboard" }) {
   const navigate = useNavigate();
   return (
     <button
-      onClick={() => navigate(-1)}
+      onClick={() => navigate(to)}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -20,7 +20,7 @@ export default function BackButton({ label = "חזרה" }) {
         fontWeight: '500'
       }}
     >
-      <span style={{ fontSize: '16px' }}>→</span>
+      <span>→</span>
       <span>{label}</span>
     </button>
   );

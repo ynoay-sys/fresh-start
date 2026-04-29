@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [activeOrders, setActiveOrders] = useState([]);
   const [isPartner, setIsPartner] = useState(false);
   const [profileCompleteness, setProfileCompleteness] = useState(0);
+  const [profile, setProfile] = useState(null);
   const [aiUsage, setAiUsage] = useState(0);
   const [templateUsage, setTemplateUsage] = useState(0);
   const [monthPayments, setMonthPayments] = useState(0);
@@ -90,6 +91,7 @@ export default function Dashboard() {
       const profileArr = await base44.entities.UserProfile.filter({ created_by: user.email });
       if (profileArr[0]?.role === "partner") setIsPartner(true);
       const profileRec = profileArr[0];
+      setProfile(profileRec || null);
 
       // Onboarding gate — DB is source of truth, localStorage is only a fast cache
       if (profileRec) {
@@ -236,7 +238,7 @@ export default function Dashboard() {
       </div>
 
       {/* Onboarding Checklist */}
-      <OnboardingChecklist checks={onboardingChecks} profileCompleteness={profileCompleteness} />
+      <OnboardingChecklist checks={onboardingChecks} userProfile={profile} />
 
       {/* Contacts marketplace link */}
       <div className="flex justify-end mb-2 -mt-6">
@@ -248,14 +250,14 @@ export default function Dashboard() {
       </div>
 
       {/* Business Opening Widget */}
-      {stepsCompleted !== 4 && (
+      {stepsCompleted < (steps.length || 4) && (
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-bold text-gray-800">מסע פתיחת העסק</h2>
           <button onClick={() => navigate("/business-opening")}
             className="text-xs font-medium px-3 py-1.5 rounded-lg text-white"
             style={{ backgroundColor: "#1E5FA8" }}>
-            {stepsCompleted === 0 ? "התחל ←" : "המשך ←"}
+            {stepsCompleted === 0 ? "התחל ←" : "להשלמת השלבים ←"}
           </button>
         </div>
         <BusinessProgressMap steps={steps} mini={true} />
